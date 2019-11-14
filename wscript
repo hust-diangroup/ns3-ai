@@ -22,6 +22,7 @@ def build(bld):
     headers.source = [
         'model/memory-pool.h',
         'model/shm-var.h',
+        'model/shm-rl.h',
         ]
 
     # if bld.env.ENABLE_EXAMPLES:
