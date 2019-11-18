@@ -1,12 +1,29 @@
-/* -*- Mode:C; c-file-style:"gnu"; indent-tabs-mode:nil; -*- */
+/* -*- Mode:C++; c-file-style:"gnu"; indent-tabs-mode:nil; -*- */
+/*
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 as
+ * published by the Free Software Foundation;
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ *
+ * Author: Pengyu Liu <eic_lpy@hust.edu.cn>
+ */
 #include <unistd.h>
 #include <sys/ipc.h>
 #include "ns3/global-value.h"
 #include "ns3/uinteger.h"
+#include "ns3/log.h"
 #include "memory-pool.h"
 
 namespace ns3 {
-
+NS_LOG_COMPONENT_DEFINE ("ShmPool");
 GlobalValue gSharedMemoryPoolSize =
     GlobalValue ("SharedMemoryPoolSize", "Shared Memory Pool Size", UintegerValue (4096),
                  MakeUintegerChecker<uint32_t> ());
@@ -15,11 +32,14 @@ GlobalValue gSharedMemoryKey = GlobalValue ("SharedMemoryKey", "Shared Memory Ke
 
 SharedMemoryPool::SharedMemoryPool (void)
 {
+  NS_LOG_FUNCTION (this);
   UintegerValue uv;
   gSharedMemoryPoolSize.GetValue (uv);
   m_memoryPoolSize = uv.Get ();
   gSharedMemoryKey.GetValue (uv);
   m_memoryKey = uv.Get ();
+  NS_LOG_INFO ("Key: " << m_memoryKey << " Size: " << m_memoryPoolSize);
+
   memset (m_memoryCtrlInfo, 0, sizeof (m_memoryCtrlInfo));
   memset (m_memoryLocker, 0, sizeof (m_memoryLocker));
   m_ctrlBlockSize = sizeof (SharedMemoryCtrl);
@@ -35,12 +55,12 @@ SharedMemoryPool::SharedMemoryPool (void)
   m_isCreator = getpid () == m_shmds.shm_cpid;
   if (m_isCreator)
     {
-      // puts("Creator");
+      NS_LOG_INFO ("Creator");
       memset (m_memoryPoolPtr, 0, m_memoryPoolSize);
     }
   else
     {
-      // puts("User");
+      NS_LOG_INFO ("User");
       sleep (1);
     }
 
@@ -58,7 +78,6 @@ SharedMemoryPool::SharedMemoryPool (void)
       --m_curCtrlInfo;
       NS_ASSERT_MSG (m_memoryCtrlInfo[m_curCtrlInfo->id] == 0, "Id has been used");
       m_memoryCtrlInfo[m_curCtrlInfo->id] = m_curCtrlInfo;
-      // printf("Load %u\n", m_curCtrlInfo->id);
     }
   m_currentVersion = m_ctrlInfo->ctrlInfoVersion;
   CtrlInfoUnlock ();
@@ -71,6 +90,7 @@ SharedMemoryPool::~SharedMemoryPool (void)
 void
 SharedMemoryPool::FreeMemory (void)
 {
+  NS_LOG_FUNCTION (this);
   if (!m_isCreator)
     return;
   shmctl (m_shmid, IPC_STAT, &m_shmds);
@@ -95,6 +115,7 @@ SharedMemoryPool::CtrlInfoUnlock (void)
 void *
 SharedMemoryPool::GetMemory (uint16_t id, uint32_t size)
 {
+  NS_LOG_FUNCTION (this << "ID: " << id << " Size: " << size);
   NS_ASSERT_MSG (id < SHM_MAX_KEY_ID, "Id out of range");
   CtrlInfoLock ();
   if (m_ctrlInfo->ctrlInfoVersion != m_currentVersion)
@@ -107,10 +128,7 @@ SharedMemoryPool::GetMemory (uint16_t id, uint32_t size)
               std::cerr << "Id " << m_curCtrlInfo->id << " has been used" << std::endl;
               NS_ABORT_MSG ("Id error");
             }
-          // NS_ASSERT_MSG (m_memoryCtrlInfo[m_curCtrlInfo->id] == 0, "Id %u has been used",
-          //                m_curCtrlInfo->id);
           m_memoryCtrlInfo[m_curCtrlInfo->id] = m_curCtrlInfo;
-          // printf("Load %u\n", m_curCtrlInfo->id);
         }
       m_currentVersion = m_ctrlInfo->ctrlInfoVersion;
     }
@@ -120,7 +138,6 @@ SharedMemoryPool::GetMemory (uint16_t id, uint32_t size)
       CtrlInfoUnlock ();
       return m_memoryPoolPtr + m_memoryCtrlInfo[id]->offset;
     };
-  // printf("Alloc id %u\n", id);
 
   NS_ASSERT_MSG (m_ctrlInfo->freeMemOffset + size <
                      m_memoryPoolSize - m_configLen -
@@ -146,6 +163,7 @@ SharedMemoryPool::GetMemory (uint16_t id, uint32_t size)
 void *
 SharedMemoryPool::RegisterMemory (uint16_t id, uint32_t size)
 {
+  NS_LOG_FUNCTION (this << "ID: " << id << " Size: " << size);
   m_memoryLocker[id] =
       (SharedMemoryLockable *) GetMemory (id, size + sizeof (SharedMemoryLockable));
   return m_memoryLocker[id]->mem;
@@ -153,7 +171,44 @@ SharedMemoryPool::RegisterMemory (uint16_t id, uint32_t size)
 
 void *SharedMemoryPool::AcquireMemory (uint16_t id) //Should register first
 {
+  NS_LOG_FUNCTION (this << "ID: " << id);
   SharedMemoryLockable *info = m_memoryLocker[id];
+  while (
+      !__sync_bool_compare_and_swap (&info->preVersion, info->version, info->version + (uint8_t) 1))
+    ;
+  return info->mem;
+}
+
+void *
+SharedMemoryPool::AcquireMemoryCond (uint16_t id, uint8_t mod, uint8_t res)
+{
+  SharedMemoryLockable *info = m_memoryLocker[id];
+  while (info->version % mod != res)
+    ;
+  while (
+      !__sync_bool_compare_and_swap (&info->preVersion, info->version, info->version + (uint8_t) 1))
+    ;
+  return info->mem;
+}
+
+void *
+SharedMemoryPool::AcquireMemoryTarget (uint16_t id, uint8_t tar)
+{
+  SharedMemoryLockable *info = m_memoryLocker[id];
+  while (info->version != tar)
+    ;
+  while (
+      !__sync_bool_compare_and_swap (&info->preVersion, info->version, info->version + (uint8_t) 1))
+    ;
+  return info->mem;
+}
+
+void *
+SharedMemoryPool::AcquireMemoryCondFunc (uint16_t id, bool (*cond) (uint8_t version))
+{
+  SharedMemoryLockable *info = m_memoryLocker[id];
+  while (!cond (info->version))
+    ;
   while (
       !__sync_bool_compare_and_swap (&info->preVersion, info->version, info->version + (uint8_t) 1))
     ;
@@ -162,15 +217,39 @@ void *SharedMemoryPool::AcquireMemory (uint16_t id) //Should register first
 
 void SharedMemoryPool::ReleaseMemory (uint16_t id) //Should register first
 {
+  NS_LOG_FUNCTION (this << "ID: " << id);
   SharedMemoryLockable *info = m_memoryLocker[id];
   NS_ASSERT_MSG (__sync_bool_compare_and_swap (&info->version, info->preVersion - (uint8_t) 1,
                                                info->preVersion),
                  "Lock status error");
 }
 
+void
+SharedMemoryPool::ReleaseMemoryAndRollback (uint16_t id)
+{
+  NS_LOG_FUNCTION (this << "ID: " << id);
+  SharedMemoryLockable *info = m_memoryLocker[id];
+  NS_ASSERT_MSG (
+      __sync_bool_compare_and_swap (&info->preVersion, info->version + (uint8_t) 1, info->version),
+      "Lock status error");
+}
+
 uint8_t
-SharedMemoryPool::GetMemoryVersion (uint8_t id)
+SharedMemoryPool::GetMemoryVersion (uint16_t id)
 {
   return m_memoryLocker[id]->version;
 }
+
+void
+SharedMemoryPool::IncMemoryVersion (uint16_t id)
+{
+  SharedMemoryLockable *info = m_memoryLocker[id];
+  while (
+      !__sync_bool_compare_and_swap (&info->preVersion, info->version, info->version + (uint8_t) 1))
+    ;
+  NS_ASSERT_MSG (
+      __sync_bool_compare_and_swap (&info->preVersion, info->version + (uint8_t) 1, info->version),
+      "Lock status error");
+}
+
 } // namespace ns3
