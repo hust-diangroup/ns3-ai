@@ -124,7 +124,7 @@ cd src/ns3-ai/example/rl-tcp/
 python testtcp.py
 ```
 
-**NOTICE: ns3 code and Python code need to run simultaneously **
+**NOTICE: ns3 code and Python code need to run simultaneously**
 
 
 

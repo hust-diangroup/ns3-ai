@@ -54,8 +54,8 @@ py_interface.FreeMemory()
 ```
 
 ## Examples
-### [RL-TCP](https://github.com/hust-diangroup/ns3-ai/blob/master/example/rl-tcp-shm/RL-TCP-en.md)
-This example is inspired by [ns3-gym example](https://github.com/tkn-tub/ns3-gym#rl-tcp). We bulid this example for the benchmarking and compare with their module.
+### [RL-TCP](https://github.com/hust-diangroup/ns3-ai/blob/master/example/rl-tcp/RL-TCP-en.md)
+This example is inspired by [ns3-gym example](https://github.com/tkn-tub/ns3-gym#rl-tcp). We bulid this example for the benchmarking and to compare with their module.
 
 #### Build and Run
 Run ns-3 example:
