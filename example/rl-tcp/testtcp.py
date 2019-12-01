@@ -27,7 +27,7 @@ class TcpRlAct(Structure):
 
 py_interface.Init(1234, 4096)
 
-var = py_interface.ShmRL(1234, TcpRlEnv, TcpRlAct)
+var = py_interface.Ns3AIRL(1234, TcpRlEnv, TcpRlAct)
 
 # var = py_interface.ShmBigVar(1234, TcpRl)
 while not var.isFinish():

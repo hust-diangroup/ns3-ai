@@ -33,6 +33,8 @@ git clone https://github.com/hust-diangroup/ns3-ai.git
 ### 2. Add Python interface
 
 #### Install
+Python3 is used and tested.
+
 ```
 cd $YOUR_NS3_CODE/src/ns-ai/py_interface
 
@@ -58,7 +60,7 @@ This example is inspired by [ns3-gym example](https://github.com/tkn-tub/ns3-gym
 #### Build and Run
 Run ns-3 example:
 ```
-copy -r src/ns3-ai/example/rl-tcp-shm scratch/
+cp -r src/ns3-ai/example/rl-tcp-shm scratch/
 
 ./waf --run "rl-tcp-shm"
 ```
