@@ -60,13 +60,13 @@ This example is inspired by [ns3-gym example](https://github.com/tkn-tub/ns3-gym
 #### Build and Run
 Run ns-3 example:
 ```
-cp -r src/ns3-ai/example/rl-tcp-shm scratch/
+cp -r src/ns3-ai/example/rl-tcp scratch/
 
-./waf --run "rl-tcp-shm"
+./waf --run "rl-tcp"
 ```
 Run Python code:
 ```
-cd src/ns3-ai/example/rl-tcp-shm/
+cd src/ns3-ai/example/rl-tcp/
 
 python testtcp.py
 ```
