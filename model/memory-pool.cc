@@ -1,5 +1,7 @@
 /* -*- Mode:C++; c-file-style:"gnu"; indent-tabs-mode:nil; -*- */
 /*
+ * Copyright (c) 2019 Huazhong University of Science and Technology, Dian Group
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 as
  * published by the Free Software Foundation;
@@ -17,6 +19,7 @@
  */
 #include <unistd.h>
 #include <sys/ipc.h>
+#include <sstream>
 #include "ns3/global-value.h"
 #include "ns3/uinteger.h"
 #include "ns3/log.h"
@@ -85,18 +88,20 @@ SharedMemoryPool::SharedMemoryPool (void)
 
 SharedMemoryPool::~SharedMemoryPool (void)
 {
+  FreeMemory ();
 }
 
 void
 SharedMemoryPool::FreeMemory (void)
 {
   NS_LOG_FUNCTION (this);
-  if (!m_isCreator)
+  if (!m_isCreator || m_memoryPoolPtr == NULL)
     return;
   shmctl (m_shmid, IPC_STAT, &m_shmds);
   while (m_shmds.shm_nattch != 1)
     shmctl (m_shmid, IPC_STAT, &m_shmds);
   shmctl (m_shmid, IPC_RMID, 0);
+  m_memoryPoolPtr = NULL;
 }
 
 void
@@ -125,8 +130,9 @@ SharedMemoryPool::GetMemory (uint16_t id, uint32_t size)
           --m_curCtrlInfo;
           if (m_memoryCtrlInfo[m_curCtrlInfo->id] != 0)
             {
-              std::cerr << "Id " << m_curCtrlInfo->id << " has been used" << std::endl;
-              NS_ABORT_MSG ("Id error");
+              std::stringstream errMsg;
+              errMsg << "Id " << m_curCtrlInfo->id << " has been used" << std::endl;
+              NS_ABORT_MSG (errMsg.str());
             }
           m_memoryCtrlInfo[m_curCtrlInfo->id] = m_curCtrlInfo;
         }
