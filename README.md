@@ -1,4 +1,6 @@
 # ns3-ai
+
+## Description
  The [ns–3](https://www.nsnam.org/) simulator is an open-source networking simulation tool implemented by C++ and wildly used for network research and education. Currently, more and more researchers are willing to apply AI algorithms to network research. Most AI algorithms are likely to rely on open source frameworks such as [TensorFlow](https://www.tensorflow.org/) and [PyTorch](https://pytorch.org/). These two parts are developed independently and extremely hard to merge, so it is more reasonable and convenient to connect these two tasks with data interaction. Our model provides a high-efficiency solution to enable the data interaction between ns-3 and other python based AI frameworks.
 
  Inspired by [ns3-gym](https://github.com/tkn-tub/ns3-gym), but using a different approach which is faster and more flexible.
@@ -9,32 +11,60 @@
 - Easy to integrate with other AI frameworks.
 
 
-## Get ns-3:  
+## Installation
+### 1. Install this module in ns-3
+#### Get ns-3:  
 This module needs to be built within ns-3, so you need to get a ns-3-dev or other ns-3 codes first.
 
-## Add this module
+Check [ns-3 installation wiki](https://www.nsnam.org/wiki/Installation) for detailed instructions.
+
+#### Add this module
 ```
-cd $YOURNS3CODE/src
-git clone https://github.com/hust-diangroup/ns-3-AI-interface.git
+cd $YOUR_NS3_CODE/src
+git clone https://github.com/hust-diangroup/ns3-ai.git
 ```
 
-## Use Shared Memory in NS-3
-
-### 1. Rebuild NS-3
+#### Rebuild ns-3
 ```
 ./waf configure
 ./waf
 ```
 
-## Run Example NS-3 Code
+### 2. Add Python interface
+
+#### Install
 ```
-copy src/shared-memory/example/test-shm.cc scratch/
-./waf --run scratch/test-shm
+cd $YOUR_NS3_CODE/src/ns-ai/py_interface
+
+python setup.py install --user
 ```
 
-## Run Python Code
-```python
-python test.py
+#### Baisc usage
+```
+import py_interface
+py_interface.Init(1234, 4096) # key poolSize
+v = ShmBigVar(233, c_int*10)
+with v as o:
+    for i in range(10):
+        o[i] = c_int(i)
+    print(*o)
+py_interface.FreeMemory()
 ```
 
-## NOTICE: C/C++ code and Python code need to run simultaneously
+## Examples
+### [RL-TCP](https://github.com/hust-diangroup/ns3-ai/blob/master/example/rl-tcp-shm/RL-TCP-en.md)
+This example is inspired by [ns3-gym example](https://github.com/tkn-tub/ns3-gym#rl-tcp). We bulid this example for the benchmarking and compare with their module.
+
+#### Build and Run
+Run ns-3 example:
+```
+copy -r src/ns3-ai/example/rl-tcp-shm scratch/
+
+./waf --run "rl-tcp-shm"
+```
+Run Python code:
+```
+cd src/ns3-ai/example/rl-tcp-shm/
+
+python testtcp.py
+```
