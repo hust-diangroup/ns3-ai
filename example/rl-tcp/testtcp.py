@@ -36,6 +36,8 @@ while not var.isFinish():
     # with var as data:
     #     # print(data.env.ssThresh, data.env.cWnd)
     with var as data:
+        if data == None:
+            break
         print(var.GetVersion())
         ssThresh = data.env.ssThresh
         cWnd = data.env.cWnd

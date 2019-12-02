@@ -102,6 +102,7 @@ class Ns3AIRL:
         self.envType = EnvType
         self.actType = ActType
         self.extInfo = ExtInfo
+        self.finished = False
 
         class StorageType(Structure):
             _pack_ = 1
@@ -131,6 +132,7 @@ class Ns3AIRL:
         while not self.isFinish() and self.GetVersion() % self.mod != self.res:
             pass
         if self.isFinish():
+            self.finished = True
             return None
         AcquireMemory(self.m_id)
         return self.m_obj
@@ -145,6 +147,8 @@ class Ns3AIRL:
         return self.Acquire()
 
     def __exit__(self, Type, value, traceback):
+        if self.finished:
+            return
         self.Release()
 
 class Ns3AIDL:
