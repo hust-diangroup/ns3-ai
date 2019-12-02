@@ -16,6 +16,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  * Author: Pengyu Liu <eic_lpy@hust.edu.cn>
+ * Author: Hao Yin <haoyin@uw.edu>
  */
 #include <unistd.h>
 #include <sys/ipc.h>

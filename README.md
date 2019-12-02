@@ -70,3 +70,9 @@ cd src/ns3-ai/example/rl-tcp/
 
 python testtcp.py
 ```
+**NOTE: Currently the RL test in python script is not fully enabled, coming soon.**
+
+#### Future plan
+- Full RL-TCP example - debugging.
+- LTE CQI prediction with Deep learning - ns-3 parts finished.
+
