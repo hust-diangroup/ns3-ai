@@ -1,4 +1,4 @@
-#include "ns3/shm-var.h"
+#include "ns3/train-var.h"
 
 using namespace ns3;
 
@@ -13,7 +13,7 @@ main ()
 
   //Use simple variables
   //Create a variable in shared memory pool with id = 1
-  ShmVar<int> var (1);
+  TrainVar<int> var (1);
   for (int i = 0; i < 100000; ++i)
     {
       //Set the variable to 2*i
