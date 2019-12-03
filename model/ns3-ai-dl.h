@@ -100,7 +100,7 @@ Ns3AIDL<FeatureType, PredictedType, TargetType, SimInfoType>::Ns3AIDL(uint16_t i
   m_res = 0;
   m_cond = NULL;
   m_id = id;
-  m_memSize = sizeof(FeatureType) + sizeof(PredictedType) + sizeof(SimInfoType) + sizeof(bool);
+  m_memSize = sizeof(FeatureType) + sizeof(PredictedType) + sizeof(TargetType) + sizeof(SimInfoType) + sizeof(bool);
   m_baseAddr = (uint8_t *)SharedMemoryPool::Get()->RegisterMemory(id, m_memSize);
   m_feature = (FeatureType *)m_baseAddr;
   m_predicted = (PredictedType *)(m_baseAddr + sizeof(FeatureType));
