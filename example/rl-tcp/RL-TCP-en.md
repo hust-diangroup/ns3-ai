@@ -49,7 +49,8 @@
 
 ## RL Algorithm
 
-
+* Apply Deep Q-learning algorithm to TCP congestion control
+* In RL Algorithm, output actions and reward determine the performance of model
 
 
 
@@ -121,7 +122,7 @@ Run Python code:
 ```
 cd src/ns3-ai/example/rl-tcp/
 
-python testtcp.py
+python run_tcp_rl.py --use_rl --result
 ```
 
 **NOTICE: ns3 code and Python code need to run simultaneously**
