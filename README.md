@@ -36,7 +36,7 @@ git clone https://github.com/hust-diangroup/ns3-ai.git
 Python3 is used and tested.
 
 ```
-cd $YOUR_NS3_CODE/src/ns-ai/py_interface
+cd $YOUR_NS3_CODE/src/ns3-ai/py_interface
 
 python setup.py install --user
 ```
