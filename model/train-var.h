@@ -28,9 +28,7 @@ namespace ns3 {
 #ifndef SETABLE
 #define SETABLE 0x0
 #endif
-/*
-适用于小型数据
-*/
+
 template <typename T>
 class TrainVar
 {

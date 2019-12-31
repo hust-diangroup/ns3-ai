@@ -52,23 +52,125 @@ public:
   ~Ns3AIDL(void);
   void SetCond(uint8_t mod, uint8_t res);
   void SetCondFunc(bool (*cond)(uint8_t version));
+/**
+ * \brief Get feature pointer for reading. 
+ *  If it is not locked, it will lock.
+ * \returns feature type.
+ */
   FeatureType *FeatureGetter(void);                  //Get feature pointer for reading
+/**
+ * \brief Get feature pointer for reading. 
+ *  If it is not locked, it will lock.
+ *  It only happens when its version is a multiple of the mod. 
+ * \returns feature type.
+ */
   FeatureType *FeatureGetterCond(void);              //Get feature pointer for reading
+/**
+ * \brief Get feature pointer for reading. 
+ * If it is not locked, it will lock.
+ * It only happens when its version is the specific number. 
+ * \param [in] id Id of the memory to be allocated
+ * \returns feature type.
+ */ 
   FeatureType *FeatureGetterTarget(uint8_t tar);     //Get feature pointer for reading
+/**
+ * \brief Get feature pointer for reading. 
+ *  If it is not locked, it will lock.
+ *  It only happens when its version does not equal to 0. 
+ * \returns feature type.
+ */  
   FeatureType *FeatureGetterCondFunc(void);          //Get feature pointer for reading
+/**
+ * \brief get predicted pointer for reading. 
+ *  If it is not locked, it will lock.
+ *  If next version equals to present version, the present version add to 1. 
+ * \returns predicted type.
+ */  
   PredictedType *PredictedGetter(void);              //Get predicted pointer for reading
+/**
+ * \brief get predicted pointer for reading. 
+ *  If it is not locked, it will lock.
+ *  It only happens when its version is a multiple of the mod. 
+ * \returns predicted type.
+ */ 
   PredictedType *PredictedGetterCond(void);          //Get predicted pointer for reading
+/**
+ * \brief get predicted pointer for reading. 
+ * If it is not locked, it will lock.
+ * It only happens when its version is the target number. 
+ * \param [in] target version number.
+ * \returns predicted type.
+ */  
   PredictedType *PredictedGetterTarget(uint8_t tar); //Get predicted pointer for reading
+/**
+ * \brief get predicted pointer for reading. 
+ *  If it is not locked, it will lock.
+ *  It only happens when its version does not equal to 0. 
+ * \returns predicted type.
+ */ 
   PredictedType *PredictedGetterCondFunc(void);      //Get predicted pointer for reading
+/**
+ * \brief target pointer for reading. 
+ *  If it is not locked, it will lock.
+ * \returns target type.
+ */ 
   TargetType *TargetGetter(void);                    //Get target pointer for reading
+/**
+ * \brief get simulation info pointer for reading. 
+ *  If it is not locked, it will lock.
+ *  It only happens when its version is a multiple of the mod. 
+ * \returns information type.
+ */  
   TargetType *TargetGetterCond(void);                //Get target pointer for reading
+/**
+ * \brief get target pointer for reading. 
+ * If it is not locked, it will lock.
+ * It only happens when its version is the target number. 
+ * \param [in] target version number.
+ * \returns target type.
+ */   
   TargetType *TargetGetterTarget(uint8_t tar);       //Get target pointer for reading
+/**
+ * \brief get target pointer for reading. 
+ *  If it is not locked, it will lock.
+ *  It only happens when its version does not equal to 0. 
+ * \returns target type.
+ */   
   TargetType *TargetGetterCondFunc(void);            //Get target pointer for reading
+/**
+ * \brief get simulation info pointer for reading. 
+ *  If it is not locked, it will lock.
+ * \returns information type.
+ */ 
   SimInfoType *InfoGetter(void);                     //Get simulation info pointer for reading
+/**
+ * \brief get simulation info pointer for reading. 
+ *  If it is not locked, it will lock.
+ *  It only happens when its version is a multiple of the mod. 
+ * \returns information type.
+ */ 
   SimInfoType *InfoGetterCond(void);                 //Get simulation info pointer for reading
+/**
+ * \brief get simulation info pointer for reading. 
+ * If it is not locked, it will lock.
+ * It only happens when its version is the target number. 
+ * \param [in] target version number.
+ * \returns information type.
+ */  
   SimInfoType *InfoGetterTarget(uint8_t tar);        //Get simulation info pointer for reading
-  SimInfoType *InfoGetterCondFunc(void);             //Get simulation info pointer for reading
-  void GetCompleted(void);                           //read completed
+/**
+ * \brief get simulation info pointer for reading. 
+ *  If it is not locked, it will lock.
+ *  It only happens when its version does not equal to 0. 
+ * \returns information type.
+ */ 
+  SimInfoType *InfoGetterCondFunc(void);       //Get simulation info pointer for reading
+/**
+ * \brief get simulation info pointer for reading. 
+ *  If it is locked, it will unlock.
+ *  It checks lock status right or not. 
+ */ 
+  void GetCompleted(void);                     //read completed
 
   FeatureType *FeatureSetter(void);                  //Get pointer to modify feature
   FeatureType *FeatureSetterCond(void);              //Get pointer to modify feature
@@ -86,10 +188,29 @@ public:
   SimInfoType *InfoSetterCond(void);                 //Get pointer to modify info
   SimInfoType *InfoSetterTarget(uint8_t tar);        //Get pointer to modify info
   SimInfoType *InfoSetterCondFunc(void);             //Get pointer to modify info
-  void SetCompleted(void);                           //modification completed
-
+/**
+ * \brief modification completed. 
+ *  If it is not locked, it will lock.
+ *  It checks lock status right or not. 
+ */ 
+  void SetCompleted(void);                     //modification completed
+/**
+ * \brief get memory version.
+ *  If it is not locked, it will lock.
+ *  It checks lock status right or not. 
+ * \return version.
+ */ 
   uint8_t GetVersion(void); //get memory version
+/**
+ * \brief set simulation finish. 
+ *  If it is not locked, it will lock and acquire memory.
+ *  If it is locked, it will unlock and release memory.
+ */ 
   void SetFinish(void);     //set simulation finish
+/**
+ * \brief get finish identifier. 
+ * \return finish flag.
+ */ 
   bool GetIsFinish(void);
 };
 

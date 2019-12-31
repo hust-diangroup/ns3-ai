@@ -51,18 +51,96 @@ public:
   ~Ns3AIRL(void);
   void SetCond(uint8_t mod, uint8_t res);
   void SetCondFunc(bool (*cond)(uint8_t version));
+/**
+ * \brief Get env pointer for reading. 
+ *  If it is not locked, it will lock.
+ * \returns env type.
+ */
   EnvType *EnvGetter(void);                    //Get env pointer for reading
+/**
+ * \brief Get env pointer for reading. 
+ *  If it is not locked, it will lock.
+ *  It only happens when its version is a multiple of the mod. 
+ * \returns env type.
+ */
   EnvType *EnvGetterCond(void);                //Get env pointer for reading
+/**
+ * \brief Get env pointer for reading. 
+ * If it is not locked, it will lock.
+ * It only happens when its version is the specific number. 
+ * \param [in] id Id of the memory to be allocated
+ * \returns env type.
+ */  
   EnvType *EnvGetterTarget(uint8_t tar);       //Get env pointer for reading
+/**
+ * \brief Get env pointer for reading. 
+ *  If it is not locked, it will lock.
+ *  It only happens when its version does not equal to 0. 
+ * \returns env type.
+ */  
   EnvType *EnvGetterCondFunc(void);            //Get env pointer for reading
+/**
+ * \brief get action pointer for reading. 
+ *  If it is not locked, it will lock.
+ *  If next version equals to present version, the present version add to 1. 
+ * \returns action type.
+ */  
   ActionType *ActionGetter(void);              //Get action pointer for reading
+/**
+ * \brief get action pointer for reading. 
+ *  If it is not locked, it will lock.
+ *  It only happens when its version is a multiple of the mod. 
+ * \returns action type.
+ */ 
   ActionType *ActionGetterCond(void);          //Get action pointer for reading
+/**
+ * \brief get action pointer for reading. 
+ * If it is not locked, it will lock.
+ * It only happens when its version is the target number. 
+ * \param [in] target version number.
+ * \returns env type.
+ */  
   ActionType *ActionGetterTarget(uint8_t tar); //Get action pointer for reading
+/**
+ * \brief get action pointer for reading. 
+ *  If it is not locked, it will lock.
+ *  It only happens when its version does not equal to 0. 
+ * \returns action type.
+ */ 
   ActionType *ActionGetterCondFunc(void);      //Get action pointer for reading
+/**
+ * \brief get simulation info pointer for reading. 
+ *  If it is not locked, it will lock.
+ * \returns information type.
+ */ 
   SimInfoType *InfoGetter(void);               //Get simulation info pointer for reading
+/**
+ * \brief get simulation info pointer for reading. 
+ *  If it is not locked, it will lock.
+ *  It only happens when its version is a multiple of the mod. 
+ * \returns information type.
+ */ 
   SimInfoType *InfoGetterCond(void);           //Get simulation info pointer for reading
+/**
+ * \brief get simulation info pointer for reading. 
+ * If it is not locked, it will lock.
+ * It only happens when its version is the target number. 
+ * \param [in] target version number.
+ * \returns information type.
+ */   
   SimInfoType *InfoGetterTarget(uint8_t tar);  //Get simulation info pointer for reading
+/**
+ * \brief get simulation info pointer for reading. 
+ *  If it is not locked, it will lock.
+ *  It only happens when its version does not equal to 0. 
+ * \returns information type.
+ */ 
   SimInfoType *InfoGetterCondFunc(void);       //Get simulation info pointer for reading
+/**
+ * \brief get simulation info pointer for reading. 
+ *  If it is locked, it will unlock.
+ *  It checks lock status right or not. 
+ */ 
   void GetCompleted(void);                     //read completed
 
   EnvType *EnvSetter(void);                    //Get pointer to modify env
@@ -77,10 +155,29 @@ public:
   SimInfoType *InfoSetterCond(void);           //Get pointer to modify info
   SimInfoType *InfoSetterTarget(uint8_t tar);  //Get pointer to modify info
   SimInfoType *InfoSetterCondFunc(void);       //Get pointer to modify info
+/**
+ * \brief modification completed. 
+ *  If it is not locked, it will lock.
+ *  It checks lock status right or not. 
+ */ 
   void SetCompleted(void);                     //modification completed
-
+/**
+ * \brief get memory version.
+ *  If it is not locked, it will lock.
+ *  It checks lock status right or not. 
+ * \return version.
+ */ 
   uint8_t GetVersion(void); //get memory version
+/**
+ * \brief set simulation finish. 
+ *  If it is not locked, it will lock and acquire memory.
+ *  If it is locked, it will unlock and release memory.
+ */ 
   void SetFinish(void);     //set simulation finish
+/**
+ * \brief get finish identifier. 
+ * \return finish flag.
+ */ 
   bool GetIsFinish(void);
 };
 
