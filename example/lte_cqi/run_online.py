@@ -36,9 +36,9 @@ try:
             if data == None:
                 break
             # print('data.env.wbCqi', data.env.wbCqi)
-            # Reinforcement learning code there
-            data.pred.new_wbCqi = data.feat.wbCqi
-            data.pred.new_sbCqi = data.feat.sbCqi
+            # Deep Learning code there
+            data.act.new_wbCqi = data.env.wbCqi
+            data.act.new_sbCqi = data.env.sbCqi
 except KeyboardInterrupt:
     print('Ctrl C')
 finally:
