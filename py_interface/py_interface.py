@@ -169,8 +169,8 @@ class Ns3AIDL:
         class StorageType(Structure):
             _pack_ = 1
             _fields_ = [
-                ('env', self.featureType),
-                ('act', self.predictedType),
+                ('feat', self.featureType),
+                ('pred', self.predictedType),
                 ('tar', self.targetType),
                 ('ext', self.extInfo),
                 ('isFinish', c_bool)

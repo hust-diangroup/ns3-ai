@@ -35,10 +35,10 @@ try:
         with dl as data:
             if data == None:
                 break
-            # print('data.env.wbCqi', data.env.wbCqi)
+            # print('data.feat.wbCqi', data.feat.wbCqi)
             # Deep Learning code there
-            data.act.new_wbCqi = data.env.wbCqi
-            data.act.new_sbCqi = data.env.sbCqi
+            data.pred.new_wbCqi = data.feat.wbCqi
+            data.pred.new_sbCqi = data.feat.sbCqi
 except KeyboardInterrupt:
     print('Ctrl C')
 finally:
