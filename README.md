@@ -99,6 +99,6 @@ cd scratch/lte_cqi/
 
 python run_online.py
 ```
-**NOTE: Currently the DL test in python script is not uploaded, so you don't need to set up DL environment to test our module.**
+**NOTE: Currently the DL test in python script is not uploaded, so you don't need to set up DL environment to test our module.**  
 **NOTE: If the program does not exit normally, you need to run freeshm.sh to release the shared memory manually.**
 
