@@ -20,7 +20,7 @@ Check [ns-3 installation wiki](https://www.nsnam.org/wiki/Installation) for deta
 
 #### Add this module
 ```
-cd $YOUR_NS3_CODE/src
+cd $YOUR_NS3_CODE/contrib
 git clone https://github.com/hust-diangroup/ns3-ai.git
 ```
 
@@ -36,7 +36,7 @@ git clone https://github.com/hust-diangroup/ns3-ai.git
 Python3 is used and tested.
 
 ```
-cd $YOUR_NS3_CODE/src/ns3-ai/py_interface
+cd $YOUR_NS3_CODE/contrib/ns3-ai/py_interface
 
 python setup.py install --user
 ```
@@ -52,6 +52,9 @@ with v as o:
     print(*o)
 py_interface.FreeMemory()
 ```
+## Shared Memory Pool
+The ns3-ai module interconnects the ns-3 and AI frameworks by transferring data through the shared memory pool. The memory can be accessed by both sides and controlled mainly in ns-3. The shared memory pool is defined in `ns3-ai/model/memory-pool.h`.
+
 
 ## Examples
 ### [RL-TCP](https://github.com/hust-diangroup/ns3-ai/blob/master/example/rl-tcp/RL-TCP-en.md)
@@ -60,7 +63,7 @@ This example is inspired by [ns3-gym example](https://github.com/tkn-tub/ns3-gym
 #### Build and Run
 Run ns-3 example:
 ```
-cp -r src/ns3-ai/example/rl-tcp scratch/
+cp -r contrib/ns3-ai/example/rl-tcp scratch/
 
 ./waf --run "rl-tcp"
 ```
@@ -97,8 +100,13 @@ Run Python code:
 ```
 cd scratch/lte_cqi/
 
-python run_online.py
+python run_online.py 
+```    
+If you want to test the LSTM, you can run another python script but you may need to install [PyTorch](https://pytorch.org/) environment first. 
 ```
-**NOTE: Currently the DL test in python script is not uploaded, so you don't need to set up DL environment to test our module.**  
+cd scratch/lte_cqi/
+
+python run_online_lstm.py
+```    
 **NOTE: If the program does not exit normally, you need to run freeshm.sh to release the shared memory manually.**
 
