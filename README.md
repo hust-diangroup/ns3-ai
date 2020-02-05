@@ -116,7 +116,7 @@ cd scratch/lte_cqi/
 
 python run_online.py 
 ```    
-If you want to test the LSTM, you can run another python script but you may need to install [PyTorch](https://pytorch.org/) environment first. 
+If you want to test the LSTM, you can run another python script but you may need to install [TensorFlow](https://www.tensorflow.org/) environment first. 
 ```
 cd scratch/lte_cqi/
 
