@@ -53,7 +53,21 @@ with v as o:
 py_interface.FreeMemory()
 ```
 ## Shared Memory Pool
-The ns3-ai module interconnects the ns-3 and AI frameworks by transferring data through the shared memory pool. The memory can be accessed by both sides and controlled mainly in ns-3. The shared memory pool is defined in `ns3-ai/model/memory-pool.h`.
+The ns3-ai module interconnects the ns-3 and AI frameworks by transferring data through the shared memory pool. The memory can be accessed by both sides and controlled mainly in ns-3. The shared memory pool is defined in `ns3-ai/model/memory-pool.h`.  
+The `CtrlInfoBlock` is the control block of the all shared memory pool, the `SharedMemoryCtrl` is the control block of each shared memory, and the `SharedMemoryLockable` is the actual shared memory used for data exchange. In each memory block, we use version and preVersion as the lock indicator. The synchronization for reading/writing locks and the events update are accomplished by the lock indicator. For every process that wants to access or modify the data, it will compare the `version` variable and the `nextVersion` variable. If they are the same, it means that the memory is reachable. Then it will add one to the next version atomically to lock the memory and also add one to the version after its operation to the memory to unlock the memory. Besides the version of the memory acts as the signal to tell different processes the current state of the memory block, which provides different methods to synchronize.
+```
+|SharedMemoryBlock1|
+|SharedMemoryBlock2|
+|SharedMemoryBlock3|
+...
+...
+...
+|ControlMemoryBlock3|
+|ControlMemoryBlock2|
+|ControlMemoryBlock1|
+|MemoryPoolContrlBlk|
+```
+
 
 
 ## Examples

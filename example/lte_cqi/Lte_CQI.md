@@ -119,7 +119,12 @@ cd scratch/lte_cqi/
 
 python run_online.py
 ```
+If you want to test the LSTM, you can run another python script but you may need to install [PyTorch](https://pytorch.org/) environment first. 
+```
+cd scratch/lte_cqi/
 
+python run_online_lstm.py
+```    
 **NOTICE: ns3 code and Python code need to run simultaneously**
 
 
