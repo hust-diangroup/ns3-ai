@@ -114,13 +114,13 @@ python  side：
 
 Run ns-3 example:
 ```
-cp -r src/ns3-ai/example/rl-tcp scratch/
+cp -r contrib/ns3-ai/example/rl-tcp scratch/
 
 ./waf --run "rl-tcp"
 ```
 Run Python code:
 ```
-cd src/ns3-ai/example/rl-tcp/
+cd contrib/ns3-ai/example/rl-tcp/
 
 python run_tcp_rl.py --use_rl --result
 ```

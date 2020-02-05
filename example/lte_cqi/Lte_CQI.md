@@ -98,7 +98,7 @@ with dl as data:
 ## Build and Run
 Apply the lte patch (in your ns3 dir)
 ```
-cp src/ns3-ai/example/lte_cqi/lte_cqi_predict.patch .
+cp contrib/ns3-ai/example/lte_cqi/lte_cqi_predict.patch .
 
 git apply --stat lte_cqi_predict.patch
 
@@ -109,7 +109,7 @@ git am -s < lte_cqi_predict.patch
 
 Run ns-3 example:
 ```
-cp -r src/ns3-ai/example/lte_cqi scratch/
+cp -r contrib/ns3-ai/example/lte_cqi scratch/
 
 ./waf --run "lte_cqi"
 ```

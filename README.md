@@ -83,7 +83,7 @@ cp -r contrib/ns3-ai/example/rl-tcp scratch/
 ```
 Run Python code:
 ```
-cd src/ns3-ai/example/rl-tcp/
+cd contrib/ns3-ai/example/rl-tcp/
 
 python testtcp.py
 ```
@@ -95,7 +95,7 @@ This original work is done based on [5G NR](https://5g-lena.cttc.es/) branch in 
 #### Build and Run
 Apply the lte patch (in your ns3 dir)
 ```
-cp src/ns3-ai/example/lte_cqi/lte_cqi_predict.patch .
+cp contrib/ns3-ai/example/lte_cqi/lte_cqi_predict.patch .
 
 git apply --stat lte_cqi_predict.patch
 
@@ -106,7 +106,7 @@ git am -s < lte_cqi_predict.patch
 
 Run ns-3 example:
 ```
-cp -r src/ns3-ai/example/lte_cqi scratch/
+cp -r contrib/ns3-ai/example/lte_cqi scratch/
 
 ./waf --run "lte_cqi"
 ```
