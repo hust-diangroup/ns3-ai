@@ -181,7 +181,7 @@ void *SharedMemoryPool::AcquireMemory (uint16_t id) //Should register first
   NS_LOG_FUNCTION (this << "ID: " << id);
   SharedMemoryLockable *info = m_memoryLocker[id];
   while (
-      !__sync_bool_compare_and_swap (&info->preVersion, info->version, info->version + (uint8_t) 1))
+      !__sync_bool_compare_and_swap (&info->nextVersion, info->version, info->version + (uint8_t) 1))
     ;
   return info->mem;
 }
@@ -193,7 +193,7 @@ SharedMemoryPool::AcquireMemoryCond (uint16_t id, uint8_t mod, uint8_t res)
   while (info->version % mod != res)
     ;
   while (
-      !__sync_bool_compare_and_swap (&info->preVersion, info->version, info->version + (uint8_t) 1))
+      !__sync_bool_compare_and_swap (&info->nextVersion, info->version, info->version + (uint8_t) 1))
     ;
   return info->mem;
 }
@@ -205,7 +205,7 @@ SharedMemoryPool::AcquireMemoryTarget (uint16_t id, uint8_t tar)
   while (info->version != tar)
     ;
   while (
-      !__sync_bool_compare_and_swap (&info->preVersion, info->version, info->version + (uint8_t) 1))
+      !__sync_bool_compare_and_swap (&info->nextVersion, info->version, info->version + (uint8_t) 1))
     ;
   return info->mem;
 }
@@ -217,7 +217,7 @@ SharedMemoryPool::AcquireMemoryCondFunc (uint16_t id, bool (*cond) (uint8_t vers
   while (!cond (info->version))
     ;
   while (
-      !__sync_bool_compare_and_swap (&info->preVersion, info->version, info->version + (uint8_t) 1))
+      !__sync_bool_compare_and_swap (&info->nextVersion, info->version, info->version + (uint8_t) 1))
     ;
   return info->mem;
 }
@@ -226,8 +226,8 @@ void SharedMemoryPool::ReleaseMemory (uint16_t id) //Should register first
 {
   NS_LOG_FUNCTION (this << "ID: " << id);
   SharedMemoryLockable *info = m_memoryLocker[id];
-  NS_ASSERT_MSG (__sync_bool_compare_and_swap (&info->version, info->preVersion - (uint8_t) 1,
-                                               info->preVersion),
+  NS_ASSERT_MSG (__sync_bool_compare_and_swap (&info->version, info->nextVersion - (uint8_t) 1,
+                                               info->nextVersion),
                  "Lock status error");
 }
 
@@ -237,7 +237,7 @@ SharedMemoryPool::ReleaseMemoryAndRollback (uint16_t id)
   NS_LOG_FUNCTION (this << "ID: " << id);
   SharedMemoryLockable *info = m_memoryLocker[id];
   NS_ASSERT_MSG (
-      __sync_bool_compare_and_swap (&info->preVersion, info->version + (uint8_t) 1, info->version),
+      __sync_bool_compare_and_swap (&info->nextVersion, info->version + (uint8_t) 1, info->version),
       "Lock status error");
 }
 
@@ -252,10 +252,10 @@ SharedMemoryPool::IncMemoryVersion (uint16_t id)
 {
   SharedMemoryLockable *info = m_memoryLocker[id];
   while (
-      !__sync_bool_compare_and_swap (&info->preVersion, info->version, info->version + (uint8_t) 1))
+      !__sync_bool_compare_and_swap (&info->nextVersion, info->version, info->version + (uint8_t) 1))
     ;
   NS_ASSERT_MSG (
-      __sync_bool_compare_and_swap (&info->preVersion, info->version + (uint8_t) 1, info->version),
+      __sync_bool_compare_and_swap (&info->nextVersion, info->version + (uint8_t) 1, info->version),
       "Lock status error");
 }
 

@@ -290,7 +290,7 @@ PyObject *py_acquireMemory(PyObject *self, PyObject *args)
         return NULL;
     }
     SharedMemoryLockable *info = gMemoryLocker[id];
-    while (!__sync_bool_compare_and_swap(&info->preVersion, info->version, info->version + (uint8_t)1))
+    while (!__sync_bool_compare_and_swap(&info->nextVersion, info->version, info->version + (uint8_t)1))
         ;
     return Py_BuildValue("K", (unsigned long long)info->mem);
 }
@@ -308,7 +308,7 @@ PyObject *py_acquireMemoryCond(PyObject *self, PyObject *args)
     SharedMemoryLockable *info = gMemoryLocker[id];
     while (info->version % mod != res)
         ;
-    while (!__sync_bool_compare_and_swap(&info->preVersion, info->version, info->version + (uint8_t)1))
+    while (!__sync_bool_compare_and_swap(&info->nextVersion, info->version, info->version + (uint8_t)1))
         ;
     return Py_BuildValue("K", (unsigned long long)info->mem);
 }
@@ -325,7 +325,7 @@ PyObject *py_acquireMemoryTarget(PyObject *self, PyObject *args)
     SharedMemoryLockable *info = gMemoryLocker[id];
     while (info->version != tar)
         ;
-    while (!__sync_bool_compare_and_swap(&info->preVersion, info->version, info->version + (uint8_t)1))
+    while (!__sync_bool_compare_and_swap(&info->nextVersion, info->version, info->version + (uint8_t)1))
         ;
     return Py_BuildValue("K", (unsigned long long)info->mem);
 }
@@ -354,7 +354,7 @@ PyObject *py_acquireMemoryCondFunc(PyObject *self, PyObject *args)
         }
     }
 
-    while (!__sync_bool_compare_and_swap(&info->preVersion, info->version, info->version + (uint8_t)1))
+    while (!__sync_bool_compare_and_swap(&info->nextVersion, info->version, info->version + (uint8_t)1))
         ;
     return Py_BuildValue("K", (unsigned long long)info->mem);
 }
@@ -368,8 +368,8 @@ PyObject *py_releaseMemory(PyObject *self, PyObject *args)
         return NULL;
     }
     SharedMemoryLockable *info = gMemoryLocker[id];
-    // Assertf(__sync_bool_compare_and_swap(&info->version, info->preVersion - (uint8_t)1, info->preVersion), "Lock %u status error", id);
-    if (!__sync_bool_compare_and_swap(&info->version, info->preVersion - (uint8_t)1, info->preVersion))
+    // Assertf(__sync_bool_compare_and_swap(&info->version, info->nextVersion - (uint8_t)1, info->nextVersion), "Lock %u status error", id);
+    if (!__sync_bool_compare_and_swap(&info->version, info->nextVersion - (uint8_t)1, info->nextVersion))
     {
         PyErr_Format(PyExc_RuntimeError, "Lock %u status error", id);
         return NULL;
@@ -385,8 +385,8 @@ PyObject *py_releaseMemoryAndRollback(PyObject *self, PyObject *args)
         return NULL;
 
     SharedMemoryLockable *info = gMemoryLocker[id];
-    // Assertf(__sync_bool_compare_and_swap(&info->preVersion, info->version + (uint8_t)1, info->version), "Lock %u status error", id);
-    if (!__sync_bool_compare_and_swap(&info->preVersion, info->version + (uint8_t)1, info->version))
+    // Assertf(__sync_bool_compare_and_swap(&info->nextVersion, info->version + (uint8_t)1, info->version), "Lock %u status error", id);
+    if (!__sync_bool_compare_and_swap(&info->nextVersion, info->version + (uint8_t)1, info->version))
     {
         PyErr_Format(PyExc_RuntimeError, "Lock %u status error", id);
         return NULL;
@@ -414,8 +414,8 @@ PyObject *py_incMemoryVersion(PyObject *self, PyObject *args)
         return NULL;
     }
     SharedMemoryLockable *info = gMemoryLocker[id];
-    while (!__sync_bool_compare_and_swap(&info->preVersion, info->version, info->version + (uint8_t)1))
+    while (!__sync_bool_compare_and_swap(&info->nextVersion, info->version, info->version + (uint8_t)1))
         ;
-    Assertf(__sync_bool_compare_and_swap(&info->preVersion, info->version + (uint8_t)1, info->version), "Lock %u status error", id);
+    Assertf(__sync_bool_compare_and_swap(&info->nextVersion, info->version + (uint8_t)1, info->version), "Lock %u status error", id);
     Py_RETURN_NONE;
 }

@@ -73,7 +73,7 @@ struct SharedMemoryLockable
   /** present version */
   volatile uint8_t version;
   /** next version */
-  volatile uint8_t preVersion;
+  volatile uint8_t nextVersion;
   /** memory base address */
   uint8_t mem[0];
 } Packed;
