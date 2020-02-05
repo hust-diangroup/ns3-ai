@@ -120,7 +120,7 @@ If you want to test the LSTM, you can run another python script but you may need
 ```
 cd scratch/lte_cqi/
 
-python run_online_lstm.py
+python run_online_lstm.py 1
 ```    
 **NOTE: If the program does not exit normally, you need to run freeshm.sh to release the shared memory manually.**
 

@@ -10,8 +10,7 @@ import sys
 import re
 import os
 import gc
-key = int(sys.argv[1])
-delta = int(sys.argv[2]) # 预测的delta
+delta = int(sys.argv[1]) # 预测的delta
 
 MAX_RBG_NUM = 32
 
@@ -51,7 +50,7 @@ def new_print(filename = "log",print_screen = False):
             f.write(s)
             f.write('\n')
     return print_fun
-print = new_print(filename = "log_"+str(key)+"_"+str(delta), print_screen =False)
+print = new_print(filename = "log_"+str(delta), print_screen =False)
 
 tf.set_random_seed(1)
 np.random.seed(1)
@@ -162,7 +161,7 @@ except KeyboardInterrupt:
 finally:
     FreeMemory()
 print('Finish')
-with open("log_"+str(key)+"_"+str(delta),"a+") as f:
+with open("log_"+str(delta),"a+") as f:
     f.write("\n")
     if len(right):
         f.write("rate = %f %%\n"%(sum(right)/len(right)))
