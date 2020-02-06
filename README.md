@@ -3,6 +3,9 @@
 ## Description
  The [ns–3](https://www.nsnam.org/) simulator is an open-source networking simulation tool implemented by C++ and wildly used for network research and education. Currently, more and more researchers are willing to apply AI algorithms to network research. Most AI algorithms are likely to rely on open source frameworks such as [TensorFlow](https://www.tensorflow.org/) and [PyTorch](https://pytorch.org/). These two parts are developed independently and extremely hard to merge, so it is more reasonable and convenient to connect these two tasks with data interaction. Our model provides a high-efficiency solution to enable the data interaction between ns-3 and other python based AI frameworks.
 
+ This module does not provide any AI algorithms or rely on any frameworks but instead is providing a Python module that enables AI interconnect, so the AI framework needs to be separately installed. You only need to clone or download this work, then import the Python modules, you could use this work to exchange data between ns-3 and your AI algorithms.
+
+
  Inspired by [ns3-gym](https://github.com/tkn-tub/ns3-gym), but using a different approach which is faster and more flexible.
 
 ### Features
