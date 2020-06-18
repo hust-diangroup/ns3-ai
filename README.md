@@ -127,3 +127,24 @@ python run_online_lstm.py 1
 ```    
 **NOTE: If the program does not exit normally, you need to run freeshm.sh to release the shared memory manually.**
 
+## Cite our work
+Please use the following bibtex:
+```
+@inproceedings{10.1145/3389400.3389404,
+author = {Yin, Hao and Liu, Pengyu and Liu, Keshu and Cao, Liu and Zhang, Lytianyang and Gao, Yayu and Hei, Xiaojun},
+title = {Ns3-Ai: Fostering Artificial Intelligence Algorithms for Networking Research},
+year = {2020},
+isbn = {9781450375375},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+url = {https://doi.org/10.1145/3389400.3389404},
+doi = {10.1145/3389400.3389404},
+booktitle = {Proceedings of the 2020 Workshop on Ns-3},
+pages = {57–64},
+numpages = {8},
+keywords = {AI, network simulation, ns-3},
+location = {Gaithersburg, MD, USA},
+series = {WNS3 2020}
+}
+  
+```
