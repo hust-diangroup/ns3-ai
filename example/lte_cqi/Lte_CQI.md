@@ -44,7 +44,7 @@ This scenario is implemented to test the performance of high-speed situations, a
 
 
 
-## Interaction between RL and ns-3
+## Interaction between DL and ns-3
 
 
 - Set up the environment
@@ -96,6 +96,10 @@ with dl as data:
 
 
 ## Build and Run
+Check and Intall required packets:
+```
+pip install -r requirements.txt
+```
 Apply the lte patch (in your ns3 dir)
 ```
 cp contrib/ns3-ai/example/lte_cqi/lte_cqi_predict.patch .
