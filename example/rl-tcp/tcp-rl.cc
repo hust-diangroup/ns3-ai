@@ -76,7 +76,12 @@ TcpRlTimeBased::GetTypeId (void)
                          MakeTimeAccessor (&TcpRlTimeBased::m_timeStep), MakeTimeChecker ());
   return tid;
 }
-
+void
+TcpRlTimeBased::ReduceCwnd (Ptr<TcpSocketState> tcb) 
+{
+   NS_LOG_FUNCTION (this << tcb);
+   tcb->m_cWnd = std::max (tcb->m_cWnd.Get () / 2, tcb->m_segmentSize); 
+}
 uint64_t
 TcpRlTimeBased::GenerateUuid ()
 {
