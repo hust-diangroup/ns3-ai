@@ -96,7 +96,7 @@ with dl as data:
 
 
 ## Build and Run
-Check and Intall required packets:
+Check and Intall required packets for the tensorflow:
 ```
 pip install -r requirements.txt
 ```
