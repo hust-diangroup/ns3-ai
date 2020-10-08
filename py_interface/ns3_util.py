@@ -18,9 +18,10 @@
 
 import os
 import subprocess
+import time
 from collections import OrderedDict
 from copy import copy
-import time
+
 import psutil
 
 try:
@@ -64,7 +65,10 @@ def kill_proc_tree(p, timeout=None, on_terminate=None):
         p = psutil.Process(p.pid)
     ch = [p]+p.children(recursive=True)
     for c in ch:
-        c.kill()
+        try:
+            c.kill()
+        except psutil.NoSuchProcess:
+            continue
     succ, err = psutil.wait_procs(ch, timeout=timeout,
                                   callback=on_terminate)
     return (succ, err)

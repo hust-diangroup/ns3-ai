@@ -16,12 +16,15 @@
 #
 # Author: Pengyu Liu <eic_lpy@hust.edu.cn>
 
-import shm_pool
-from shm_pool import Init, ResetAll, Reset, FreeMemory, GetMemory, RegisterMemory, AcquireMemory, AcquireMemoryCond,\
-    AcquireMemoryTarget, AcquireMemoryCondFunc, ReleaseMemory, ReleaseMemoryRB, GetMemoryVersion, IncMemoryVersion
 from ctypes import *
-from ns3_util import *
 from typing import Optional
+
+import shm_pool
+from ns3_util import *
+from shm_pool import (AcquireMemory, AcquireMemoryCond, AcquireMemoryCondFunc,
+                      AcquireMemoryTarget, FreeMemory, GetMemory,
+                      GetMemoryVersion, IncMemoryVersion, Init, RegisterMemory,
+                      ReleaseMemory, ReleaseMemoryRB, Reset, ResetAll)
 
 READABLE = 0xff
 SETABLE = 0
