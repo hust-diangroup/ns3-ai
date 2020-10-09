@@ -53,7 +53,7 @@ SharedMemoryPool::SharedMemoryPool (void)
   NS_ASSERT_MSG (m_shmid >= 0, "Cannot alloc shared memory(shmid<0)");
 
   m_memoryPoolPtr = (uint8_t *) shmat (m_shmid, NULL, 0);
-  NS_ASSERT_MSG (m_memoryPoolPtr > 0, "Cannot alloc shared memory(ptr error)");
+  NS_ASSERT_MSG (m_memoryPoolPtr > (void *)0, "Cannot alloc shared memory(ptr error)");
 
   shmctl (m_shmid, IPC_STAT, &m_shmds);
   m_isCreator = getpid () == m_shmds.shm_cpid;

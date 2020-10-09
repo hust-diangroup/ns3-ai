@@ -94,7 +94,7 @@ public:
                                    const TcpSocketState::TcpCongState_t newState);
   virtual void CwndEvent (Ptr<TcpSocketState> tcb, const TcpSocketState::TcpCAEvent_t event);
   virtual Ptr<TcpCongestionOps> Fork ();
-
+  virtual void ReduceCwnd (Ptr<TcpSocketState> tcb);
 protected:
   static uint64_t GenerateUuid ();
   virtual void CreateEnv ();
