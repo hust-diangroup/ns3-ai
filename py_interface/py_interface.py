@@ -16,10 +16,15 @@
 #
 # Author: Pengyu Liu <eic_lpy@hust.edu.cn>
 
-import shm_pool
-from shm_pool import Init, FreeMemory, GetMemory, RegisterMemory, AcquireMemory, AcquireMemoryCond,\
-    AcquireMemoryTarget, AcquireMemoryCondFunc, ReleaseMemory, ReleaseMemoryRB, GetMemoryVersion, IncMemoryVersion
 from ctypes import *
+from typing import Optional
+
+import shm_pool
+from ns3_util import *
+from shm_pool import (AcquireMemory, AcquireMemoryCond, AcquireMemoryCondFunc,
+                      AcquireMemoryTarget, FreeMemory, GetMemory,
+                      GetMemoryVersion, IncMemoryVersion, Init, RegisterMemory,
+                      ReleaseMemory, ReleaseMemoryRB, Reset, ResetAll)
 
 READABLE = 0xff
 SETABLE = 0
@@ -215,6 +220,45 @@ class Ns3AIDL:
         self.Release()
 
 
-__all__ = ['Init', 'FreeMemory', 'GetMemory', 'RegisterMemory',
+class Experiment:
+    _created = False
+
+    def __init__(self, shmKey, memSize, programName, path):
+        if self._created:
+            raise Exception('Experiment is singleton')
+        self._created = True
+        self.shmKey = shmKey
+        self.memSize = memSize
+        self.programName = programName
+        self.path = path
+        self.proc = None
+        Init(shmKey, memSize)
+
+    def __del__(self):
+        self.kill()
+        FreeMemory()
+
+    def run(self, setting=None, show_output=False):
+        self.kill()
+        env = {'NS_GLOBAL_VALUE': 'SharedMemoryKey={};SharedMemoryPoolSize={};'.format(
+            self.shmKey, self.memSize)}
+        self.proc = run_single_ns3(
+            self.path, self.programName, setting, env=env, show_output=show_output)
+        return self.proc
+
+    def kill(self):
+        if self.proc and self.isalive():
+            kill_proc_tree(self.proc)
+            self.proc = None
+
+    def reset(self):
+        self.kill()
+        Reset()
+
+    def isalive(self):
+        return self.proc.poll() == None
+
+
+__all__ = ['Init', 'FreeMemory', 'ResetAll', 'Reset', 'GetMemory', 'RegisterMemory',
            'AcquireMemory', 'AcquireMemoryCond', 'AcquireMemoryTarget', 'AcquireMemoryCondFunc',
-           'ReleaseMemory', 'ReleaseMemoryRB', 'GetMemoryVersion', 'IncMemoryVersion', 'NS3Var', 'NS3BigVar', 'Ns3AIRL', 'Ns3AIDL']
+           'ReleaseMemory', 'ReleaseMemoryRB', 'GetMemoryVersion', 'IncMemoryVersion', 'NS3Var', 'NS3BigVar', 'Ns3AIRL', 'Ns3AIDL', 'Experiment']

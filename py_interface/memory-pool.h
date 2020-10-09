@@ -59,7 +59,9 @@ typedef struct
 } Packed SharedMemoryLockable;
 
 PyObject *py_init(PyObject *self, PyObject *args);
-PyObject *py_freeMemory(PyObject *self);
+PyObject *py_resetAll(PyObject *self, PyObject *args);
+PyObject *py_reset(PyObject *self, PyObject *args);
+PyObject *py_freeMemory(PyObject *self, PyObject *args);
 PyObject *py_getMemory(PyObject *self, PyObject *args);
 PyObject *py_regMemory(PyObject *self, PyObject *args);
 PyObject *py_acquireMemory(PyObject *self, PyObject *args);

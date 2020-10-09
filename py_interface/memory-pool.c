@@ -27,6 +27,7 @@
 
 uint8_t *gMemoryPoolPtr;
 CtrlInfoBlock *gCtrlInfo;
+bool gHasInit;
 bool gIsCreator;
 key_t gShmid;
 struct shmid_ds gShmds;
@@ -39,12 +40,6 @@ SharedMemoryCtrl *gCurCtrlInfo;
 
 SharedMemoryCtrl *gMemoryCtrlInfo[MAX_ID];
 SharedMemoryLockable *gMemoryLocker[MAX_ID];
-
-#define Assertf(A, M, ...)                                  \
-    if (!(A))                                               \
-    {                                                       \
-        PyErr_Format(PyExc_RuntimeError, M, ##__VA_ARGS__); \
-    }
 
 void CtrlInfoLock(void)
 {
@@ -76,7 +71,6 @@ static void *GetMemory(uint16_t id, uint32_t size)
                 return NULL;
             }
             gMemoryCtrlInfo[gCurCtrlInfo->id] = gCurCtrlInfo;
-            // printf("Load %u\n", gCurCtrlInfo->id);
         }
         gCurrentVersion = gCtrlInfo->ctrlInfoVersion;
     }
@@ -85,15 +79,13 @@ static void *GetMemory(uint16_t id, uint32_t size)
         if (size != gMemoryCtrlInfo[id]->size)
         {
             CtrlInfoUnlock();
-            PyErr_SetString(PyExc_RuntimeError, "Size of memory error");
+            PyErr_Format(PyExc_RuntimeError, "Size of memory error(%u %u)", size, gMemoryCtrlInfo[id]->size);
             return NULL;
         }
         CtrlInfoUnlock();
         return gMemoryPoolPtr + gMemoryCtrlInfo[id]->offset;
     };
-    // printf("Alloc id %u\n", id);
 
-    // Assertf(gCtrlInfo->freeMemOffset + size < gMemoryPoolSize - gConfigLen - (gCtrlInfo->ctrlInfoVersion + 1) * gCtrlBlockSize || (CtrlInfoUnlock(), 0), "Memory pool full");
     if (gCtrlInfo->freeMemOffset + size >= gMemoryPoolSize - gConfigLen - (gCtrlInfo->ctrlInfoVersion + 1) * gCtrlBlockSize)
     {
         CtrlInfoUnlock();
@@ -124,6 +116,11 @@ static void *GetMemory(uint16_t id, uint32_t size)
 // void Init(uint32_t key, uint32_t poolSize)
 PyObject *py_init(PyObject *self, PyObject *args)
 {
+    if (gHasInit)
+    {
+        Py_RETURN_NONE;
+    }
+    gHasInit = true;
     uint32_t key, poolSize;
     if (!PyArg_ParseTuple(args, "II", &key, &poolSize))
     {
@@ -136,7 +133,6 @@ PyObject *py_init(PyObject *self, PyObject *args)
 
     gMemoryPoolSize = poolSize;
     gMemoryKey = key;
-    // printf("Key %u  Size %u\n", gMemoryKey, gMemoryPoolSize);
 
     gShmid = shmget(gMemoryKey, gMemoryPoolSize, 0666 | IPC_CREAT);
     if (gShmid < 0)
@@ -203,7 +199,7 @@ PyObject *py_init(PyObject *self, PyObject *args)
     }
     gIsCreator = getpid() == gShmds.shm_cpid;
     if (gIsCreator)
-        memset(gMemoryPoolPtr, 0, poolSize);
+        memset(gMemoryPoolPtr, 0, gMemoryPoolSize);
     else
         sleep(1);
 
@@ -240,8 +236,28 @@ PyObject *py_init(PyObject *self, PyObject *args)
     Py_RETURN_NONE;
 }
 
+PyObject *py_resetAll(PyObject *self, PyObject *args)
+{
+    CtrlInfoLock();
+    memset(gMemoryPoolPtr, 0, gMemoryPoolSize - gConfigLen);
+    __sync_bool_compare_and_swap(&gCtrlInfo->ctrlInfoLock, 0xffff, 0x0);
+    Py_RETURN_NONE;
+}
+
+PyObject *py_reset(PyObject *self, PyObject *args)
+{
+    CtrlInfoLock();
+    memset(gMemoryPoolPtr, 0, (uint8_t *)gCurCtrlInfo - gMemoryPoolPtr);
+    if (!CtrlInfoUnlock())
+    {
+        PyErr_SetString(PyExc_RuntimeError, "Lock status error");
+        return NULL;
+    }
+    Py_RETURN_NONE;
+}
+
 // void FreeMemory(void)
-PyObject *py_freeMemory(PyObject *self)
+PyObject *py_freeMemory(PyObject *self, PyObject *args)
 {
     if (!gIsCreator)
         Py_RETURN_NONE;
@@ -368,7 +384,6 @@ PyObject *py_releaseMemory(PyObject *self, PyObject *args)
         return NULL;
     }
     SharedMemoryLockable *info = gMemoryLocker[id];
-    // Assertf(__sync_bool_compare_and_swap(&info->version, info->nextVersion - (uint8_t)1, info->nextVersion), "Lock %u status error", id);
     if (!__sync_bool_compare_and_swap(&info->version, info->nextVersion - (uint8_t)1, info->nextVersion))
     {
         PyErr_Format(PyExc_RuntimeError, "Lock %u status error", id);
@@ -385,7 +400,6 @@ PyObject *py_releaseMemoryAndRollback(PyObject *self, PyObject *args)
         return NULL;
 
     SharedMemoryLockable *info = gMemoryLocker[id];
-    // Assertf(__sync_bool_compare_and_swap(&info->nextVersion, info->version + (uint8_t)1, info->version), "Lock %u status error", id);
     if (!__sync_bool_compare_and_swap(&info->nextVersion, info->version + (uint8_t)1, info->version))
     {
         PyErr_Format(PyExc_RuntimeError, "Lock %u status error", id);
@@ -416,6 +430,10 @@ PyObject *py_incMemoryVersion(PyObject *self, PyObject *args)
     SharedMemoryLockable *info = gMemoryLocker[id];
     while (!__sync_bool_compare_and_swap(&info->nextVersion, info->version, info->version + (uint8_t)1))
         ;
-    Assertf(__sync_bool_compare_and_swap(&info->nextVersion, info->version + (uint8_t)1, info->version), "Lock %u status error", id);
+    if (!__sync_bool_compare_and_swap(&info->version, info->nextVersion - (uint8_t)1, info->nextVersion))
+    {
+        PyErr_Format(PyExc_RuntimeError, "Lock %u status error", id);
+        return NULL;
+    }
     Py_RETURN_NONE;
 }

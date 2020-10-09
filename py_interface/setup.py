@@ -34,7 +34,7 @@ extension = setuptools.Extension("shm_pool",
                                  )
 
 setuptools.setup(name=name,
-                 version='0.0.1',
+                 version='0.0.2',
                  description="NS-3 AI interface for Python",
                  long_description=long_description,
                  long_description_content_type="text/markdown",
@@ -47,6 +47,6 @@ setuptools.setup(name=name,
                     "License :: OSI Approved :: GNU General Public License v2 (GPLv2)",
                     "Operating System :: POSIX :: Linux",
                  ],
-                 py_modules=['py_interface'],
+                 py_modules=['py_interface', 'ns3_util'],
                  ext_modules=[extension]
                  )
