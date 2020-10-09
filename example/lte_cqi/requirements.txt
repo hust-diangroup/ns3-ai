@@ -1,5 +1,5 @@
 tensorboard==1.14.0
-tensorflow==1.14.0
+tensorflow==1.15.4
 tensorflow-estimator==1.14.0
 
 Keras==2.2.4
