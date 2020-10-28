@@ -52,9 +52,10 @@ def new_print(filename="log", print_screen=False):
     return print_fun
 
 
+old_print = print
 print = new_print(filename="log_" + str(delta), print_screen=False)
 
-tf.set_random_seed(1)
+tf.random.set_seed(0)
 np.random.seed(1)
 
 input_len = 200
@@ -67,21 +68,16 @@ not_train = False
 lstm_input_vec = Input(shape=(input_len, 1), name="input_vec")
 
 
-def my_dense(x):
-    return K.expand_dims(Dense(
-        30,
-        activation='selu',
-        kernel_regularizer='l1',
-    )(x[:, :, 0]),
-                         axis=-1)
-
-
-lstm_l1_mse = Lambda(my_dense)(lstm_input_vec)
+dense1 = Dense(30, activation='selu', kernel_regularizer='l1',)(
+    lstm_input_vec[:, :, 0])
+old_print(dense1)
+lstm_l1_mse = K.expand_dims(dense1, axis=-1)
 lstm_mse = LSTM(20)(lstm_l1_mse)
 predict_lstm_mse = Dense(1)(lstm_mse)
 
 lstm_model_mse = keras.Model(inputs=lstm_input_vec, outputs=predict_lstm_mse)
 lstm_model_mse.compile(optimizer="adam", loss="MSE")
+old_print('hello world')
 
 
 def simple_MSE(y_pred, y_true):
@@ -103,6 +99,8 @@ train_data = []
 is_train = True
 CQI = 0
 delay_queue = []
+exp = Experiment(1234, 4096, 'lte_cqi', '../../')
+exp.run(show_output=0)
 try:
     while True:
         with dl as data:
@@ -113,7 +111,7 @@ try:
             CQI = data.feat.wbCqi
             if CQI > 15:
                 break
-            print("get:%d" % CQI)
+            old_print("get:%d" % CQI)
             # CQI = next(get_CQI)
             delay_queue.append(CQI)
             if len(delay_queue) < delta:
@@ -132,10 +130,11 @@ try:
 
             else:
                 data.pred.new_wbCqi = CQI
-                print("set: %d" % CQI)
+                old_print("set: %d" % CQI)
                 continue
             data_to_pred = np.array(one_data).reshape(-1, input_len, 1) / 10
             _predict_cqi = lstm_model_mse.predict(data_to_pred)
+            old_print(_predict_cqi)
             del data_to_pred
             prediction.append(int(_predict_cqi[0, 0] + 0.49995))
             last.append(one_data[-1])
@@ -168,10 +167,10 @@ try:
                         lstm_model_mse.fit(x=np.array(
                             train_data[-delta - batch_size:-delta]).reshape(
                                 batch_size, input_len, 1) / 10,
-                                           y=np.array(target[-batch_size:]),
-                                           batch_size=batch_size,
-                                           epochs=1,
-                                           verbose=0)
+                            y=np.array(target[-batch_size:]),
+                            batch_size=batch_size,
+                            epochs=1,
+                            verbose=0)
             else:
                 corrected_predict[-1] = last[-1]
             # sm.Set(corrected_predict[-1])
@@ -180,7 +179,8 @@ try:
 except KeyboardInterrupt:
     print('Ctrl C')
 finally:
-    FreeMemory()
+    exp.kill()
+    del exp
 print('Finish')
 with open("log_" + str(delta), "a+") as f:
     f.write("\n")

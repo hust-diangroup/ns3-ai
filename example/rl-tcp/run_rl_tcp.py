@@ -1,4 +1,4 @@
-import py_interface
+from py_interface import *
 from ctypes import *
 import os
 import torch
@@ -8,9 +8,13 @@ import torch.nn as nn
 import matplotlib.pyplot as plt
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--result', action='store_true', help='whether output figures')
-parser.add_argument('--output_dir', type=str, default='./result', help='output figures path')
-parser.add_argument('--use_rl', action='store_true', help='whether use rl algorithm')
+parser.add_argument('--result', action='store_true',
+                    help='whether output figures')
+parser.add_argument('--output_dir', type=str,
+                    default='./result', help='output figures path')
+parser.add_argument('--use_rl', action='store_true',
+                    help='whether use rl algorithm')
+
 
 class TcpRlEnv(Structure):
     _pack_ = 1
@@ -33,8 +37,8 @@ class TcpRlAct(Structure):
         ('new_ssThresh', c_uint32),
         ('new_cWnd', c_uint32)
     ]
-    
-    
+
+
 class net(nn.Module):
     def __init__(self):
         super(net, self).__init__()
@@ -49,7 +53,7 @@ class net(nn.Module):
     def forward(self, x):
         return self.layers(x)
 
-    
+
 class DQN(object):
     def __init__(self):
         self.eval_net = net()
@@ -61,7 +65,8 @@ class DQN(object):
         self.memory_counter = 0
         self.memory_capacity = 2000
         self.memory = np.zeros((2000, 2*5+2))    # s, a, r, s'
-        self.optimizer = torch.optim.Adam(self.eval_net.parameters(), lr=0.0001)
+        self.optimizer = torch.optim.Adam(
+            self.eval_net.parameters(), lr=0.0001)
         self.loss_func = nn.MSELoss()
 
     def choose_action(self, x):
@@ -86,8 +91,10 @@ class DQN(object):
         # choose a mini batch
         sample = self.memory[sample_list, :]
         s = torch.Tensor(sample[:, :self.observer_shape])
-        a = torch.LongTensor(sample[:, self.observer_shape:self.observer_shape+1])
-        r = torch.Tensor(sample[:, self.observer_shape+1:self.observer_shape+2])
+        a = torch.LongTensor(
+            sample[:, self.observer_shape:self.observer_shape+1])
+        r = torch.Tensor(
+            sample[:, self.observer_shape+1:self.observer_shape+2])
         s_ = torch.Tensor(sample[:, self.observer_shape+2:])
         q_eval = self.eval_net(s).gather(1, a)
         q_next = self.target_net(s_).detach()
@@ -100,9 +107,10 @@ class DQN(object):
         self.optimizer.step()
 
 
-py_interface.Init(1234, 4096)
-var = py_interface.Ns3AIRL(1234, TcpRlEnv, TcpRlAct)
-res_list = ['ssThresh_l', 'cWnd_l', 'segmentsAcked_l', 'segmentSize_l', 'bytesInFlight_l']
+Init(1234, 4096)
+var = Ns3AIRL(1234, TcpRlEnv, TcpRlAct)
+res_list = ['ssThresh_l', 'cWnd_l', 'segmentsAcked_l',
+            'segmentSize_l', 'bytesInFlight_l']
 args = parser.parse_args()
 
 if args.result:
@@ -111,75 +119,80 @@ if args.result:
     if args.output_dir:
         if not os.path.exists(args.output_dir):
             os.mkdir(args.output_dir)
-            
+
 if args.use_rl:
     dqn = DQN()
-
-while not var.isFinish():
-    with var as data:
-        if not data:
-            break
-#         print(var.GetVersion())
-        ssThresh = data.env.ssThresh
-        cWnd = data.env.cWnd
-        segmentsAcked = data.env.segmentsAcked
-        segmentSize = data.env.segmentSize
-        bytesInFlight = data.env.bytesInFlight
-#         print(ssThresh, cWnd, segmentsAcked, segmentSize, bytesInFlight)
-        
-        if args.result:
-            for res in res_list:
-                globals()[res].append(globals()[res[:-2]])
-                print(globals()[res][-1])
-        
-        if not args.use_rl:
-            print(0)
-            new_cWnd = 1
-            new_ssThresh = 1
-            # IncreaseWindow
-            if (cWnd < ssThresh):
-                # slow start
-                if (segmentsAcked >= 1):
-                    new_cWnd = cWnd + segmentSize
-            if (cWnd >= ssThresh):
-                # congestion avoidance
-                if (segmentsAcked > 0):
-                    adder = 1.0 * (segmentSize * segmentSize) / cWnd
-                    adder = int(max(1.0, adder))
-                    new_cWnd = cWnd + adder
-            # GetSsThresh
-            new_ssThresh = int(max(2 * segmentSize, bytesInFlight / 2))
-            data.act.new_cWnd = new_cWnd
-            data.act.new_ssThresh = new_ssThresh
-        else:
-            print(1)
-            s = [ssThresh, cWnd, segmentsAcked, segmentSize, bytesInFlight]
-            a = dqn.choose_action(s)
-            if a & 1:
-                new_cWnd = cWnd + segmentSize
-            else:
-                new_cWnd = cWnd + int(max(1, (segmentSize * segmentSize) / cWnd))
-            if a < 3:
-                new_ssThresh = 2 * segmentSize
-            else:
-                new_ssThresh = int(bytesInFlight / 2)
-            data.act.new_cWnd = new_cWnd
-            data.act.new_ssThresh = new_ssThresh
-            
+exp = Experiment(1234, 4096, 'rl-tcp', '../../')
+exp.run(show_output=0)
+try:
+    while not var.isFinish():
+        with var as data:
+            if not data:
+                break
+    #         print(var.GetVersion())
             ssThresh = data.env.ssThresh
             cWnd = data.env.cWnd
             segmentsAcked = data.env.segmentsAcked
             segmentSize = data.env.segmentSize
             bytesInFlight = data.env.bytesInFlight
-            
-            # modify the reward
-            r = segmentsAcked - bytesInFlight - cWnd
-            s_ = [ssThresh, cWnd, segmentsAcked, segmentSize, bytesInFlight]
-            
-            dqn.store_transition(s, a, r, s_)
+    #         print(ssThresh, cWnd, segmentsAcked, segmentSize, bytesInFlight)
 
-            if dqn.memory_counter > dqn.memory_capacity:
-                dqn.learn()
+            if args.result:
+                for res in res_list:
+                    globals()[res].append(globals()[res[:-2]])
+                    #print(globals()[res][-1])
+
+            if not args.use_rl:
+                new_cWnd = 1
+                new_ssThresh = 1
+                # IncreaseWindow
+                if (cWnd < ssThresh):
+                    # slow start
+                    if (segmentsAcked >= 1):
+                        new_cWnd = cWnd + segmentSize
+                if (cWnd >= ssThresh):
+                    # congestion avoidance
+                    if (segmentsAcked > 0):
+                        adder = 1.0 * (segmentSize * segmentSize) / cWnd
+                        adder = int(max(1.0, adder))
+                        new_cWnd = cWnd + adder
+                # GetSsThresh
+                new_ssThresh = int(max(2 * segmentSize, bytesInFlight / 2))
+                data.act.new_cWnd = new_cWnd
+                data.act.new_ssThresh = new_ssThresh
+            else:
+                s = [ssThresh, cWnd, segmentsAcked, segmentSize, bytesInFlight]
+                a = dqn.choose_action(s)
+                if a & 1:
+                    new_cWnd = cWnd + segmentSize
+                else:
+                    new_cWnd = cWnd + \
+                        int(max(1, (segmentSize * segmentSize) / cWnd))
+                if a < 3:
+                    new_ssThresh = 2 * segmentSize
+                else:
+                    new_ssThresh = int(bytesInFlight / 2)
+                data.act.new_cWnd = new_cWnd
+                data.act.new_ssThresh = new_ssThresh
+
+                ssThresh = data.env.ssThresh
+                cWnd = data.env.cWnd
+                segmentsAcked = data.env.segmentsAcked
+                segmentSize = data.env.segmentSize
+                bytesInFlight = data.env.bytesInFlight
+
+                # modify the reward
+                r = segmentsAcked - bytesInFlight - cWnd
+                s_ = [ssThresh, cWnd, segmentsAcked,
+                      segmentSize, bytesInFlight]
+
+                dqn.store_transition(s, a, r, s_)
+
+                if dqn.memory_counter > dqn.memory_capacity:
+                    dqn.learn()
+except KeyboardInterrupt:
+    exp.kill()
+    del exp
 
 if args.result:
     for res in res_list:
@@ -188,8 +201,5 @@ if args.result:
         plt.clf()
         plt.plot(x, y, label=res[:-2], linewidth=1, color='r')
         plt.xlabel('Step Number')
-        plt.title('Information of {}'.format(res[:-2])) 
+        plt.title('Information of {}'.format(res[:-2]))
         plt.savefig('{}.png'.format(os.path.join(args.output_dir, res[:-2])))
-        
-py_interface.FreeMemory()
-
