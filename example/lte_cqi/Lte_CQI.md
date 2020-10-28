@@ -105,7 +105,6 @@ Run ns-3 example:
 ```
 cp -r contrib/ns3-ai/example/lte_cqi scratch/
 
-./waf --run "lte_cqi"
 ```
 Run Python code:
 ```
