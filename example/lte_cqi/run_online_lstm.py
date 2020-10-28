@@ -77,7 +77,6 @@ predict_lstm_mse = Dense(1)(lstm_mse)
 
 lstm_model_mse = keras.Model(inputs=lstm_input_vec, outputs=predict_lstm_mse)
 lstm_model_mse.compile(optimizer="adam", loss="MSE")
-old_print('hello world')
 
 
 def simple_MSE(y_pred, y_true):
