@@ -100,22 +100,11 @@ Check and Intall required packets for the tensorflow:
 ```
 pip install -r requirements.txt
 ```
-Apply the lte patch (in your ns3 dir)
-```
-cp contrib/ns3-ai/example/lte_cqi/lte_cqi_predict.patch .
-
-git apply --stat lte_cqi_predict.patch
-
-git apply --check lte_cqi_predict.patch
-
-git am -s < lte_cqi_predict.patch
-```
 
 Run ns-3 example:
 ```
 cp -r contrib/ns3-ai/example/lte_cqi scratch/
 
-./waf --run "lte_cqi"
 ```
 Run Python code:
 ```

@@ -15,11 +15,8 @@ NS_LOG_COMPONENT_DEFINE ("LenaSimpleEpc");
 int
 main (int argc, char *argv[])
 {
-  string SchedulerTypes[] = {"ns3::RrFfMacScheduler", "ns3::PfFfMacScheduler",
-                             "ns3::FdMtFfMacScheduler"};
-  // LogComponentEnable ("PfFfMacScheduler", LOG_LEVEL_INFO);
-  uint8_t choice = 0;
-
+  // LogComponentEnable ("MyRrMacScheduler", LOG_LEVEL_INFO);
+  
   //Number of Users
   uint16_t m_nUser = 4;
   //Distance
@@ -41,7 +38,6 @@ main (int argc, char *argv[])
   cmd.AddValue ("datarate", "datarate", datarate);
   cmd.AddValue ("packetSize", "packetSize", packetSize);
   cmd.AddValue ("speed", "speed", speed);
-  cmd.AddValue ("choice", "choice", choice);
   // cmd.AddValue ("interPacketInterval", "Inter packet interval [ms])", interPacketInterval);
   cmd.Parse (argc, argv);
 
@@ -57,8 +53,7 @@ main (int argc, char *argv[])
   Ptr<LteHelper> lteHelper = CreateObject<LteHelper> ();
   Ptr<PointToPointEpcHelper> epcHelper = CreateObject<PointToPointEpcHelper> ();
   lteHelper->SetEpcHelper (epcHelper);
-  std::cout << "Scheduler: " << SchedulerTypes[choice] << std::endl;
-  lteHelper->SetSchedulerType (SchedulerTypes[choice]);
+  lteHelper->SetSchedulerType ("ns3::MyRrMacScheduler");
   lteHelper->SetAttribute ("PathlossModel", StringValue ("ns3::FriisSpectrumPropagationLossModel"));
 
   Ptr<Node> pgw = epcHelper->GetPgwNode ();
