@@ -21,7 +21,7 @@ exp = Experiment(1234, 4096, 'multi-run', '../../')
 for i in range(2):
     exp.reset()
     rl = Ns3AIRL(2333, Env, Act)
-    pro = exp.run()
+    pro = exp.run(show_output=True)
     while not rl.isFinish():
         with rl as data:
             if data == None:
