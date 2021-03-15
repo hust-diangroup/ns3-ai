@@ -47,25 +47,25 @@ enum CtrlInfo { LastCtrlBlock = 0, FollowCtrlBlock = 0x3 };
 struct CtrlInfoBlock
 {
   /** control information */
-  uint16_t ctrlInfo : 2;
+  volatile uint16_t ctrlInfo : 2;
   /** control information version */
-  uint16_t ctrlInfoVersion : 14;
+  volatile uint16_t ctrlInfoVersion : 14;
   /** control information lock */
-  uint16_t ctrlInfoLock;
+  volatile uint16_t ctrlInfoLock;
   /** free memory offset */
-  uint32_t freeMemOffset;
+  volatile uint32_t freeMemOffset;
 } Packed;
 
 struct SharedMemoryCtrl
 {
   /** control information */
-  uint16_t ctrlInfo : 2;
+  volatile uint16_t ctrlInfo : 2;
   /** related to the memory address */
-  uint16_t id : 14;
+  volatile uint16_t id : 14;
   /** memory size */
-  uint32_t size;
+  volatile uint32_t size;
   /** memory offset */
-  uint32_t offset;
+  volatile uint32_t offset;
 } Packed;
 
 struct SharedMemoryLockable

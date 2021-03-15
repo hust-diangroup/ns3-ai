@@ -22,8 +22,21 @@
 #include <unistd.h>
 #include <sys/shm.h>
 #include <sys/ipc.h>
-// #include "structmember.h"
 #include "memory-pool.h"
+
+#if defined(__GNUC__)
+#if defined(__i386__) || defined(__x86_64__)
+#define ShmYield() __asm__ __volatile__("pause")
+#elif defined(__ia64__) || defined(__ia64)
+#define ShmYield() __asm__ __volatile__("hint @pause")
+#elif defined(__arm__)
+#define ShmYield() __asm__ __volatile__("yield")
+#endif
+#endif
+
+#if !defined(ShmYield)
+#define ShmYield() usleep(0)
+#endif
 
 uint8_t *gMemoryPoolPtr;
 CtrlInfoBlock *gCtrlInfo;
@@ -44,7 +57,7 @@ SharedMemoryLockable *gMemoryLocker[MAX_ID];
 void CtrlInfoLock(void)
 {
     while (!__sync_bool_compare_and_swap(&gCtrlInfo->ctrlInfoLock, 0x0, 0xffff))
-        ;
+        ShmYield();
 }
 bool CtrlInfoUnlock(void)
 {
@@ -307,7 +320,7 @@ PyObject *py_acquireMemory(PyObject *self, PyObject *args)
     }
     SharedMemoryLockable *info = gMemoryLocker[id];
     while (!__sync_bool_compare_and_swap(&info->nextVersion, info->version, info->version + (uint8_t)1))
-        ;
+        ShmYield();
     return Py_BuildValue("K", (unsigned long long)info->mem);
 }
 
@@ -323,9 +336,9 @@ PyObject *py_acquireMemoryCond(PyObject *self, PyObject *args)
     }
     SharedMemoryLockable *info = gMemoryLocker[id];
     while (info->version % mod != res)
-        ;
+        ShmYield();
     while (!__sync_bool_compare_and_swap(&info->nextVersion, info->version, info->version + (uint8_t)1))
-        ;
+        ShmYield();
     return Py_BuildValue("K", (unsigned long long)info->mem);
 }
 
@@ -340,9 +353,9 @@ PyObject *py_acquireMemoryTarget(PyObject *self, PyObject *args)
     }
     SharedMemoryLockable *info = gMemoryLocker[id];
     while (info->version != tar)
-        ;
+        ShmYield();
     while (!__sync_bool_compare_and_swap(&info->nextVersion, info->version, info->version + (uint8_t)1))
-        ;
+        ShmYield();
     return Py_BuildValue("K", (unsigned long long)info->mem);
 }
 
@@ -371,7 +384,7 @@ PyObject *py_acquireMemoryCondFunc(PyObject *self, PyObject *args)
     }
 
     while (!__sync_bool_compare_and_swap(&info->nextVersion, info->version, info->version + (uint8_t)1))
-        ;
+        ShmYield();
     return Py_BuildValue("K", (unsigned long long)info->mem);
 }
 
@@ -429,7 +442,7 @@ PyObject *py_incMemoryVersion(PyObject *self, PyObject *args)
     }
     SharedMemoryLockable *info = gMemoryLocker[id];
     while (!__sync_bool_compare_and_swap(&info->nextVersion, info->version, info->version + (uint8_t)1))
-        ;
+        ShmYield();
     if (!__sync_bool_compare_and_swap(&info->version, info->nextVersion - (uint8_t)1, info->nextVersion))
     {
         PyErr_Format(PyExc_RuntimeError, "Lock %u status error", id);
