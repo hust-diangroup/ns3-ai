@@ -33,10 +33,16 @@ int APB::Func(int a, int b)
     // std::cerr<<"Ver:"<<(int)SharedMemoryPool::Get()->GetMemoryVersion(m_id)<<std::endl;
     return ret;
 }
-int main()
+int main(int argc, char *argv[])
 {
     APB apb(2333);
-    std::cout << apb.Func(1, 2) << std::endl;
+    int a = 1;
+    int b = 2;
+    CommandLine cmd;
+    cmd.AddValue ("a","the value of a",a);
+    cmd.AddValue ("b","the value of b",b);
+    cmd.Parse (argc, argv);
+    std::cout << apb.Func(a, b) << std::endl;
     apb.SetFinish();
     return 0;
 }

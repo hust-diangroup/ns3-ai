@@ -15,6 +15,7 @@
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #
 # Author: Pengyu Liu <eic_lpy@hust.edu.cn>
+#         Hao Yin <haoyin@uw.edu>
 
 import os
 import subprocess
@@ -117,7 +118,7 @@ def run_single_ns3(path, pname, setting=None, env=None, show_output=False):
     if not setting:
         cmd = './waf --run "{}"'.format(pname)
     else:
-        cmd = './waf --run "{}{}"'.format(pname, get_setting(setting)[0])
+        cmd = './waf --run "{}{}"'.format(pname, get_setting(setting))
     if show_output:
         proc = subprocess.Popen(
             cmd, shell=True, universal_newlines=True, cwd=path, env=env)

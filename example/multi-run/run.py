@@ -17,11 +17,12 @@ class Act(Structure):
     _fields_ = [
         ('c', c_int)
     ]
+ns3Settings = {'a': '20', 'b': '30'}
 exp = Experiment(1234, 4096, 'multi-run', '../../')
 for i in range(2):
     exp.reset()
     rl = Ns3AIRL(2333, Env, Act)
-    pro = exp.run(show_output=True)
+    pro = exp.run(setting=ns3Settings, show_output=True)
     while not rl.isFinish():
         with rl as data:
             if data == None:
