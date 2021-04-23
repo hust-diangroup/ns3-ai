@@ -42,6 +42,7 @@ setuptools.setup(name=name,
                  author_email="eic_lpy@hust.edu.cn",
                  url="placeholder",
                  packages=setuptools.find_packages(),
+                 install_requires=["psutil==5.7.2"],
                  classifiers=[
                     "Programming Language :: Python :: 3",
                     "License :: OSI Approved :: GNU General Public License v2 (GPLv2)",
