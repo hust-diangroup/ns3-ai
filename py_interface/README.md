@@ -1,7 +1,6 @@
 # NS-3 AI Python interface
 # Install
 ```bash
-pip3 install -r requirements.txt
 pip3 install /path/to/py_interface
 ```
 # Usage
