@@ -41,7 +41,7 @@ Python3 is used and tested.
 ```
 cd $YOUR_NS3_CODE/contrib/ns3-ai/py_interface
 
-python setup.py install --user
+pip3 install . --user
 ```
 
 #### Baisc usage
@@ -88,7 +88,7 @@ Run Python code:
 ```
 cd contrib/ns3-ai/example/rl-tcp/
 
-python testtcp.py
+python3 testtcp.py
 ```
 **NOTE: Currently the RL test in python script is not fully enabled, coming soon.**
 
@@ -117,13 +117,13 @@ Run Python code:
 ```
 cd scratch/lte_cqi/
 
-python run_online.py 
+python3 run_online.py 
 ```    
 If you want to test the LSTM, you can run another python script but you may need to install [TensorFlow](https://www.tensorflow.org/) environment first. 
 ```
 cd scratch/lte_cqi/
 
-python run_online_lstm.py 1
+python3 run_online_lstm.py 1
 ```    
 **NOTE: If the program does not exit normally, you need to run freeshm.sh to release the shared memory manually.**
 
