@@ -96,16 +96,6 @@ python3 testtcp.py
 This original work is done based on [5G NR](https://5g-lena.cttc.es/) branch in ns-3. We made some changes to make it also run in LTE codebase in ns-3 mainline. We didn't reproduce all the experiments on LTE, and the results used in this document are based on NR work.
 
 #### Build and Run
-Apply the lte patch (in your ns3 dir)
-```
-cp contrib/ns3-ai/example/lte_cqi/lte_cqi_predict.patch .
-
-git apply --stat lte_cqi_predict.patch
-
-git apply --check lte_cqi_predict.patch
-
-git am -s < lte_cqi_predict.patch
-```
 
 Run ns-3 example:
 ```
