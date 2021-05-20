@@ -1,5 +1,6 @@
 #include "ns3/core-module.h"
 #include "ns3/ns3-ai-module.h"
+#include "ns3/log.h"
 
 using namespace std;
 using namespace ns3;
@@ -45,16 +46,16 @@ public:
 /**
  * \brief Link the shared memory with the id and set the operation lock
  * 
- * \param[in] id : shared memory id, should be the same in python and ns-3
+ * \param[in] id  shared memory id, should be the same in python and ns-3
  */
 APB::APB(uint16_t id) : Ns3AIRL<Env, Act>(id) { 
-    SetCond(2, 0);      ///< Set the operation lock (even for python and odd for ns-3).
+    SetCond(2, 0);      ///< Set the operation lock (even for ns-3 and odd for python).
 }
 
 /**
- * \param[in] a : a number to be added.
+ * \param[in] a  a number to be added.
  * 
- * \param[in] b : another number to be added.
+ * \param[in] b  another number to be added.
  * 
  * \returns the result of a+b.
  * 
@@ -68,17 +69,18 @@ int APB::Func(int a, int b)
     env->a = a;
     env->b = b;
     SetCompleted();                 ///< Release the memory and update conters
-    // std::cerr<<"Ver:"<<(int)SharedMemoryPool::Get()->GetMemoryVersion(m_id)<<std::endl;
+    NS_LOG_DEBUG ("Ver:" << (int)SharedMemoryPool::Get()->GetMemoryVersion(m_id));
     auto act = ActionGetterCond();  ///< Acquire the Act memory for reading
     int ret = act->c;
-    GetCompleted();                 ///< Release the memory and update conters
-    // std::cerr<<"Ver:"<<(int)SharedMemoryPool::Get()->GetMemoryVersion(m_id)<<std::endl;
+    GetCompleted();                 ///< Release the memory, roll back memory version and update conters
+    NS_LOG_DEBUG ("Ver:" << (int)SharedMemoryPool::Get()->GetMemoryVersion(m_id));
     return ret;
 }
 
 int main(int argc, char *argv[])
 {
-    APB apb(2333);
+    int memblock_key = 2333;        ///< memory block key, need to keep the same in the python script
+    APB apb(memblock_key);
     int a = 1;
     int b = 2;
     CommandLine cmd;

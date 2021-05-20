@@ -2,11 +2,13 @@ This is a very simple but useful example for the ns3-ai model to illustrate the 
 
 ### Usage
 Copy this example to scratch:
-```
+```shell
 cp -r contrib/ns3-ai/example/multi-run scratch/
 ```
+
 Run the code (Note the python script can start the ns-3 script automatically, so you do not need to start it by yourself):
-```
+
+```shell
 cd scratch/multi-run/
 
 python3 run.py
@@ -16,7 +18,7 @@ python3 run.py
 #### Environment
 We establish the environment (`Env`) for ns-3 and python and point to the same shared memory using the ns3-ai model. The variables a and b are shared through the `Env`.  
 Python
-```(Python)
+```Python
 # Shared memory to store a and b
 class Env(Structure):
     _pack_ = 1
@@ -25,8 +27,9 @@ class Env(Structure):
         ('b', c_int)
     ]
 ```
+
 ns-3
-```(c++)
+```c++
 # Shared memory to store a and b
 struct Env
 {
@@ -34,11 +37,13 @@ struct Env
     int b;
 }Packed;
 ```
+
 #### Action
 The action (`Act`) is the result that is calculated by python and put back to ns-3 with the shared memory.
 
 Python
-```(Python)
+
+```Python
 # Shared memory to store action c
 class Act(Structure):
     _pack_ = 1
@@ -46,8 +51,10 @@ class Act(Structure):
         ('c', c_int)
     ]
 ```
+
 ns-3
-```(c++)
+
+```c++
 # Shared memory to store action c
 struct Act
 {
@@ -56,7 +63,8 @@ struct Act
 ```
 ### Class APB 
 Now we consider the class APB (a plus b) in the ns-3 simulation code.
-```(c++)
+
+```c++
 class APB : public Ns3AIRL<Env, Act>
 {
 public:
@@ -71,7 +79,7 @@ function:
 */
 APB::APB(uint16_t id) : Ns3AIRL<Env, Act>(id) 
 { 
-    // Set the operation lock (even for python and odd for ns-3)
+    // Set the operation lock (even for ns-3 and odd for python)
     SetCond(2, 0); 
 }
 /*
@@ -104,18 +112,22 @@ int APB::Func(int a, int b)
     return ret;
 }
 ```
+
 The main function is quite simple to understand that just init the Env and put the variables.
 
 ### Python script
 A very convenient way we use here is to use python directly to establish the ns-3 script.  
 Set up the ns-3 environment
-```(Python)
+
+```Python
 # Experiment(self, shmKey, memSize, programName, path)
 exp = Experiment(1234, 4096, 'multi-run', '../../')
 ```
+
 You need to change the name and path according to the different ns-3 scripts' names.  
 Establish the envrionments
-```(Python)
+
+```Python
 # Reset the environment
 exp.reset()
 # Link the shared memory block

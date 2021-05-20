@@ -2,7 +2,7 @@
 # between python-based AI frameworks and ns-3. 
 # 
 # In this example, we have two variable a and b in ns-3, 
-# and then put them into the shared memory using python to calculate 
+# and then put them into the shared memory using python to calculate
 # 
 #       c = a + b
 # 
@@ -35,11 +35,14 @@ class Act(Structure):
 
 
 ns3Settings = {'a': '20', 'b': '30'}
-exp = Experiment(1234, 4096, 'multi-run', '../../')         # Set up the ns-3 environment
+mempool_key = 1234                                          # memory pool key, arbitrary integer large than 1000
+mem_size = 4096                                             # memory pool size in bytes
+memblock_key = 2333                                         # memory block key, need to keep the same in the ns-3 script
+exp = Experiment(mempool_key, mem_size, 'multi-run', '../../')      # Set up the ns-3 environment
 for i in range(2):
     exp.reset()                                             # Reset the environment
-    rl = Ns3AIRL(2333, Env, Act)                            # Link the shared memory block with ns-3 script 
-    pro = exp.run(setting=ns3Settings, show_output=True)    # Add settings and run the ns-3 script (sim.cc)
+    rl = Ns3AIRL(memblock_key, Env, Act)                    # Link the shared memory block with ns-3 script
+    pro = exp.run(setting=ns3Settings, show_output=True)    # Set and run the ns-3 script (sim.cc)
     while not rl.isFinish():
         with rl as data:
             if data == None:

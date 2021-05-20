@@ -96,8 +96,15 @@ class EmptyInfo(Structure):
         ('unused', c_uint8)
     ]
 
-
+# This class established an environment for ns3 and python 
+# to exchange data with the share memory 
+# to implement Reinforcement Learning algorithm with python.
 class Ns3AIRL:
+    # init data field for RL
+    # \param[in] uid : the share mempool's id
+    # \param[in] EnvType : the type of RL environment
+    # \param[in] ActType : the type of RL action
+    # \param[in] ExtInfo : extra information(default : EmptyInfo)
     def __init__(self, uid, EnvType, ActType, ExtInfo=EmptyInfo):
         assert issubclass(EnvType, Structure)
         assert issubclass(ActType, Structure)
@@ -109,6 +116,7 @@ class Ns3AIRL:
         self.extInfo = ExtInfo
         self.finished = False
 
+        # the main field for RL
         class StorageType(Structure):
             _pack_ = 1
             _fields_ = [
@@ -119,20 +127,23 @@ class Ns3AIRL:
             ]
         self.type = StorageType
         self.m_obj = self.type.from_address(
-            RegisterMemory(self.m_id, sizeof(self.type)))
+            RegisterMemory(self.m_id, sizeof(self.type)))   # allocate from shared memory to create object
         self.mod = 2
         self.res = 1
 
+    # get memory version (even for ns-3 and odd for python)
     def GetVersion(self):
         return int(GetMemoryVersion(self.m_id))
 
     def isFinish(self):
         return self.m_obj.isFinish
 
+    # set the operation lock (res: even for ns-3 and odd for python)
     def SetCond(self, mod, res):
         self.mod = mod
         self.res = res
 
+    # acquire ns-3's data in the memory
     def Acquire(self):
         while not self.isFinish() and self.GetVersion() % self.mod != self.res:
             pass
@@ -156,7 +167,9 @@ class Ns3AIRL:
             return
         self.Release()
 
-
+# This class established an environment for ns3 and python 
+# to exchange data with the share memory 
+# to implement Deep Learning algorithm with python.
 class Ns3AIDL:
     def __init__(self, uid, FeatureType, PredictedType, TargetType, ExtInfo=EmptyInfo):
         assert issubclass(FeatureType, Structure)
@@ -182,20 +195,23 @@ class Ns3AIDL:
             ]
         self.type = StorageType
         self.m_obj = self.type.from_address(
-            RegisterMemory(self.m_id, sizeof(self.type)))
+            RegisterMemory(self.m_id, sizeof(self.type)))   # allocate from shared memory to create object
         self.mod = 2
         self.res = 1
 
+    # get memory version (even for ns-3 and odd for python)
     def GetVersion(self):
         return int(GetMemoryVersion(self.m_id))
 
     def isFinish(self):
         return self.m_obj.isFinish
 
+    # set the operation lock (res: even for ns-3 and odd for python)
     def SetCond(self, mod, res):
         self.mod = mod
         self.res = res
 
+    # acquire ns-3's data in the memory
     def Acquire(self):
         while not self.isFinish() and self.GetVersion() % self.mod != self.res:
             pass
@@ -219,10 +235,15 @@ class Ns3AIDL:
             return
         self.Release()
 
-# 
+# This class set up the ns-3 environment and built the shared memory pool.
 class Experiment:
     _created = False
 
+    # init ns-3 environment
+    # \param[in] shmKey : share memory key
+    # \param[in] memSize : share memory size
+    # \param[in] programName : program name of ns3
+    # \param[in] path : current working directory
     def __init__(self, shmKey, memSize, programName, path):
         if self._created:
             raise Exception('Experiment is singleton')
@@ -238,6 +259,9 @@ class Experiment:
         self.kill()
         FreeMemory()
 
+    # run ns3 script in cmd with the setting being input
+    # \param[in] setting : ns3 script input parameters(default : None)
+    # \param[in] show_output : whether to show output or not(default : False) 
     def run(self, setting=None, show_output=False):
         self.kill()
         env = {'NS_GLOBAL_VALUE': 'SharedMemoryKey={};SharedMemoryPoolSize={};'.format(
