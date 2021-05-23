@@ -65,7 +65,7 @@ var = py_interface.ShmBigVar(1234, TcpRl)
 
 ns-3 side：
 
-```
+```cpp
 uint8_t newCqi = params.m_cqiList.at (i).m_wbCqi.at (0);
 NS_ASSERT_MSG (m_cqiDl != NULL, "DL env error");
 if (rnti == 1)
@@ -83,7 +83,7 @@ if (rnti == 1)
 
 python side：
 
-```
+```python
 with dl as data:
  if data == None:
  break
@@ -97,26 +97,25 @@ with dl as data:
 
 ## Build and Run
 Check and Intall required packets for the tensorflow:
-```
+```shell
 pip install -r requirements.txt
 ```
 
 Run ns-3 example:
-```
+```shell
 cp -r contrib/ns3-ai/example/lte_cqi scratch/
-
 ```
 Run Python code:
-```
+```shell
 cd scratch/lte_cqi/
 
-python run_online.py
+python3 run_online.py
 ```
 If you want to test the LSTM, you can run another python script but you may need to install [TensorFlow](https://www.tensorflow.org/) environment first. 
-```
+```shell
 cd scratch/lte_cqi/
 
-python run_online_lstm.py 1
+python3 run_online_lstm.py 1
 ```    
 **NOTICE: ns3 code and Python code need to run simultaneously**
 

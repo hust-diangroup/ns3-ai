@@ -41,7 +41,7 @@ Python3 is used and tested.
 ```
 cd $YOUR_NS3_CODE/contrib/ns3-ai/py_interface
 
-python setup.py install --user
+pip3 install . --user
 ```
 
 #### Baisc usage
@@ -88,7 +88,7 @@ Run Python code:
 ```
 cd contrib/ns3-ai/example/rl-tcp/
 
-python testtcp.py
+python3 testtcp.py
 ```
 **NOTE: Currently the RL test in python script is not fully enabled, coming soon.**
 
@@ -96,16 +96,6 @@ python testtcp.py
 This original work is done based on [5G NR](https://5g-lena.cttc.es/) branch in ns-3. We made some changes to make it also run in LTE codebase in ns-3 mainline. We didn't reproduce all the experiments on LTE, and the results used in this document are based on NR work.
 
 #### Build and Run
-Apply the lte patch (in your ns3 dir)
-```
-cp contrib/ns3-ai/example/lte_cqi/lte_cqi_predict.patch .
-
-git apply --stat lte_cqi_predict.patch
-
-git apply --check lte_cqi_predict.patch
-
-git am -s < lte_cqi_predict.patch
-```
 
 Run ns-3 example:
 ```
@@ -117,13 +107,13 @@ Run Python code:
 ```
 cd scratch/lte_cqi/
 
-python run_online.py 
+python3 run_online.py 
 ```    
 If you want to test the LSTM, you can run another python script but you may need to install [TensorFlow](https://www.tensorflow.org/) environment first. 
 ```
 cd scratch/lte_cqi/
 
-python run_online_lstm.py 1
+python3 run_online_lstm.py 1
 ```    
 **NOTE: If the program does not exit normally, you need to run freeshm.sh to release the shared memory manually.**
 

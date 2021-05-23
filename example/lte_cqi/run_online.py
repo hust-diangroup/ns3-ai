@@ -1,20 +1,27 @@
+# should run with ns3 code (cd $YOUR_NS3_CODE; ./waf --run "lte_cqi") simultaneously
+
 from py_interface import *
 from ctypes import *
-Init(1234, 4096)
+mempool_key = 1234          # memory pool key, arbitrary integer large than 1000
+mem_size = 4096             # memory pool size in bytes
+Init(mempool_key, mem_size) # Init shared memory pool
 
 MAX_RBG_NUM = 32
 
-
+# The feature of DL training (in this example, feature of cqi)
+# shared between ns-3 and python with the same shared memory
+# using the ns3-ai model.
 class CqiFeature(Structure):
     _pack_ = 1
     _fields_ = [
-        ('wbCqi', c_uint8),
-        ('rbgNum', c_uint8),
-        ('nLayers', c_uint8),
-        ('sbCqi', (c_uint8*MAX_RBG_NUM)*2)
+        ('wbCqi', c_uint8),                 # wide band cqi
+        ('rbgNum', c_uint8),                # resource block group number
+        ('nLayers', c_uint8),               # number of layers
+        ('sbCqi', (c_uint8*MAX_RBG_NUM)*2)  # sub band cqi
     ]
 
-
+# The prediction of DL training (in this example, prediction of cqi)
+# calculated by python and put back to ns-3 with the shared memory.
 class CqiPredicted(Structure):
     _pack_ = 1
     _fields_ = [
@@ -22,13 +29,15 @@ class CqiPredicted(Structure):
         ('new_sbCqi', (c_uint8*MAX_RBG_NUM)*2)
     ]
 
+# The target of DL training (in this example, target of cqi)
 class CqiTarget(Structure):
     _pack_ = 1
     _fields_ = [
         ('target', c_uint8)
     ]
 
-dl = Ns3AIDL(1357, CqiFeature, CqiPredicted, CqiTarget)
+memblock_key = 1357         # memory block key, need to keep the same in the ns-3 script
+dl = Ns3AIDL(memblock_key, CqiFeature, CqiPredicted, CqiTarget)     # Link the shared memory block with ns-3 script
 # dl.SetCond(2, 1)
 try:
     while True:
@@ -42,4 +51,4 @@ try:
 except KeyboardInterrupt:
     print('Ctrl C')
 finally:
-    FreeMemory()
+    FreeMemory()            # Free shared memory pool

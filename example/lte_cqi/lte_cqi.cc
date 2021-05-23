@@ -17,9 +17,9 @@ main (int argc, char *argv[])
 {
   // LogComponentEnable ("MyRrMacScheduler", LOG_LEVEL_INFO);
   
-  //Number of Users
+  // Number of Users
   uint16_t m_nUser = 4;
-  //Distance
+  // Distance
   double distance = 600;
 
   double speed = 10;
@@ -27,7 +27,7 @@ main (int argc, char *argv[])
   string datarate = "20Mbps";
   uint32_t packetSize = 1200;
 
-  //Set the simulation time
+  // Set the simulation time
   double simTime = 5.0;
 
   // Command line arguments
