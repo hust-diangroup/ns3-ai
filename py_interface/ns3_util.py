@@ -99,6 +99,7 @@ def get_setting(setting_map):
 
 
 def build_ns3(path):
+    print('build')
     proc = subprocess.Popen('./waf build', shell=True, stdout=subprocess.PIPE,
                             stderr=devnull, universal_newlines=True, cwd=path)
     proc.wait()
@@ -110,21 +111,25 @@ def build_ns3(path):
     return ok
 
 
-def run_single_ns3(path, pname, setting=None, env=None, show_output=False):
-    if not build_ns3(path):
+def run_single_ns3(path, pname, setting=None, env=None, show_output=False, build=True):
+    if build and not build_ns3(path):
         return None
     if env:
         env.update(os.environ)
+    env['LD_LIBRARY_PATH'] = os.path.abspath(os.path.join(path, 'build', 'lib'))
     if not setting:
-        cmd = './waf --run "{}"'.format(pname)
+        cmd = './{}'.format(pname)
     else:
-        cmd = './waf --run "{}{}"'.format(pname, get_setting(setting))
+        cmd = './{}{}'.format(pname, get_setting(setting))
+    exec_path = os.path.join(path, 'build', 'scratch')
+    if os.path.isdir(os.path.join(exec_path, pname)):
+        exec_path = os.path.join(exec_path, pname)
     if show_output:
         proc = subprocess.Popen(
-            cmd, shell=True, universal_newlines=True, cwd=path, env=env)
+            cmd, shell=True, universal_newlines=True, cwd=exec_path, env=env)
     else:
         proc = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE,
-                                stderr=devnull, universal_newlines=True, cwd=path, env=env)
+                                stderr=devnull, universal_newlines=True, cwd=exec_path, env=env)
     return proc
 
 

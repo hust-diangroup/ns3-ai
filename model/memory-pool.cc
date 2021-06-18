@@ -70,17 +70,17 @@ SharedMemoryPool::SharedMemoryPool (void)
   NS_ASSERT_MSG (m_memoryPoolPtr > (void *)0, "Cannot alloc shared memory(ptr error)");
 
   shmctl (m_shmid, IPC_STAT, &m_shmds);
-  m_isCreator = getpid () == m_shmds.shm_cpid;
-  if (m_isCreator)
-    {
-      NS_LOG_INFO ("Creator");
-      memset (m_memoryPoolPtr, 0, m_memoryPoolSize);
-    }
-  else
-    {
-      NS_LOG_INFO ("User");
-      sleep (1);
-    }
+  // m_isCreator = getpid () == m_shmds.shm_cpid;
+  // if (m_isCreator)
+  //   {
+  //     NS_LOG_INFO ("Creator");
+  //     memset (m_memoryPoolPtr, 0, m_memoryPoolSize);
+  //   }
+  // else
+  //   {
+  //     NS_LOG_INFO ("User");
+  //     sleep (1);
+  //   }
 
   m_ctrlInfo = (CtrlInfoBlock *) (m_memoryPoolPtr + m_memoryPoolSize - m_configLen);
   m_curCtrlInfo = (SharedMemoryCtrl *) m_ctrlInfo;
@@ -110,12 +110,12 @@ void
 SharedMemoryPool::FreeMemory (void)
 {
   NS_LOG_FUNCTION (this);
-  if (!m_isCreator || m_memoryPoolPtr == NULL)
-    return;
-  shmctl (m_shmid, IPC_STAT, &m_shmds);
-  while (m_shmds.shm_nattch != 1)
-    shmctl (m_shmid, IPC_STAT, &m_shmds);
-  shmctl (m_shmid, IPC_RMID, 0);
+  // if (!m_isCreator || m_memoryPoolPtr == NULL)
+  //   return;
+  // shmctl (m_shmid, IPC_STAT, &m_shmds);
+  // while (m_shmds.shm_nattch != 1)
+  //   shmctl (m_shmid, IPC_STAT, &m_shmds);
+  // shmctl (m_shmid, IPC_RMID, 0);
   m_memoryPoolPtr = NULL;
 }
 
