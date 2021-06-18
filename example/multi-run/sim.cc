@@ -5,6 +5,8 @@
 using namespace std;
 using namespace ns3;
 
+NS_LOG_COMPONENT_DEFINE("multi-run");
+
 /**
  * \brief Shared memory to store a and b.
  * 
@@ -80,14 +82,15 @@ int APB::Func(int a, int b)
 int main(int argc, char *argv[])
 {
     int memblock_key = 2333;        ///< memory block key, need to keep the same in the python script
-    APB apb(memblock_key);
     int a = 1;
     int b = 2;
     CommandLine cmd;
     cmd.AddValue ("a","the value of a",a);
     cmd.AddValue ("b","the value of b",b);
+    cmd.AddValue ("key","memory block key",memblock_key);
     cmd.Parse (argc, argv);
-    std::cout << apb.Func(a, b) << std::endl;
+    APB apb(memblock_key);
+    std::cout << a << "+" << b << "=" << apb.Func(a, b) << std::endl;
     apb.SetFinish();
     return 0;
 }

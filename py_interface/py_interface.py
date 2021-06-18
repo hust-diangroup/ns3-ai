@@ -253,21 +253,24 @@ class Experiment:
         self.programName = programName
         self.path = path
         self.proc = None
+        self.dirty = True
         Init(shmKey, memSize)
 
     def __del__(self):
+        print('cleaning')
         self.kill()
         FreeMemory()
 
     # run ns3 script in cmd with the setting being input
     # \param[in] setting : ns3 script input parameters(default : None)
-    # \param[in] show_output : whether to show output or not(default : False) 
+    # \param[in] show_output : whether to show output or not(default : False)
     def run(self, setting=None, show_output=False):
         self.kill()
         env = {'NS_GLOBAL_VALUE': 'SharedMemoryKey={};SharedMemoryPoolSize={};'.format(
             self.shmKey, self.memSize)}
         self.proc = run_single_ns3(
-            self.path, self.programName, setting, env=env, show_output=show_output)
+            self.path, self.programName, setting, env=env, show_output=show_output, build=self.dirty)
+        self.dirty = False
         return self.proc
 
     def kill(self):

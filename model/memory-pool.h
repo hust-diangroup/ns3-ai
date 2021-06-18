@@ -83,7 +83,6 @@ class SharedMemoryPool : public Singleton<SharedMemoryPool>
 public:
   uint8_t *m_memoryPoolPtr{NULL};
   CtrlInfoBlock *m_ctrlInfo;
-  bool m_isCreator;
   key_t m_shmid;
   struct shmid_ds m_shmds;
   uint32_t m_memoryPoolSize;
