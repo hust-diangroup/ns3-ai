@@ -3,13 +3,13 @@ This is a very simple but useful example for the ns3-ai model to illustrate the 
 ### Usage
 Copy this example to scratch:
 ```shell
-cp -r contrib/ns3-ai/example/multi-run scratch/
+cp -r contrib/ns3-ai/example/a_plus_b scratch/
 ```
 
 Run the code (Note the python script can start the ns-3 script automatically, so you do not need to start it by yourself):
 
 ```shell
-cd scratch/multi-run/
+cd scratch/a_plus_b/
 
 python3 run.py
 ```
@@ -121,7 +121,7 @@ Set up the ns-3 environment
 
 ```Python
 # Experiment(self, shmKey, memSize, programName, path)
-exp = Experiment(1234, 4096, 'multi-run', '../../')
+exp = Experiment(1234, 4096, 'a_plus_b', '../../')
 ```
 
 You need to change the name and path according to the different ns-3 scripts' names.  

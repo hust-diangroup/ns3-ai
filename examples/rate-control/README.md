@@ -1,5 +1,5 @@
 # Rate Control Example
-
+This is an example that shows how to develop a new rate control algorithm for the Wi-Fi model in ns-3 using the ns3-ai model.
 ## Usage
 
 Copy this example to scratch:

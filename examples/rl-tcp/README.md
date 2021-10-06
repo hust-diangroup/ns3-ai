@@ -112,21 +112,10 @@ python  side：
 
 ## Build and Run
 
-Run ns-3 example:
-```
-cp -r contrib/ns3-ai/example/rl-tcp scratch/
-
-./waf --run "rl-tcp"
-```
-Run Python code:
+Run code:
 ```
 cd contrib/ns3-ai/example/rl-tcp/
 
-python run_tcp_rl.py --use_rl --result
+python3 run_tcp_rl.py --use_rl --result
 ```
 
-**NOTICE: ns3 code and Python code need to run simultaneously**
-
-
-
-## Results
