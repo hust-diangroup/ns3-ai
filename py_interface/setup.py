@@ -34,7 +34,7 @@ extension = setuptools.Extension("shm_pool",
                                  )
 
 setuptools.setup(name=name,
-                 version='0.0.2',
+                 version='1.0.0',
                  description="NS-3 AI interface for Python",
                  long_description=long_description,
                  long_description_content_type="text/markdown",
