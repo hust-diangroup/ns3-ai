@@ -14,8 +14,8 @@ Unlike the RL_TCP example, in this example, we want to show how to change the so
 
 ### Simulation scenario
 This scenario is implemented to test the performance of high-speed situations, and multi-users are attached to the base station to test the downlink scheduling performance.
+<img src="figures/scene1.png" alt="scenario" width="200"/>
 
-![scenario](figures/scene1.png)
 
 ### Performance Metrics
 - Calculate the MSE of the outdated CQI and predicted CQI
@@ -98,26 +98,30 @@ with dl as data:
 ## Build and Run
 Check and Intall required packets for the tensorflow:
 ```shell
-pip install -r requirements.txt
+pip3 install -r requirements.txt
 ```
-
-Run ns-3 example:
+### Run Separately (no longer recommended)
+Run ns-3 example with two shell window:
 ```shell
 cp -r contrib/ns3-ai/example/lte_cqi scratch/
+./waf --run "lte_cqi"
 ```
-Run Python code:
+Open another shell window and Run Python code:
 ```shell
 cd scratch/lte_cqi/
 
 python3 run_online.py
 ```
+**NOTICE: ns3 code and Python code need to run simultaneously**
+
+### Run with all-in-one script
 If you want to test the LSTM, you can run another python script but you may need to install [TensorFlow](https://www.tensorflow.org/) environment first. 
 ```shell
 cd scratch/lte_cqi/
 
 python3 run_online_lstm.py 1
 ```    
-**NOTICE: ns3 code and Python code need to run simultaneously**
+
 
 
 
