@@ -1,3 +1,22 @@
+# -*- Mode: python; py-indent-offset: 4; indent-tabs-mode: nil; coding: utf-8; -*-
+# Copyright (c) 2020 Huazhong University of Science and Technology, Dian Group
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License version 2 as
+# published by the Free Software Foundation;
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+#
+# Author: Pengyu Liu <eic_lpy@hust.edu.cn>
+#         Hao Yin <haoyin@uw.edu>
+
 # An example for the ns3-ai model to illustrate the data exchange
 # between python-based AI frameworks and ns-3.
 #
@@ -37,7 +56,7 @@ ns3Settings = {'a': 20, 'b': 30}
 mempool_key = 1234                                          # memory pool key, arbitrary integer large than 1000
 mem_size = 4096                                             # memory pool size in bytes
 memblock_key = 2333                                         # memory block key, need to keep the same in the ns-3 script
-exp = Experiment(mempool_key, mem_size, 'multi-run', '../../')      # Set up the ns-3 environment
+exp = Experiment(mempool_key, mem_size, 'a_plus_b', '../../')      # Set up the ns-3 environment
 try:
     for i in range(10):
         exp.reset()                                             # Reset the environment
