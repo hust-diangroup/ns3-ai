@@ -1,5 +1,6 @@
 # ns3-ai
-
+## Online Tutorial:
+Join us in this [online recording](https://vimeo.com/566296651) to get better knowledge about ns3-ai! The slides introduce the ns3-ai model could also be found [here](https://www.nsnam.org/wp-content/uploads/2021/tutorials/ns3-ai-tutorial-June-2021.pdf)! 
 ## Description
  The [ns–3](https://www.nsnam.org/) simulator is an open-source networking simulation tool implemented by C++ and wildly used for network research and education. Currently, more and more researchers are willing to apply AI algorithms to network research. Most AI algorithms are likely to rely on open source frameworks such as [TensorFlow](https://www.tensorflow.org/) and [PyTorch](https://pytorch.org/). These two parts are developed independently and extremely hard to merge, so it is more reasonable and convenient to connect these two tasks with data interaction. Our model provides a high-efficiency solution to enable the data interaction between ns-3 and other python based AI frameworks.
 
@@ -22,13 +23,13 @@ This module needs to be built within ns-3, so you need to get a ns-3-dev or othe
 Check [ns-3 installation wiki](https://www.nsnam.org/wiki/Installation) for detailed instructions.
 
 #### Add this module
-```
+```Shell
 cd $YOUR_NS3_CODE/contrib
 git clone https://github.com/hust-diangroup/ns3-ai.git
 ```
 
 #### Rebuild ns-3
-```
+```Shell
 ./waf configure
 ./waf
 ```
@@ -38,17 +39,20 @@ git clone https://github.com/hust-diangroup/ns3-ai.git
 #### Install
 Python3 is used and tested.
 
-```
+```Shell
 cd $YOUR_NS3_CODE/contrib/ns3-ai/py_interface
 
 pip3 install . --user
 ```
 
 #### Baisc usage
-```
+``` Python
 import py_interface
-py_interface.Init(1234, 4096) # key poolSize
-v = NS3BigVar(233, c_int*10)
+mempool_key = 1234                                          # memory pool key, arbitrary integer large than 1000
+mem_size = 4096                                             # memory pool size in bytes
+memblock_key = 2333                                         # memory block key, need to keep the same in the ns-3 script
+py_interface.Init(mempool_key, mem_size) # key poolSize
+v = ShmBigVar(memblock_key, c_int*10)
 with v as o:
     for i in range(10):
         o[i] = c_int(i)
@@ -74,6 +78,9 @@ The `CtrlInfoBlock` is the control block of the all shared memory pool, the `Sha
 
 
 ## Examples
+### Quick Statrt on how to us ns3-ai - [a_plus_b](https://github.com/hust-diangroup/ns3-ai/tree/master/example/a_plus_b)
+This example show how you can use ns3-ai by a very simple case that you transfer the data from ns-3 to python side and calculate a + b in the python to put back the results. Please check the README in it for more details.
+
 ### [RL-TCP](https://github.com/hust-diangroup/ns3-ai/blob/master/example/rl-tcp/RL-TCP-en.md)
 This example is inspired by [ns3-gym example](https://github.com/tkn-tub/ns3-gym#rl-tcp). We bulid this example for the benchmarking and to compare with their module.
 
@@ -81,16 +88,8 @@ This example is inspired by [ns3-gym example](https://github.com/tkn-tub/ns3-gym
 Run ns-3 example:
 ```
 cp -r contrib/ns3-ai/example/rl-tcp scratch/
-
-./waf --run "rl-tcp"
+python3 run_tcp_rl.py --use_rl --result
 ```
-Run Python code:
-```
-cd contrib/ns3-ai/example/rl-tcp/
-
-python3 testtcp.py
-```
-**NOTE: Currently the RL test in python script is not fully enabled, coming soon.**
 
 ### [LTE_CQI](https://github.com/hust-diangroup/ns3-ai/blob/master/example/lte_cqi/Lte_CQI.md)
 This original work is done based on [5G NR](https://5g-lena.cttc.es/) branch in ns-3. We made some changes to make it also run in LTE codebase in ns-3 mainline. We didn't reproduce all the experiments on LTE, and the results used in this document are based on NR work.
@@ -98,24 +97,36 @@ This original work is done based on [5G NR](https://5g-lena.cttc.es/) branch in 
 #### Build and Run
 
 Run ns-3 example:
-```
-cp -r contrib/ns3-ai/example/lte_cqi scratch/
-
-./waf --run "lte_cqi"
-```
-Run Python code:
-```
-cd scratch/lte_cqi/
-
-python3 run_online.py 
-```    
 If you want to test the LSTM, you can run another python script but you may need to install [TensorFlow](https://www.tensorflow.org/) environment first. 
-```
+```Shell
 cd scratch/lte_cqi/
 
 python3 run_online_lstm.py 1
 ```    
 **NOTE: If the program does not exit normally, you need to run freeshm.sh to release the shared memory manually.**
+
+### [Rate-Control](https://github.com/hust-diangroup/ns3-ai/tree/master/example/rate-control)
+This is an example that shows how to develop a new rate control algorithm for the Wi-Fi model in ns-3 using the ns3-ai model.
+#### Usage
+
+Copy this example to scratch:
+
+```shell
+cp -r contrib/ns3-ai/example/rate-control scratch/
+cd scratch/rate-control
+```
+
+##### 1. Constant Rate Control
+
+```shell
+python3 ai_constant_rate.py
+```
+
+##### 2. Thompson Sampling Rate Control
+
+```shell
+python3 ai_thompson_sampling.py
+```
 
 ## Cite our work
 Please use the following bibtex:
