@@ -1,3 +1,25 @@
+/* -*-  Mode: C++; c-file-style: "gnu"; indent-tabs-mode:nil; -*- */
+/*
+ * Copyright (c) 2018 Technische Universität Berlin
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 as
+ * published by the Free Software Foundation;
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ *
+ * Author: Piotr Gawlowicz <gawlowicz@tkn.tu-berlin.de>
+ * Modify: Pengyu Liu <eic_lpy@hust.edu.cn> 
+ *         Hao Yin <haoyin@uw.edu>
+ */
+
 #include <numeric>
 #include "tcp-rl-env.h"
 namespace ns3
@@ -45,105 +67,6 @@ void TcpRlEnv::RxPktTrace(Ptr<const Packet>, const TcpHeader &, Ptr<const TcpSoc
   m_lastPktRxTime = Simulator::Now();
 }
 
-// void
-// TcpEventEnv::UpdateEnv (void)
-// {
-//   auto env = EnvSetter ();
-//   env->socketUid = m_socketUuid;
-//   env->cWnd = m_tcb->m_cWnd;
-//   env->ssThresh = m_tcb->m_ssThresh;
-//   env->envType = 0;
-//   env->simTime_us = Simulator::Now ().GetMicroSeconds ();
-//   env->nodeId = m_nodeId;
-//   env->ssThresh = m_tcb->m_ssThresh;
-//   env->cWnd = m_tcb->m_cWnd;
-//   env->segmentSize = m_tcb->m_segmentSize;
-//   env->segmentsAcked = m_segmentsAcked;
-//   env->bytesInFlight = m_bytesInFlight;
-//   env->rtt = m_rtt.GetMicroSeconds ();
-//   env->minRtt = m_tcb->m_minRtt.GetMicroSeconds ();
-//   env->calledFunc = m_calledFunc;
-//   env->congState = m_tcb->m_congState;
-//   env->event = m_event;
-//   env->ecnState = m_tcb->m_ecnState;
-// }
-
-// uint32_t
-// TcpEventEnv::GetSsThresh (Ptr<const TcpSocketState> tcb, uint32_t bytesInFlight)
-// {
-//   //   NS_LOG_FUNCTION (this);
-//   //   // pkt was lost, so penalty
-//   m_envReward = m_penalty;
-
-//   // //   NS_LOG_INFO(Simulator::Now() << " Node: " << m_nodeId << " GetSsThresh, BytesInFlight: " << bytesInFlight);
-//   m_calledFunc = CalledFunc_t::GET_SS_THRESH;
-//   // //   m_info = "GetSsThresh";
-//   m_tcb = tcb;
-//   m_bytesInFlight = bytesInFlight;
-//   SetCompleted ();
-//   auto act = ActionGetter ();
-//   // //   Notify();
-//   //   return m_new_ssThresh;
-// }
-
-// void
-// TcpEventEnv::IncreaseWindow (Ptr<TcpSocketState> tcb, uint32_t segmentsAcked)
-// {
-//   NS_LOG_FUNCTION (this);
-//   // pkt was acked, so reward
-//   m_envReward = m_reward;
-
-//   NS_LOG_INFO (Simulator::Now () << " Node: " << m_nodeId
-//                                  << " IncreaseWindow, SegmentsAcked: " << segmentsAcked);
-//   m_calledFunc = CalledFunc_t::INCREASE_WINDOW;
-//   m_info = "IncreaseWindow";
-//   m_tcb = tcb;
-//   m_segmentsAcked = segmentsAcked;
-//   Notify ();
-//   tcb->m_cWnd = m_new_cWnd;
-// }
-
-// void
-// TcpEventEnv::PktsAcked (Ptr<TcpSocketState> tcb, uint32_t segmentsAcked, const Time &rtt)
-// {
-//   NS_LOG_FUNCTION (this);
-//   NS_LOG_INFO (Simulator::Now () << " Node: " << m_nodeId << " PktsAcked, SegmentsAcked: "
-//                                  << segmentsAcked << " Rtt: " << rtt);
-//   m_calledFunc = CalledFunc_t::PKTS_ACKED;
-//   m_info = "PktsAcked";
-//   m_tcb = tcb;
-//   m_segmentsAcked = segmentsAcked;
-//   m_rtt = rtt;
-// }
-
-// void
-// TcpEventEnv::CongestionStateSet (Ptr<TcpSocketState> tcb,
-//                                     const TcpSocketState::TcpCongState_t newState)
-// {
-//   NS_LOG_FUNCTION (this);
-//   std::string stateName = GetTcpCongStateName (newState);
-//   NS_LOG_INFO (Simulator::Now () << " Node: " << m_nodeId << " CongestionStateSet: " << newState
-//                                  << " " << stateName);
-
-//   m_calledFunc = CalledFunc_t::CONGESTION_STATE_SET;
-//   m_info = "CongestionStateSet";
-//   m_tcb = tcb;
-//   m_newState = newState;
-// }
-
-// void
-// TcpEventEnv::CwndEvent (Ptr<TcpSocketState> tcb, const TcpSocketState::TcpCAEvent_t event)
-// {
-//   NS_LOG_FUNCTION (this);
-//   std::string eventName = GetTcpCAEventName (event);
-//   NS_LOG_INFO (Simulator::Now () << " Node: " << m_nodeId << " CwndEvent: " << event << " "
-//                                  << eventName);
-
-//   m_calledFunc = CalledFunc_t::CWND_EVENT;
-//   m_info = "CwndEvent";
-//   m_tcb = tcb;
-//   m_event = event;
-// }
 
 TcpTimeStepEnv::TcpTimeStepEnv(uint16_t id) : TcpRlEnv(id)
 {
