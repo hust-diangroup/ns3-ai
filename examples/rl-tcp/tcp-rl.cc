@@ -19,9 +19,8 @@
  * Modify: Pengyu Liu <eic_lpy@hust.edu.cn> 
  *         Hao Yin <haoyin@uw.edu>
  */
- 
+
 #include "tcp-rl.h"
-// #include "tcp-rl-env.h"
 #include "ns3/tcp-header.h"
 #include "ns3/object.h"
 #include "ns3/node-list.h"

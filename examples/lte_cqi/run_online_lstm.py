@@ -198,7 +198,6 @@ try:
 except KeyboardInterrupt:
     print('Ctrl C')
 finally:
-    exp.kill()
     del exp
 print('Finish')
 with open("log_" + str(delta), "a+") as f:
