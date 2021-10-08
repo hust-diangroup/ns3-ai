@@ -15,6 +15,7 @@
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #
 # Author: Pengyu Liu <eic_lpy@hust.edu.cn>
+#         Hao Yin <haoyin@uw.edu>
 
 from ctypes import *
 from typing import Optional

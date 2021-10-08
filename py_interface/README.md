@@ -6,8 +6,11 @@ pip3 install /path/to/py_interface
 # Usage
 ```python
 import py_interface
-py_interface.Init(1234, 4096) # key poolSize
-v = ShmBigVar(233, c_int*10)
+mempool_key = 1234                                          # memory pool key, arbitrary integer large than 1000
+mem_size = 4096                                             # memory pool size in bytes
+memblock_key = 2333                                         # memory block key, need to keep the same in the ns-3 script
+py_interface.Init(mempool_key, mem_size) # key poolSize
+v = ShmBigVar(memblock_key, c_int*10)
 with v as o:
     for i in range(10):
         o[i] = c_int(i)
@@ -31,10 +34,13 @@ class Act(Structure):
     _fields_ = [
         ('c', c_int)
     ]
-exp = Experiment(1234, 4096, 'multi-run', '../../')
+mempool_key = 1234                                          # memory pool key, arbitrary integer large than 1000
+mem_size = 4096                                             # memory pool size in bytes
+memblock_key = 2333                                         # memory block key, need to keep the same in the ns-3 script
+exp = Experiment(mempool_key, mem_size, 'multi-run', '../../')
 for i in range(2):
     exp.reset()
-    rl = Ns3AIRL(2333, Env, Act)
+    rl = Ns3AIRL(memblock_key, Env, Act)
     pro = exp.run()
     while not rl.isFinish():
         with rl as data:
