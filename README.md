@@ -78,10 +78,10 @@ The `CtrlInfoBlock` is the control block of the all shared memory pool, the `Sha
 
 
 ## Examples
-### Quick Statrt on how to us ns3-ai - [a_plus_b](https://github.com/hust-diangroup/ns3-ai/tree/master/example/a_plus_b)
+### Quick Statrt on how to us ns3-ai - [a_plus_b](https://github.com/hust-diangroup/ns3-ai/tree/master/examples/a_plus_b)
 This example show how you can use ns3-ai by a very simple case that you transfer the data from ns-3 to python side and calculate a + b in the python to put back the results. Please check the README in it for more details.
 
-### [RL-TCP](https://github.com/hust-diangroup/ns3-ai/blob/master/example/rl-tcp/RL-TCP-en.md)
+### [RL-TCP](https://github.com/hust-diangroup/ns3-ai/blob/master/examples/rl-tcp/)
 This example is inspired by [ns3-gym example](https://github.com/tkn-tub/ns3-gym#rl-tcp). We bulid this example for the benchmarking and to compare with their module.
 
 #### Build and Run
@@ -91,7 +91,7 @@ cp -r contrib/ns3-ai/example/rl-tcp scratch/
 python3 run_tcp_rl.py --use_rl --result
 ```
 
-### [LTE_CQI](https://github.com/hust-diangroup/ns3-ai/blob/master/example/lte_cqi/Lte_CQI.md)
+### [LTE_CQI](https://github.com/hust-diangroup/ns3-ai/blob/master/examples/lte_cqi/)
 This original work is done based on [5G NR](https://5g-lena.cttc.es/) branch in ns-3. We made some changes to make it also run in LTE codebase in ns-3 mainline. We didn't reproduce all the experiments on LTE, and the results used in this document are based on NR work.
 
 #### Build and Run
@@ -105,7 +105,7 @@ python3 run_online_lstm.py 1
 ```    
 **NOTE: If the program does not exit normally, you need to run freeshm.sh to release the shared memory manually.**
 
-### [Rate-Control](https://github.com/hust-diangroup/ns3-ai/tree/master/example/rate-control)
+### [Rate-Control](https://github.com/hust-diangroup/ns3-ai/tree/master/examples/rate-control)
 This is an example that shows how to develop a new rate control algorithm for the Wi-Fi model in ns-3 using the ns3-ai model.
 #### Usage
 
