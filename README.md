@@ -45,6 +45,18 @@ cd $YOUR_NS3_CODE/contrib/ns3-ai/py_interface
 pip3 install . --user
 ```
 
+### use docker to quick install
+
+auto install ns3 and ns3-ai by docker
+
+usage
+
+``` shell
+git clone https://github.com/hust-diangroup/ns3-ai.git
+
+cd ns3-ai/docker && sudo sh build.sh
+```
+
 #### Baisc usage
 ``` Python
 import py_interface
