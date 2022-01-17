@@ -142,7 +142,7 @@ if args.result:
 if args.use_rl:
     dqn = DQN()
 exp = Experiment(1234, 4096, 'rl-tcp', '../../')
-exp.run(show_output=0)
+exp.run(show_output=1)
 try:
     while not var.isFinish():
         with var as data:
@@ -185,8 +185,8 @@ try:
                 if a & 1:
                     new_cWnd = cWnd + segmentSize
                 else:
-                    new_cWnd = cWnd + \
-                        int(max(1, (segmentSize * segmentSize) / cWnd))
+                    if(cWnd > 0):
+                        new_cWnd = cWnd + int(max(1, (segmentSize * segmentSize) / cWnd))
                 if a < 3:
                     new_ssThresh = 2 * segmentSize
                 else:
