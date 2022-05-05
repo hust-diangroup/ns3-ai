@@ -245,7 +245,7 @@ class Experiment:
     # \param[in] memSize : share memory size
     # \param[in] programName : program name of ns3
     # \param[in] path : current working directory
-    def __init__(self, shmKey, memSize, programName, path):
+    def __init__(self, shmKey, memSize, programName, path, using_waf = True):
         if self._created:
             raise Exception('Experiment is singleton')
         self._created = True
@@ -255,6 +255,7 @@ class Experiment:
         self.path = path
         self.proc = None
         self.dirty = True
+        self.using_waf = using_waf
         Init(shmKey, memSize)
 
     def __del__(self):
@@ -269,8 +270,10 @@ class Experiment:
         self.kill()
         env = {'NS_GLOBAL_VALUE': 'SharedMemoryKey={};SharedMemoryPoolSize={};'.format(
             self.shmKey, self.memSize)}
+        # 
+        #print(self.using_waf)
         self.proc = run_single_ns3(
-            self.path, self.programName, setting, env=env, show_output=show_output, build=self.dirty)
+            self.path, self.programName, setting, env=env, show_output=show_output, build=self.dirty, using_waf = self.using_waf)
         self.dirty = False
         return self.proc
 

@@ -111,25 +111,36 @@ def build_ns3(path):
     return ok
 
 
-def run_single_ns3(path, pname, setting=None, env=None, show_output=False, build=True):
-    if build and not build_ns3(path):
-        return None
+def run_single_ns3(path, pname, setting=None, env=None, show_output=False, build=True, using_waf = True):
     if env:
         env.update(os.environ)
     env['LD_LIBRARY_PATH'] = os.path.abspath(os.path.join(path, 'build', 'lib'))
-    if not setting:
-        cmd = './{}'.format(pname)
+    if using_waf:
+        if build and not build_ns3(path):
+            return None
+        if not setting:
+            cmd = './{}'.format(pname)
+        else:
+            cmd = './{}{}'.format(pname, get_setting(setting))
+        print(cmd)
+        exec_path = os.path.join(path, 'build', 'scratch')
+        if os.path.isdir(os.path.join(exec_path, pname)):
+            exec_path = os.path.join(exec_path, pname)
+        if show_output:
+            proc = subprocess.Popen(
+                cmd, shell=True, universal_newlines=True, cwd=exec_path, env=env)
+        else:
+            proc = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE,
+                                    stderr=devnull, universal_newlines=True, cwd=exec_path, env=env)
     else:
-        cmd = './{}{}'.format(pname, get_setting(setting))
-    exec_path = os.path.join(path, 'build', 'scratch')
-    if os.path.isdir(os.path.join(exec_path, pname)):
-        exec_path = os.path.join(exec_path, pname)
-    if show_output:
+        # import pdb; pdb.set_trace()
+        exec_path = os.path.join(path, 'ns3')
+        cmd = '{} run {} {}'.format(exec_path, pname, get_setting(setting))
+        print("Running ns3 with: ", cmd)
         proc = subprocess.Popen(
-            cmd, shell=True, universal_newlines=True, cwd=exec_path, env=env)
-    else:
-        proc = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE,
-                                stderr=devnull, universal_newlines=True, cwd=exec_path, env=env)
+                cmd, shell=True, universal_newlines=True, env=env)
+
+
     return proc
 
 
