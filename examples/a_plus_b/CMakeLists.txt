@@ -1,5 +1,5 @@
 set(source_files
-    a_plus_b.cc
+    sim.cc
 )
 
 build_lib_example(
