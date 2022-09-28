@@ -100,20 +100,17 @@ def get_setting(setting_map):
 
 def build_ns3(path):
     print('build')
-    proc = subprocess.Popen('./waf build', shell=True, stdout=subprocess.PIPE,
+    proc = subprocess.Popen('./ns3 build', shell=True, stdout=subprocess.PIPE,
                             stderr=devnull, universal_newlines=True, cwd=path)
     proc.wait()
-    ok = False
-    for line in proc.stdout:
-        if "'build' finished successfully" in line:
-            ok = True
-            break
+
+    ok = proc.returncode == 0
     return ok
 
 
 def run_single_ns3(path, pname, setting=None, env=None, show_output=False, build=True):
     if build and not build_ns3(path):
-        return None
+        raise RuntimeError("run_single_ns3(): requested to build ns3, but build failed!")
     if env:
         env.update(os.environ)
     env['LD_LIBRARY_PATH'] = os.path.abspath(os.path.join(path, 'build', 'lib'))
