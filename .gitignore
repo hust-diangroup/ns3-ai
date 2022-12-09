@@ -163,3 +163,5 @@ cython_debug/
 py_interface/build/
 py_interface/dist/
 py_interface/ns3_ai.egg-info/
+cmake-build-debug/
+examples/elegante/
