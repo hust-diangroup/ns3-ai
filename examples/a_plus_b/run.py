@@ -56,7 +56,7 @@ ns3Settings = {'a': 20, 'b': 30}
 mempool_key = 1234                                          # memory pool key, arbitrary integer large than 1000
 mem_size = 4096                                             # memory pool size in bytes
 memblock_key = 2333                                         # memory block key, need to keep the same in the ns-3 script
-exp = Experiment(mempool_key, mem_size, 'a_plus_b/ns3.36.1-sim-debug', '../../')      # Set up the ns-3 environment
+exp = Experiment(mempool_key, mem_size, 'a_plus_b', '../../')      # Set up the ns-3 environment
 try:
     for i in range(10):
         exp.reset()                                             # Reset the environment

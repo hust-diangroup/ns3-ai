@@ -141,7 +141,7 @@ if args.result:
 
 if args.use_rl:
     dqn = DQN()
-exp = Experiment(1234, 4096, 'rl-tcp/ns3.36.1-sim-debug', '../../')
+exp = Experiment(1234, 4096, 'rl-tcp/', '../../')
 exp.run(show_output=1)
 try:
     while not var.isFinish():

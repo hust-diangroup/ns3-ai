@@ -114,13 +114,13 @@ def run_single_ns3(path, pname, setting=None, env=None, show_output=False, build
     if env:
         env.update(os.environ)
     env['LD_LIBRARY_PATH'] = os.path.abspath(os.path.join(path, 'build', 'lib'))
-    if not setting:
-        cmd = './{}'.format(pname)
-    else:
-        cmd = './{}{}'.format(pname, get_setting(setting))
     exec_path = os.path.join(path, 'build', 'scratch')
-    if os.path.isdir(os.path.join(exec_path, pname)):
-        exec_path = os.path.join(exec_path, pname)
+    # TODO hotfix for cmake-built ns3: executable seems to be placed differently, so take 1st file from exec_path
+    exec_name = [f for f in os.listdir(os.path.join(exec_path, pname)) if f.startswith("ns")][0]
+    if not setting:
+        cmd = f'./{pname}/{exec_name}'
+    else:
+        cmd = f'./{pname}/{exec_name}{get_setting(setting)}'
     if show_output:
         proc = subprocess.Popen(
             cmd, shell=True, universal_newlines=True, cwd=exec_path, env=env)

@@ -26,6 +26,7 @@ from shm_pool import (AcquireMemory, AcquireMemoryCond, AcquireMemoryCondFunc,
                       AcquireMemoryTarget, FreeMemory, GetMemory,
                       GetMemoryVersion, IncMemoryVersion, Init, RegisterMemory,
                       ReleaseMemory, ReleaseMemoryRB, Reset, ResetAll)
+import os
 
 READABLE = 0xff
 SETABLE = 0
