@@ -26,7 +26,8 @@ fi
 echo "copying example to scratch folder"
 cp -r $EXAMPLE_DIR $SCRATCH_DIR
 
-# cd there and run the script
-pushd $TARGET_DIR > /dev/null
-python $RUN_FILE
-popd > /dev/null
+# cd there and run the script with the python script arguments
+pushd $TARGET_DIR > /dev/null || exit
+shift  # removes the first argument from "$@" (which is the python file accessible via $TARGET)
+python $RUN_FILE "$@"
+popd > /dev/null || exit
