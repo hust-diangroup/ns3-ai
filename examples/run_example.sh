@@ -1,12 +1,12 @@
 # validity checks
 if [[ "$(dirname "$0")" != "." ]]; then
-  echo 'Please change to the folder containing this script before execution. Exiting...'
+  echo '[bash ] please change to the folder containing this script before execution. Exiting...'
   exit 1
 fi
 
 TARGET=$1
 if [ ! -f $TARGET ]; then
-  echo "Invalid example script file name. Exiting..."
+  echo "[bash ] invalid example script file name. Exiting..."
   exit 1
 fi
 
@@ -20,14 +20,17 @@ SCRATCH_DIR=../../../scratch
 TARGET_DIR=$SCRATCH_DIR/$EXAMPLE_DIR
 if [[ -d $TARGET_DIR ]]
 then
-  echo "deleting existing example in scratch folder"
+  echo "[bash ] deleting existing example in scratch folder"
   rm -rf $TARGET_DIR
 fi
-echo "copying example to scratch folder"
+echo "[bash ] copying example to scratch folder"
 cp -r $EXAMPLE_DIR $SCRATCH_DIR
+echo "[bash ] copied example to scratch folder"
 
 # cd there and run the script with the python script arguments
 pushd $TARGET_DIR > /dev/null || exit
 shift  # removes the first argument from "$@" (which is the python file accessible via $TARGET)
+echo "[bash ] running python entry script"
 python $RUN_FILE "$@"
 popd > /dev/null || exit
+bash ../freeshm.sh

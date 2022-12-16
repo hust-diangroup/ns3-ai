@@ -99,7 +99,7 @@ def get_setting(setting_map):
 
 
 def build_ns3(path):
-    print('build')
+    print('=== NS3AI: BUILDING NS3 ===')
     proc = subprocess.Popen('./ns3 build', shell=True, stdout=subprocess.PIPE,
                             stderr=devnull, universal_newlines=True, cwd=path)
     proc.wait()

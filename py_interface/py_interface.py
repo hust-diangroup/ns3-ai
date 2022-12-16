@@ -266,10 +266,12 @@ class Experiment:
     # run ns3 script in cmd with the setting being input
     # \param[in] setting : ns3 script input parameters(default : None)
     # \param[in] show_output : whether to show output or not(default : False)
-    def run(self, setting=None, show_output=False):
+    def run(self, setting=None, show_output=False, log_modules=[], log_level="none"):
         self.kill()
         env = {'NS_GLOBAL_VALUE': 'SharedMemoryKey={};SharedMemoryPoolSize={};'.format(
             self.shmKey, self.memSize)}
+        if log_level != "none" and len(log_modules) > 0:
+            env["NS_LOG"] = ":".join([f"{module}=level_{log_level}|prefix_level" for module in log_modules])
         self.proc = run_single_ns3(
             self.path, self.programName, setting, env=env, show_output=show_output, build=self.dirty)
         self.dirty = False
