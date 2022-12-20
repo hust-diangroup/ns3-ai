@@ -117,6 +117,7 @@ class Ns3AIRL:
         self.actType = ActType
         self.extInfo = ExtInfo
         self.finished = False
+        self.rollback_on_release = False
 
         # the main field for RL
         class StorageType(Structure):
@@ -145,6 +146,9 @@ class Ns3AIRL:
         self.mod = mod
         self.res = res
 
+    def SetRollbackOnRelease(self, value: bool):
+        self.rollback_on_release = value
+
     # acquire ns-3's data in the memory
     def Acquire(self):
         while not self.isFinish() and self.GetVersion() % self.mod != self.res:
@@ -167,7 +171,10 @@ class Ns3AIRL:
     def __exit__(self, Type, value, traceback):
         if self.finished:
             return
-        self.Release()
+        if self.rollback_on_release:
+            self.ReleaseAndRollback()
+        else:
+            self.Release()
 
 # This class established an environment for ns3 and python
 # to exchange data with the share memory

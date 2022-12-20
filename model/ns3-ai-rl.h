@@ -179,6 +179,12 @@ public:
  * \return finish flag.
  */ 
   bool GetIsFinish(void);
+
+  /**
+   * TODO comment
+   * @return
+   */
+  uint8_t GetMemVersion(void);
 };
 
 template <typename EnvType, typename ActionType, typename SimInfoType>
@@ -544,6 +550,12 @@ template <typename EnvType, typename ActionType, typename SimInfoType>
 bool Ns3AIRL<EnvType, ActionType, SimInfoType>::GetIsFinish(void)
 {
   return *m_isFinish;
+}
+
+template <typename EnvType, typename ActionType, typename SimInfoType>
+uint8_t Ns3AIRL<EnvType, ActionType, SimInfoType>::GetMemVersion(void)
+{
+  return SharedMemoryPool::Get()->GetMemoryVersion(m_id);
 }
 
 } // namespace ns3

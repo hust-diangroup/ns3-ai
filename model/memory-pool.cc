@@ -235,8 +235,10 @@ void SharedMemoryPool::ReleaseMemory (uint16_t id) //Should register first
 {
   NS_LOG_FUNCTION (this << "ID: " << id);
   SharedMemoryLockable *info = m_memoryLocker[id];
+  NS_LOG_INFO ("memory version before: " << +info->version << " , nextVersion: " << +info->nextVersion);
   while (!__sync_bool_compare_and_swap(&info->version, info->nextVersion - (uint8_t)1, info->nextVersion))
     ShmYield();
+  NS_LOG_INFO ("memory version after: " << +info->version << " , nextVersion: " << +info->nextVersion);
 }
 
 void
@@ -244,8 +246,10 @@ SharedMemoryPool::ReleaseMemoryAndRollback (uint16_t id)
 {
   NS_LOG_FUNCTION (this << "ID: " << id);
   SharedMemoryLockable *info = m_memoryLocker[id];
+  NS_LOG_INFO ("memory version before: " << +info->version << " , nextVersion: " << +info->nextVersion);
   while (!__sync_bool_compare_and_swap(&info->nextVersion, info->version + (uint8_t)1, info->version))
     ShmYield();
+  NS_LOG_INFO ("memory version after: " << +info->version << " , nextVersion: " << +info->nextVersion);
 }
 
 uint8_t
