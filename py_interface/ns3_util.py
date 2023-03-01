@@ -135,7 +135,10 @@ def run_single_ns3(path, pname, setting=None, env=None, show_output=False, build
     else:
         # import pdb; pdb.set_trace()
         exec_path = os.path.join(path, 'ns3')
-        cmd = '{} run {} --{}'.format(exec_path, pname, get_setting(setting))
+        if not setting:
+            cmd = '{} run {}'.format(exec_path, pname)
+        else:
+            cmd = '{} run {} --{}'.format(exec_path, pname, get_setting(setting))
         print("Running ns3 with: ", cmd)
         proc = subprocess.Popen(
                 cmd, shell=True, universal_newlines=True, env=env)

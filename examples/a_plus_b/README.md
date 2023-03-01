@@ -3,7 +3,7 @@ This is a very simple but useful example for the ns3-ai model to illustrate the 
 ### Usage
 Copy this example to scratch:
 ```shell
-cp -r contrib/ns3-ai/example/a_plus_b scratch/
+cp -r contrib/ns3-ai/examples/a_plus_b scratch/
 ```
 
 Run the code (Note the python script can start the ns-3 script automatically, so you do not need to start it by yourself):
@@ -13,6 +13,9 @@ cd scratch/a_plus_b/
 
 python3 run.py
 ```
+
+The output of the command line consists of ten "a+b=c" calculations, where both a and b are random numbers between 0 and 10.
+
 ### Data Structure
 
 #### Environment
@@ -99,14 +102,14 @@ int APB::Func(int a, int b)
     // Set the shared memory
     env->a = a;
     env->b = b;
-    //Release the memory and update conters
+    //Release the memory and update counters
     SetCompleted();
     
     // Acquire the Act memory for reading
     auto act = ActionGetterCond();
     // Get the result
     int ret = act->c;
-    //Release the memory and update conters
+    //Release the memory and update counters
     GetCompleted();
 
     return ret;
@@ -125,7 +128,7 @@ exp = Experiment(1234, 4096, 'a_plus_b', '../../')
 ```
 
 You need to change the name and path according to the different ns-3 scripts' names.  
-Establish the envrionments
+Establish the environments
 
 ```Python
 # Reset the environment
