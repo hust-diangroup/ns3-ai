@@ -1,4 +1,13 @@
 # ns3-ai
+We are delighted to announce that ns3-ai improvements have been chosen as one of the project ideas for the ns-3 projects in [Google Summer of Code 2023](https://summerofcode.withgoogle.com/). For information on how to participate, please visit the [ns-3 GSoC pages](https://www.nsnam.org/wiki/GSOC2023ContributorGuide).
+
+## GSoC 2023: ns3-ai improvements
+We are seeking students who have a passion for enhancing ns3-ai through GSoC 2023. To enhance your chances of being selected as a contributor, we recommend that you explore the following additional experiences and practices as you prepare your GSoC proposals. These will allow us to better assess your skill sets and familiarity with the ns3-ai model.
+- Make a valuable contribution to the ns3-ai codebase by resolving non-trivial [issues](https://github.com/hust-diangroup/ns3-ai/issues).
+- Demonstrate your proficiency in ns-3 by compiling it with various C++-based AIML models.
+- Share examples of how you have applied ns3-ai in your research or personal projects to showcase your experience.
+
+
 ## Online Tutorial:
 Join us in this [online recording](https://vimeo.com/566296651) to get better knowledge about ns3-ai! The slides introduce the ns3-ai model could also be found [here](https://www.nsnam.org/wp-content/uploads/2021/tutorials/ns3-ai-tutorial-June-2021.pdf)! 
 ## Description
