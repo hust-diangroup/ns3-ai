@@ -21,7 +21,7 @@
  *         Hao Yin <haoyin@uw.edu>
  * Topology:
  *
- *   Right Leafs (Clients)                      Left Leafs (Sinks)
+ *   Left Leafs (Clients)                       Right Leafs (Sinks)
  *           |            \                    /        |
  *           |             \    bottleneck    /         |
  *           |              R0--------------R1          |
