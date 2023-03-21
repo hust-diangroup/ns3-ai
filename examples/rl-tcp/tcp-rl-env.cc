@@ -97,8 +97,14 @@ void TcpTimeStepEnv::ScheduleNextStateRead()
   uint64_t segmentsAckedSum = std::accumulate(m_segmentsAcked.begin(), m_segmentsAcked.end(), 0);
   env->segmentsAcked = segmentsAckedSum;
   m_segmentsAcked.clear();
-  std::cerr << (uint64_t)(Simulator::Now().GetMilliSeconds()) << "  " << env->ssThresh << "  "
-            << env->cWnd << "  " << env->segmentSize << "  " << bytesInFlightSum << std::endl;
+  std::cerr << "At " << (uint64_t)(Simulator::Now().GetMilliSeconds()) << "ms:\n";
+  std::cerr << "\tstate --"
+            << " ssThresh=" << env->ssThresh
+            << " cWnd=" << env->cWnd
+            << " segmentSize=" << env->segmentSize
+            << " segmentAcked=" << env->segmentsAcked
+            << " bytesInFlightSum=" << bytesInFlightSum
+            << std::endl;
   SetCompleted();
   // std::cerr<<"GetVersion () "<<(int)GetVersion ()<<std::endl;
   // while (GetVersion() % 2 != 0)
@@ -125,7 +131,9 @@ void TcpTimeStepEnv::ScheduleNextStateRead()
   //   env->congState = m_tcb->m_congState;
   //   env->event = m_event;
   //   env->ecnState = m_tcb->m_ecnState;
-  std::cerr << Simulator::Now().GetMilliSeconds() << "  " << m_new_cWnd << "  " << m_new_ssThresh
+  std::cerr << "\taction --"
+            << " new_cWnd=" << m_new_cWnd
+            << " new_ssThresh=" << m_new_ssThresh
             << std::endl;
 }
 

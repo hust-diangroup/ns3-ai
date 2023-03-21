@@ -140,9 +140,12 @@ def run_single_ns3(path, pname, setting=None, env=None, show_output=False, build
         else:
             cmd = '{} run {} --{}'.format(exec_path, pname, get_setting(setting))
         print("Running ns3 with: ", cmd)
-        proc = subprocess.Popen(
+        if show_output:
+            proc = subprocess.Popen(
                 cmd, shell=True, universal_newlines=True, env=env)
-
+        else:
+            proc = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE,
+                                    stderr=devnull, universal_newlines=True, env=env)
 
     return proc
 
