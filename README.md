@@ -1,7 +1,12 @@
 # ns3-ai
-We are delighted to announce that ns3-ai improvements have been chosen as one of the project ideas for the ns-3 projects in [Google Summer of Code 2023](https://summerofcode.withgoogle.com/). For information on how to participate, please visit the [ns-3 GSoC pages](https://www.nsnam.org/wiki/GSOC2023ContributorGuide).
+## Compling with latest ns-3 version
+Please check the [cmake](https://github.com/hust-diangroup/ns3-ai/tree/cmake) branch for compling with the ns-3.36 release and later using CMake system. We will continue to work on to support all the existing examples. Current supported examples:
+- [a_plus_b](https://github.com/hust-diangroup/ns3-ai/tree/cmake/examples/a_plus_b)
+- [rl_tcp](https://github.com/hust-diangroup/ns3-ai/tree/cmake/examples/rl-tcp)
 
 ## GSoC 2023: ns3-ai improvements
+We are delighted to announce that ns3-ai improvements have been chosen as one of the project ideas for the ns-3 projects in [Google Summer of Code 2023](https://summerofcode.withgoogle.com/). For information on how to participate, please visit the [ns-3 GSoC pages](https://www.nsnam.org/wiki/GSOC2023ContributorGuide).
+
 We are seeking students who have a passion for enhancing ns3-ai through GSoC 2023. To enhance your chances of being selected as a contributor, we recommend that you explore the following additional experiences and practices as you prepare your GSoC proposals. These will allow us to better assess your skill sets and familiarity with the ns3-ai model.
 - Make a valuable contribution to the ns3-ai codebase by resolving non-trivial [issues](https://github.com/hust-diangroup/ns3-ai/issues).
 - Demonstrate your proficiency in ns-3 by compiling it with various C++-based AIML models.
