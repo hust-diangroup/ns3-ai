@@ -14,13 +14,14 @@ Unlike the RL_TCP example, in this example, we want to show how to change the so
 
 ### Simulation scenario
 This scenario is implemented to test the performance of high-speed situations, and multi-users are attached to the base station to test the downlink scheduling performance.
+
 <img src="figures/scene1.png" alt="scenario" width="200"/>
 
 
 ### Performance Metrics
 - Calculate the MSE of the outdated CQI and predicted CQI
-- Compare the MSE, calculate the rate of the prediction (usage rate)
-- Using Radom Robin as a scheduler to see directly the impact of CQI (Every user has an equal number of times scheduled )
+- Map the predicted CQI to MCS and data rate
+- Use Round Robin as a scheduler to see directly the impact of CQI (Every user has an equal number of times scheduled )
 - Mainly concern throughput
 
 
@@ -96,14 +97,14 @@ with dl as data:
 
 
 ## Build and Run
-Check and Intall required packets for the tensorflow:
+Check and Install required packets for the tensorflow:
 ```shell
 pip3 install -r requirements.txt
 ```
 ### Run Separately (no longer recommended)
 Run ns-3 example with two shell window:
 ```shell
-cp -r contrib/ns3-ai/example/lte_cqi scratch/
+cp -r contrib/ns3-ai/examples/lte_cqi scratch/
 ./waf --run "lte_cqi"
 ```
 Open another shell window and Run Python code:
@@ -117,6 +118,7 @@ python3 run_online.py
 ### Run with all-in-one script
 If you want to test the LSTM, you can run another python script but you may need to install [TensorFlow](https://www.tensorflow.org/) environment first. 
 ```shell
+cp -r contrib/ns3-ai/examples/lte_cqi scratch/
 cd scratch/lte_cqi/
 
 python3 run_online_lstm.py 1

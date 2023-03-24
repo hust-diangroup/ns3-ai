@@ -67,6 +67,7 @@ MyRrMacScheduler::MyRrMacScheduler ()
 MyRrMacScheduler::~MyRrMacScheduler ()
 {
   NS_LOG_FUNCTION (this);
+  m_cqiDl->SetFinish();
 }
 
 void
