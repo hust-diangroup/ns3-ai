@@ -195,12 +195,13 @@ Ns3AIRL<EnvType, ActionType, SimInfoType>::Ns3AIRL(uint16_t id)
   m_info = (SimInfoType *)(m_baseAddr + sizeof(EnvType) + sizeof(ActionType));
   m_isFinish =
       (bool *)(m_baseAddr + sizeof(EnvType) + sizeof(ActionType) + sizeof(SimInfoType));
-  Simulator::ScheduleDestroy(&Ns3AIRL<EnvType, ActionType, SimInfoType>::SetFinish, this);
+//  Simulator::ScheduleDestroy(&Ns3AIRL<EnvType, ActionType, SimInfoType>::SetFinish, this);
 }
 
 template <typename EnvType, typename ActionType, typename SimInfoType>
 Ns3AIRL<EnvType, ActionType, SimInfoType>::~Ns3AIRL(void)
 {
+  SetFinish();
 }
 
 template <typename EnvType, typename ActionType, typename SimInfoType>

@@ -57,7 +57,7 @@ public:
    * \return the object TypeId
    */
   static TypeId GetTypeId (void);
-  AiConstantRateWifiManager (uint16_t id);
+  AiConstantRateWifiManager (uint16_t id = 2333);
   virtual ~AiConstantRateWifiManager ();
 
 
@@ -73,13 +73,13 @@ private:
                        double dataSnr, uint16_t dataChannelWidth, uint8_t dataNss) override;
   void DoReportFinalRtsFailed (WifiRemoteStation *station) override;
   void DoReportFinalDataFailed (WifiRemoteStation *station) override;
-  WifiTxVector DoGetDataTxVector (WifiRemoteStation *station) override;
+  WifiTxVector DoGetDataTxVector (WifiRemoteStation *station, uint16_t allowedWidth) override;
   WifiTxVector DoGetRtsTxVector (WifiRemoteStation *station) override;
 
   WifiMode m_dataMode; //!< Wifi mode for unicast Data frames
   WifiMode m_ctlMode;  //!< Wifi mode for RTS frames
 
-  uint16_t m_ns3ai_id;
+//  uint16_t m_ns3ai_id;
   Ns3AIRL<AiConstantRateEnv, AiConstantRateAct> * m_ns3ai_mod;
 };
 

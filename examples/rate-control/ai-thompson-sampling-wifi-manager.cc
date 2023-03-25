@@ -379,7 +379,7 @@ AiThompsonSamplingWifiManager::GetModeGuardInterval (WifiRemoteStation *st, Wifi
 }
 
 WifiTxVector
-AiThompsonSamplingWifiManager::DoGetDataTxVector (WifiRemoteStation *st)
+AiThompsonSamplingWifiManager::DoGetDataTxVector (WifiRemoteStation *st, uint16_t allowedWidth)
 {
   NS_LOG_FUNCTION (this << st);
   InitializeStation (st);
@@ -416,7 +416,7 @@ AiThompsonSamplingWifiManager::DoGetDataTxVector (WifiRemoteStation *st)
       GetNumberOfAntennas (),
       nss,
       0, // NESS
-      GetChannelWidthForTransmission (mode, channelWidth),
+      GetPhy()->GetTxBandwidth(mode, GetChannelWidth(st)),
       GetAggregation (station),
       false);
 }
@@ -447,13 +447,16 @@ AiThompsonSamplingWifiManager::DoGetRtsTxVector (WifiRemoteStation *st)
   NS_ASSERT (nss == 1);
 
   return WifiTxVector (
-      mode, GetDefaultTxPowerLevel (),
-      GetPreambleForTransmission (mode.GetModulationClass (), GetShortPreambleEnabled ()),
+      mode,
+      GetDefaultTxPowerLevel (),
+      GetPreambleForTransmission (
+          mode.GetModulationClass (),
+          GetShortPreambleEnabled ()),
       guardInterval,
       GetNumberOfAntennas (),
       nss,
       0, // NESS
-      GetChannelWidthForTransmission (mode, channelWidth),
+      channelWidth,
       GetAggregation (station),
       false);
 }
