@@ -3,6 +3,8 @@
 Please check the [cmake](https://github.com/hust-diangroup/ns3-ai/tree/cmake) branch for compling with the ns-3.36 release and later using CMake system. We will continue to work on to support all the existing examples. Current supported examples:
 - [a_plus_b](https://github.com/hust-diangroup/ns3-ai/tree/cmake/examples/a_plus_b)
 - [rl_tcp](https://github.com/hust-diangroup/ns3-ai/tree/cmake/examples/rl-tcp)
+- [lte_cqi](https://github.com/hust-diangroup/ns3-ai/tree/cmake/examples/lte_cqi)
+- [rate-control](https://github.com/hust-diangroup/ns3-ai/tree/cmake/examples/rate-control)
 
 ## GSoC 2023: ns3-ai improvements
 We are delighted to announce that ns3-ai improvements have been chosen as one of the project ideas for the ns-3 projects in [Google Summer of Code 2023](https://summerofcode.withgoogle.com/). For information on how to participate, please visit the [ns-3 GSoC pages](https://www.nsnam.org/wiki/GSOC2023ContributorGuide).
