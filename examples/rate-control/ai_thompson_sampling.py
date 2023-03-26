@@ -247,10 +247,10 @@ class AiThompsonSamplingContainer:
 
 
 if __name__ == '__main__':
-    ns3Settings = {'raa': 'AiThompsonSampling', 'nWifi': 3, 'standard': '11ac', 'duration': 1}
+    ns3Settings = {'raa': 'AiThompsonSampling', 'nWifi': 3, 'standard': '11ac', 'duration': 5}
     mempool_key = 1234 # memory pool key, arbitrary integer large than 1000
     mem_size = 4096 # memory pool size in bytes
-    exp = Experiment(mempool_key, mem_size, 'rate-control', '../../')
+    exp = Experiment(mempool_key, mem_size, 'rate-control', '../../', using_waf=False)
     exp.reset()
 
     memblock_key = 2333 # memory block key in the memory pool, arbitrary integer, and need to keep the same in the ns-3 script

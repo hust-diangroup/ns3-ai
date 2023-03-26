@@ -108,25 +108,17 @@ setWifiStandard (WifiHelper &wifi, const std::string standard)
     {
       wifi.SetStandard (WIFI_STANDARD_80211a);
     }
-  else if (standard == "11n_2_4GHZ")
+  else if (standard == "11n")
     {
-      wifi.SetStandard (WIFI_STANDARD_80211n_2_4GHZ);
-    }
-  else if (standard == "11n_5GHZ")
-    {
-      wifi.SetStandard (WIFI_STANDARD_80211n_5GHZ);
+      wifi.SetStandard (WIFI_STANDARD_80211n);
     }
   else if (standard == "11ac")
     {
       wifi.SetStandard (WIFI_STANDARD_80211ac);
     }
-  else if (standard == "11ax_2_4GHZ")
+  else if (standard == "11ax")
     {
-      wifi.SetStandard (WIFI_STANDARD_80211ax_2_4GHZ);
-    }
-  else if (standard == "11ax_5GHZ")
-    {
-      wifi.SetStandard (WIFI_STANDARD_80211ax_5GHZ);
+      wifi.SetStandard (WIFI_STANDARD_80211ax);
     }
   else
     {
@@ -230,8 +222,8 @@ main (int argc, char *argv[])
 
   WifiHelper wifi;
 
-  // Setting Wifi Standard]
-  setWifiStandard (wifi, standard); // wifi.SetStandard (WIFI_STANDARD_80211ax_5GHZ);
+  // Setting Wifi Standard (enum WifiStandard)
+  setWifiStandard (wifi, standard);
 
   // Setting Raa Algorithm, refer to 'src/wifi/model/rate-control'
   wifi.SetRemoteStationManager (raaAlgo);
@@ -340,7 +332,6 @@ main (int argc, char *argv[])
     }
 
   Simulator::Run ();
-  Simulator::Destroy ();
 
   Ptr<PacketSink> sink1 = DynamicCast<PacketSink> (sinkApps.Get (0));
   std::cout << "Total Bytes Received: " << sink1->GetTotalRx () << std::endl;
@@ -348,5 +339,6 @@ main (int argc, char *argv[])
             << "Mbps" << std::endl;
   std::cout << "Average Delay: " << data.averageDelay () << "ms" << std::endl;
 
+  Simulator::Destroy ();
   return 0;
 }

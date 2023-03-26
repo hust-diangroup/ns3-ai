@@ -229,7 +229,6 @@ Ns3AIDL<FeatureType, PredictedType, TargetType, SimInfoType>::Ns3AIDL(uint16_t i
   m_info = (SimInfoType *)(m_baseAddr + sizeof(FeatureType) + sizeof(PredictedType) + sizeof(TargetType));
   m_isFinish =
       (bool *)(m_baseAddr + sizeof(FeatureType) + sizeof(PredictedType) + sizeof(TargetType) + sizeof(SimInfoType));
-  Simulator::ScheduleDestroy(&Ns3AIDL<FeatureType, PredictedType, TargetType, SimInfoType>::SetFinish, this);
 }
 
 template <typename FeatureType, typename PredictedType, typename TargetType, typename SimInfoType>

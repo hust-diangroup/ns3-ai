@@ -39,29 +39,23 @@ int
 main (int argc, char *argv[])
 {
   // LogComponentEnable ("MyRrMacScheduler", LOG_LEVEL_INFO);
-  
-  // Number of Users
-  uint16_t m_nUser = 4;
-  // Distance
-  double distance = 600;
 
-  double speed = 10;
+  uint16_t m_nUser = 5;
+  // although this speed is meaningless in reality, it has to be large to make CQI change
+  double speed = 10000;
 
   string datarate = "20Mbps";
   uint32_t packetSize = 1200;
 
   // Set the simulation time
-  double simTime = 5.0;
+  double simTime = 3.0;
 
   // Command line arguments
   CommandLine cmd;
-  cmd.AddValue ("numberOfNodes", "Number of eNodeBs + UE pairs", m_nUser);
   cmd.AddValue ("simTime", "Total duration of the simulation [s])", simTime);
-  cmd.AddValue ("distance", "Distance between eNBs [m]", distance);
   cmd.AddValue ("datarate", "datarate", datarate);
   cmd.AddValue ("packetSize", "packetSize", packetSize);
   cmd.AddValue ("speed", "speed", speed);
-  // cmd.AddValue ("interPacketInterval", "Inter packet interval [ms])", interPacketInterval);
   cmd.Parse (argc, argv);
 
   ConfigStore inputConfig;
@@ -111,22 +105,23 @@ main (int argc, char *argv[])
   ueNodes.Create (m_nUser);
 
   // Install Mobility Model
-  Ptr<ListPositionAllocator> apPositionAlloc = CreateObject<ListPositionAllocator> ();
-  Ptr<ListPositionAllocator> staPositionAlloc = CreateObject<ListPositionAllocator> ();
-  apPositionAlloc->Add (Vector (0, 0, 25));
-  staPositionAlloc->Add (Vector (distance, 368, 1.5));
-  staPositionAlloc->Add (Vector (10, 400, 1.5));
-  staPositionAlloc->Add (Vector (10, 400, 1.5));
-  staPositionAlloc->Add (Vector (10, 400, 1.5));
-  staPositionAlloc->Add (Vector (10, 400, 1.5));
+  Ptr<ListPositionAllocator> enbPositionAlloc = CreateObject<ListPositionAllocator> ();
+  Ptr<ListPositionAllocator> uePositionAlloc = CreateObject<ListPositionAllocator> ();
+  enbPositionAlloc->Add (Vector (0, 0, 25));
+  uePositionAlloc->Add (Vector (-15000, 8000, 1.5)); // the moving ue
+  uePositionAlloc->Add (Vector (10000, 10000, 1.5)); // stable ue #1
+  uePositionAlloc->Add (Vector (-10000, 10000, 1.5)); // stable ue #2
+  uePositionAlloc->Add (Vector (-10000, -10000, 1.5)); // stable ue #3
+  uePositionAlloc->Add (Vector (10000, -10000, 1.5)); // stable ue #4
   MobilityHelper mobility;
   mobility.SetMobilityModel ("ns3::ConstantPositionMobilityModel");
-  mobility.SetPositionAllocator (apPositionAlloc);
+  mobility.SetPositionAllocator (enbPositionAlloc);
   mobility.Install (enbNodes);
   mobility.SetMobilityModel ("ns3::ConstantVelocityMobilityModel");
-  mobility.SetPositionAllocator (staPositionAlloc);
+  mobility.SetPositionAllocator (uePositionAlloc);
   mobility.Install (ueNodes);
 
+  // set speed for the moving ue
   Vector sp (speed, 0, 0);
   ueNodes.Get (0)->GetObject<ConstantVelocityMobilityModel> ()->SetVelocity (sp);
 
@@ -156,7 +151,7 @@ main (int argc, char *argv[])
   enum EpsBearer::Qci q = EpsBearer::GBR_CONV_VOICE;
   EpsBearer bearer (q);
 
-  // Attach one UE per eNodeB
+  // Attach the UEs to the eNB
   for (uint16_t i = 0; i < m_nUser; i++)
     {
       lteHelper->Attach (ueLteDevs.Get (i), enbLteDevs.Get (0));
@@ -205,7 +200,7 @@ main (int argc, char *argv[])
   /*GtkConfigStore config;
   config.ConfigureAttributes();*/
 
-  cout << "Start Simulation" << endl;
+  cout << "Begin Simulation Results" << endl;
 
   monitor->CheckForLostPackets ();
 
@@ -232,7 +227,7 @@ main (int argc, char *argv[])
 
   NS_LOG_UNCOND ("Done");
 
-  cout << "Simulation End" << endl;
+  cout << "End Simulation Results" << endl;
 
   Simulator::Destroy ();
   return 0;

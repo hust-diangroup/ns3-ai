@@ -118,8 +118,8 @@ train_data = []
 is_train = True
 CQI = 0
 delay_queue = []
-exp = Experiment(1234, 4096, 'lte_cqi', '../../')
-exp.run(show_output=0)
+exp = Experiment(1234, 4096, 'lte_cqi', '../../', using_waf=False)
+exp.run(show_output=1)
 try:
     while True:
         with dl as data:
@@ -130,7 +130,7 @@ try:
             CQI = data.feat.wbCqi
             if CQI > 15:
                 break
-            old_print("get:%d" % CQI)
+            old_print("get: %d" % CQI)
             # CQI = next(get_CQI)
             delay_queue.append(CQI)
             if len(delay_queue) < delta:
