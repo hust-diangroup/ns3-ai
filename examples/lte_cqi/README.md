@@ -105,7 +105,7 @@ pip3 install -r requirements.txt
 Run ns-3 example with two shell window:
 ```shell
 cp -r contrib/ns3-ai/examples/lte_cqi scratch/
-./waf --run "lte_cqi"
+./ns3 run lte_cqi
 ```
 Open another shell window and Run Python code:
 ```shell
