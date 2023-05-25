@@ -22,7 +22,7 @@ In `ns3ai-apb` example, C++ side sets a vector in shared memory that containes 3
 
 ```bash
 git clone https://github.com/ShenMuyuan/ns3-ai.git
-git checkout cmake origin/cmake
+git checkout -b cmake origin/cmake
 ```
 
 2. Unlike previous ns3-ai design, you don't need to move examples to scratch directory. Use `./ns3` script to build the example:
