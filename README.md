@@ -35,6 +35,7 @@ git checkout -b cmake origin/cmake
 3. Unlike previous ns3-ai design, you need to run `setup.py` to install Python module for each example.
 
 ```bash
+cd contrib/ns3ai_new/examples/a_plus_b/
 pip install . --user
 ```
 
