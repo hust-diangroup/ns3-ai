@@ -2,9 +2,9 @@
 
 ## About the new interface proposed in GSoC 2023
 
-The new interface utillizes Boost and Cython to support STL containers such as `std::vector` and `std::string` in shared memory. It is still in development and currently it does not support all platforms (I tested it on macOS). 
+The new interface utillizes Boost and Cython to support STL containers such as `std::vector` and `std::string` in shared memory. It is still in development and currently it may not support all platforms (I only tested it on macOS). 
 
-You can find the new interface in `ns3ai_new` directory.
+You can find the new interface in `ns3ai_new` directory. It should be treated as a subdirectory of `contrib`.
 
 ### Prerequisites
 
@@ -32,7 +32,8 @@ cd ../../
 2. Unlike previous ns3-ai design, you don't need to move examples to scratch directory. Use `./ns3` script to build the example:
 
 ```bash
-./ns3 configure
+./ns3 clean
+./ns3 configure --enable-examples
 ./ns3 build ns3ai-apb
 ```
 
