@@ -1,18 +1,16 @@
-set(source_files
-    model/memory-pool.cc
-)
+check_include_file_cxx(stdint.h HAVE_STDINT_H)
+if(HAVE_STDINT_H)
+    add_definitions(-DHAVE_STDINT_H)
+endif()
 
-set(header_files
-    model/memory-pool.h
-    model/train-var.h
-    model/ns3-ai-rl.h
-    model/ns3-ai-dl.h
-)
+find_package(Boost REQUIRED COMPONENTS program_options)
+include_directories(${Boost_INCLUDE_DIRS})
+
+find_package(pybind11 REQUIRED)
 
 build_lib(
-  LIBNAME ns3-ai
-  SOURCE_FILES ${source_files}
-  HEADER_FILES ${header_files}
-  LIBRARIES_TO_LINK
-    ${libcore}
+        LIBNAME ns3-ai
+        SOURCE_FILES model/ns3-ai-new-rl.cc
+        HEADER_FILES model/ns3-ai-new-rl.h
+        LIBRARIES_TO_LINK ${libcore} Boost::program_options
 )

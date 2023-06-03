@@ -2,61 +2,57 @@
 
 ## About the new interface proposed in GSoC 2023
 
-The new interface utillizes Boost and Cython to support STL containers such as `std::vector` and `std::string` in shared memory. It is still in development and currently it may not support all platforms (I only tested it on macOS). 
+Wiki page: [GSOC2023ns3-ai](https://www.nsnam.org/wiki/GSOC2023ns3-ai)
 
-You can find the new interface in `ns3ai_new` directory. It should be treated as a subdirectory of `contrib`.
+The new interface utillizes Boost C++ Library to support STL containers such as `std::vector` in shared memory. It is still in development and currently it may not support all platforms (I only tested it on macOS).
 
 ### Prerequisites
 
-You need to install Boost and Cython. Personally, I use `brew` to install Boost and `pip` to install cython (under a Conda environment).
+1. Boost C++ Library
+2. pybind11 (it's better to install under a Conda environment)
 
-**Note: Boost's include dirs and libraries are hardcoded in setup.py so you need to manually adjust them according to your installation.**
+### Available examples using the new interface
+
+- A Plus B
 
 ### A Plus B example
 
-In `ns3ai-apb` example, C++ side sets a vector in shared memory that containes 3 structures. Each structure contains 2 random numbers which can be seen as environment in RL. Python side gets the vector and compute the sum for each structure, and sets another vector in shared memory that contains the sums, which can be seen as action in RL. C++ then gets the actions and prints them. The procedure is repeated 10 times.
+In `ns3ai_apb` example, C++ side sets a vector in shared memory that containes 3 structures. Each structure contains 2 random numbers which can be seen as environment in RL. Python side gets the vector and compute the sum for each structure, and sets another vector in shared memory that contains the sums, which can be seen as action in RL. C++ then gets the actions and prints them. The procedure is repeated many times, as defined by the macro ENV_NUM on C++ side.
 
 #### Running the example
 
-1. Clone the repository under `contrib`, checkout `cmake` branch, and copy `ns3ai_new` to `contrib` (because ns3ai_new is another ns-3 module different from ns3ai)
+1. Clone the repository under `contrib`, checkout `improvements` branch
 
 ```bash
 cd contrib
 git clone https://github.com/ShenMuyuan/ns3-ai.git
 cd ns3-ai
-git checkout -b cmake origin/cmake
-cp -r ns3ai_new ../
+git checkout -b improvements origin/improvements
 cd ../../
 ```
 
-2. Unlike previous ns3-ai design, you don't need to move examples to scratch directory. Use `./ns3` script to build the example:
+2. Use `./ns3` script to build the example. This builds both C++ and Python modules. An `.so` shared library will be placed in the example directory, which can be imported by Python.
 
 ```bash
 ./ns3 clean
 ./ns3 configure --enable-examples
-./ns3 build ns3ai-apb
+./ns3 build ns3ai_apb
 ```
 
-3. Unlike previous ns3-ai design, you need to run `setup.py` to install Python module for each example.
+3. Run the example. You must run Python side first because Python script is the shared memory creator.
 
 ```bash
-cd contrib/ns3ai_new/examples/a_plus_b/
-pip install . --user
-```
-
-4. Run Python script first (because Python script is the shared memory creator).
-
-```bash
+cd contrib/ns3-ai/examples/a_plus_b
 python apb.py
 ```
 
-5. Next, in another terminal, run C++ program.
+4. Open another terminal and run C++ program.
 
 ```bash
-./ns3 run ns3ai-apb
+./ns3 run ns3ai_apb
 ```
 
-6. You should see output like this on C++ side (the numbers are random):
+5. You should see output like this on C++ side. The numbers are random, we only care about the sum.
 
 ```
 CPP env to set: 2,5;5,6;2,5;
@@ -65,21 +61,10 @@ CPP env to set: 10,10;7,7;6,8;
 Get act: 20;14;14;
 CPP env to set: 10,10;4,8;2,7;
 Get act: 20;12;9;
-CPP env to set: 1,7;2,8;5,6;
-Get act: 8;10;11;
-CPP env to set: 7,6;5,5;7,6;
-Get act: 13;10;13;
-CPP env to set: 1,1;7,6;6,7;
-Get act: 2;13;13;
-CPP env to set: 3,2;3,3;5,9;
-Get act: 5;6;14;
-CPP env to set: 2,7;8,10;7,3;
-Get act: 9;18;10;
-CPP env to set: 7,5;4,6;6,2;
-Get act: 12;10;8;
-CPP env to set: 3,3;7,3;1,4;
-Get act: 6;10;5;
+......
 ```
+
+# Original README:
 
 ## Online Tutorial:
 Join us in this [online recording](https://vimeo.com/566296651) to get better knowledge about ns3-ai! The slides introduce the ns3-ai model could also be found [here](https://www.nsnam.org/wp-content/uploads/2021/tutorials/ns3-ai-tutorial-June-2021.pdf)! 
