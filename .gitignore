@@ -1,6 +1,7 @@
 
 .vscode
 build
+__pycache__
 # Prerequisites
 *.d
 

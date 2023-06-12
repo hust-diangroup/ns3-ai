@@ -19,76 +19,84 @@
 #         Hao Yin <haoyin@uw.edu>
 
 import copy
-from ctypes import *
+# from ctypes import *
+# from typing import List
+# import numpy as np
+# from py_interface import *
+
 from typing import List
-
 import numpy as np
-from py_interface import *
 
+import sys
+sys.path.append("../../../utils")
+import ns3_util
+import ns3ai_ratecontrol_ts_py as ts
 
-class ThompsonSamplingRateStats(Structure):
-    _pack_ = 1
-    _fields_ = [
-        ('nss', c_uint8),
-        ('channelWidth', c_uint16),
-        ('guardInterval', c_uint16),
-        ('dataRate', c_uint64),
-        ('success', c_double),
-        ('fails', c_double),
-        ('lastDecay', c_double)  # Time
-    ]
-
-
-class AiThompsonSamplingEnvDecay(Structure):
-    _pack_ = 1
-    _fields_ = [
-        ('decayIdx', c_int8),
-        ('decay', c_double),
-        ('now', c_double)  # Time
-    ]
-
-
-class AiThompsonSamplingEnvPayload(Union):
-    _pack_ = 1
-    _fields_ = [
-        ('addr', c_void_p),
-        ('stats', ThompsonSamplingRateStats * 64),
-        ('decay', AiThompsonSamplingEnvDecay)
-    ]
-
-
-class AiThompsonSamplingEnv(Structure):
-    _pack_ = 1
-    _anonymous_ = ['data']
-    _fields_ = [
-        ('type', c_int8),
-        ('managerId', c_int8),
-        ('stationId', c_int8),
-        ('var', c_uint64),
-        ('data', AiThompsonSamplingEnvPayload)
-    ]
-
-
-class AiThompsonSamplingAct(Structure):
-    _pack_ = 1
-    _fields_ = [
-        ('managerId', c_int8),
-        ('stationId', c_int8),
-        ('res', c_uint64),
-        ('stats', ThompsonSamplingRateStats)
-    ]
+#
+# class ThompsonSamplingRateStats(Structure):
+#     _pack_ = 1
+#     _fields_ = [
+#         ('nss', c_uint8),
+#         ('channelWidth', c_uint16),
+#         ('guardInterval', c_uint16),
+#         ('dataRate', c_uint64),
+#         ('success', c_double),
+#         ('fails', c_double),
+#         ('lastDecay', c_double)  # Time
+#     ]
+#
+#
+# class AiThompsonSamplingEnvDecay(Structure):
+#     _pack_ = 1
+#     _fields_ = [
+#         ('decayIdx', c_int8),
+#         ('decay', c_double),
+#         ('now', c_double)  # Time
+#     ]
+#
+#
+# class AiThompsonSamplingEnvPayload(Union):
+#     _pack_ = 1
+#     _fields_ = [
+#         ('addr', c_void_p),
+#         ('stats', ThompsonSamplingRateStats * 64),
+#         ('decay', AiThompsonSamplingEnvDecay)
+#     ]
+#
+#
+# class AiThompsonSamplingEnv(Structure):
+#     _pack_ = 1
+#     _anonymous_ = ['data']
+#     _fields_ = [
+#         ('type', c_int8),
+#         ('managerId', c_int8),
+#         ('stationId', c_int8),
+#         ('var', c_uint64),
+#         ('data', AiThompsonSamplingEnvPayload)
+#     ]
+#
+#
+# class AiThompsonSamplingAct(Structure):
+#     _pack_ = 1
+#     _fields_ = [
+#         ('managerId', c_int8),
+#         ('stationId', c_int8),
+#         ('res', c_uint64),
+#         ('stats', ThompsonSamplingRateStats)
+#     ]
 
 
 class AiThompsonSamplingStation:
     _id = -1
-    _addr = 0
+    # _addr = 0
     m_nextMode: int = 0
     m_lastMode: int = 0
-    m_mcsStats: List[ThompsonSamplingRateStats]
+    m_mcsStats: List[ts.ThompsonSamplingRateStats]
 
-    def __init__(self, id=-1, addr=0) -> None:
+    # def __init__(self, id=-1, addr=0) -> None:
+    def __init__(self, id=-1) -> None:
         self._id = id
-        self._addr = addr
+        # self._addr = addr
         self.m_mcsStats = []
 
     def Decay(self, decayIdx, decay, now) -> None:
@@ -124,12 +132,13 @@ class AiThompsonSamplingStation:
 
 class AiThompsonSamplingManager:
     _id = -1
-    _addr = 0
+    # _addr = 0
     m_gammaRandomVariable = np.random.RandomState()
 
-    def __init__(self, id=-1, stream=1, addr=0) -> None:
+    # def __init__(self, id=-1, stream=1, addr=0) -> None:
+    def __init__(self, id=-1, stream=1) -> None:
         self._id = id
-        self._addr = addr
+        # self._addr = addr
         self.m_gammaRandomVariable = np.random.RandomState(seed=stream)
 
     def SampleBetaVariable(self, alpha, beta):
@@ -162,56 +171,61 @@ class AiThompsonSamplingContainer:
     wifiStation: List[AiThompsonSamplingStation] = []
 
     def __init__(self, uid=2333, stream=1) -> None:
-        self.rl = Ns3AIRL(uid, AiThompsonSamplingEnv, AiThompsonSamplingAct)
+        self.rl = ts.NS3AIRL(4096, True, "My Seg", "My Env", "My Act", "My Lockable")
         self.default_stream = stream
-        print('({})size: Env {} Act {}'.format(uid, sizeof(AiThompsonSamplingEnv), sizeof(AiThompsonSamplingAct)))
+        # print('({})size: Env {} Act {}'.format(uid, sizeof(AiThompsonSamplingEnv), sizeof(AiThompsonSamplingAct)))
         pass
 
     def __del__(self):
-        if not self.rl.finished:
-            self.rl.Release()
+        del self.rl
 
-    def do(self, env: AiThompsonSamplingEnv, act: AiThompsonSamplingAct) -> AiThompsonSamplingAct:
+    # get action
+    def do(self, env: ts.PyEnvStruct, act: ts.PyActStruct) -> ts.PyActStruct:
         if env.type == 0x01:  # AiThompsonSamplingWifiManager
-            id = len(self.wifiManager)
-            self.wifiManager.append(AiThompsonSamplingManager(addr=env.addr, id=id, stream=self.default_stream))
-            act.managerId = c_int8(id)
+            n_manager = len(self.wifiManager)
+            # self.wifiManager.append(AiThompsonSamplingManager(addr=env.addr, id=n_manager, stream=self.default_stream))
+            self.wifiManager.append(AiThompsonSamplingManager(id=n_manager, stream=self.default_stream))
+            act.managerId = n_manager
 
         elif env.type == 0x02:  # DoCreateStation
-            id = len(self.wifiStation)
-            # print('{} > {} new sta {} @ {}'.format(env.managerId, env.type, id, env.addr))
-            self.wifiStation.append(AiThompsonSamplingStation(addr=env.addr, id=id))
-            act.stationId = c_int8(id)
+            n_station = len(self.wifiStation)
+            # print('{} > {} new sta {} @ {}'.format(env.managerId, env.type, n_station, env.addr))
+            # print('{} > {} new sta {}'.format(env.managerId, env.type, n_station))
+            # self.wifiStation.append(AiThompsonSamplingStation(addr=env.addr, id=n_station))
+            self.wifiStation.append(AiThompsonSamplingStation(id=n_station))
+            act.stationId = n_station
 
         elif env.type == 0x03:  # InitializeStation
             sta = self.wifiStation[env.stationId]
             for i in range(64):
-                if env.stats[i].lastDecay < 0:
+                if env.data.stats[i].lastDecay < 0:
                     break
-                sta.m_mcsStats.append(copy.deepcopy(env.stats[i]))
+                sta.m_mcsStats.append(copy.copy(env.data.stats[i]))
+                # print("SMY: in do, appending mcsstats: get i={}, nss={}, channel width={}, interval={}".
+                #       format(i, env.data.stats[i].nss, env.data.stats[i].channelWidth, env.data.stats[i].guardInterval))
             # print('{} > {} sta {} msc {}'.format(env.managerId, env.type, env.stationId, len(sta.m_mcsStats)))
             act.stationId = env.stationId  # only for check
 
         elif env.type == 0x04:  # Decay
             # print('{} > {} sta {}/{}'.format(env.managerId, env.type, env.stationId, len(self.wifiStation)))
             sta = self.wifiStation[env.stationId]
-            sta.Decay(env.decay.decayIdx, env.decay.decay, env.decay.now)
+            sta.Decay(env.data.decay.decayIdx, env.data.decay.decay, env.data.decay.now)
             act.stationId = env.stationId  # only for check
 
         elif env.type == 0x05:  # DoReportDataFailed
             # print('{} > {} sta {} failed'.format(env.managerId, env.type, env.stationId))
             man = self.wifiManager[env.managerId]
             sta = self.wifiStation[env.stationId]
-            sta.DoReportDataFailed(env.decay.decay, env.decay.now)
-            man.UpdateNextMode(sta, env.decay.decay, env.decay.now)
+            sta.DoReportDataFailed(env.data.decay.decay, env.data.decay.now)
+            man.UpdateNextMode(sta, env.data.decay.decay, env.data.decay.now)
             act.stationId = env.stationId  # only for check
 
         elif env.type == 0x06:  # DoReportDataOk
             # print('{} > {} sta {} ok'.format(env.managerId, env.type, env.stationId))
             man = self.wifiManager[env.managerId]
             sta = self.wifiStation[env.stationId]
-            sta.DoReportDataOk(env.decay.decay, env.decay.now)
-            man.UpdateNextMode(sta, env.decay.decay, env.decay.now)
+            sta.DoReportDataOk(env.data.decay.decay, env.data.decay.now)
+            man.UpdateNextMode(sta, env.data.decay.decay, env.data.decay.now)
             act.stationId = env.stationId  # only for check
 
         elif env.type == 0x07:  # DoReportAmpduTxStatus
@@ -220,51 +234,65 @@ class AiThompsonSamplingContainer:
             successful = env.var >> 32
             failed = env.var & 0xffffffff
             # print('{} > {} sta {} ampdu {}/{}'.format(env.managerId, env.type, env.stationId, successful, failed))
-            sta.DoReportAmpduTxStatus(env.decay.decay, env.decay.now, successful, failed)
-            man.UpdateNextMode(sta, env.decay.decay, env.decay.now)
+            sta.DoReportAmpduTxStatus(env.data.decay.decay, env.data.decay.now, successful, failed)
+            man.UpdateNextMode(sta, env.data.decay.decay, env.data.decay.now)
             act.stationId = env.stationId  # only for check
 
         elif env.type == 0x08:  # DoGetDataTxVector
             sta = self.wifiStation[env.stationId]
             act.res = sta.m_nextMode
+            # print("SMY: in do: act.res set to next mode, which is {}".format(act.res))
             act.stats = sta.m_mcsStats[sta.m_nextMode]
+            # print("SMY: in do: act.stats.nss set to {}".format(act.stats.nss))
             sta.m_lastMode = sta.m_nextMode
-            # print('{} > {} sta {} dv {}/{} {}'.format(env.managerId, env.type, env.stationId, act.res, len(sta.m_mcsStats)))
+            # print('{} > {} sta {} dv {}/{}'.
+            #       format(env.managerId, env.type, env.stationId, act.res, len(sta.m_mcsStats)))
 
         elif env.type == 0x09:  # DoGetRtsTxVector
             sta = self.wifiStation[env.stationId]
             act.res = 0
+            # print("SMY: in do: act.res set to 0")
             act.stats = sta.m_mcsStats[0]
+            # print("SMY: in do: act.stats.nss set to {}".format(act.stats.nss))
 
         elif env.type == 0x0a:  # UpdateNextMode
-            # print('{} > {} sta {} up {}, {}'.format(env.managerId, env.type, env.stationId, env.decay.decay, env.decay.now))
+            # print('{} > {} sta {} up {}, {}'.
+            #       format(env.managerId, env.type, env.stationId, env.data.decay.decay, env.data.decay.now))
             man = self.wifiManager[env.managerId]
             sta = self.wifiStation[env.stationId]
-            man.UpdateNextMode(sta, env.decay.decay, env.decay.now)
+            man.UpdateNextMode(sta, env.data.decay.decay, env.data.decay.now)
             act.stationId = env.stationId  # only for check
 
         return act
 
 
 if __name__ == '__main__':
-    ns3Settings = {'raa': 'AiThompsonSampling', 'nWifi': 3, 'standard': '11ac', 'duration': 5}
-    mempool_key = 1234 # memory pool key, arbitrary integer large than 1000
-    mem_size = 4096 # memory pool size in bytes
-    exp = Experiment(mempool_key, mem_size, 'rate-control', '../../', using_waf=False)
-    exp.reset()
+    # ns3Settings = {'raa': 'AiThompsonSampling', 'nWifi': 3, 'standard': '11ac', 'duration': 5}
+    # mempool_key = 1234 # memory pool key, arbitrary integer large than 1000
+    # mem_size = 4096 # memory pool size in bytes
+    # exp = Experiment(mempool_key, mem_size, 'rate-control', '../../', using_waf=False)
+    # exp.reset()
 
-    memblock_key = 2333 # memory block key in the memory pool, arbitrary integer, and need to keep the same in the ns-3 script
+    # memblock_key = 2333 # memory block key in the memory pool, arbitrary integer, and need to keep the same in the ns-3 script
     random_stream = 100
-    c = AiThompsonSamplingContainer(memblock_key, random_stream)
+    c = AiThompsonSamplingContainer(stream=random_stream)
 
-    pro = exp.run(setting=ns3Settings, show_output=True)
-    print("run rate-control", ns3Settings)
-    while not c.rl.isFinish():
-        with c.rl as data:
-            if data == None:
-                break
-            data.act = c.do(data.env, data.act)
-            pass
-    
-    pro.wait()
-    del exp
+    myenvs = ts.PyEnvVector()
+    myacts = ts.PyActVector()
+    temp_env = ts.PyEnvStruct()
+    temp_act = ts.PyActStruct()
+
+    # pro = exp.run(setting=ns3Settings, show_output=True)
+    # print("run rate-control", ns3Settings)
+    while True:
+        myacts.clear()
+        c.rl.get_env(myenvs)
+        if c.rl.is_finished():
+            break
+        temp_env = myenvs[0]
+        temp_act = c.do(temp_env, temp_act)
+        myacts.append(temp_act)
+        # print("SMY: before set_act: act.res set to {}".format(myacts[0].res))
+        c.rl.set_act(myacts)
+
+    del c
