@@ -253,7 +253,8 @@ class Experiment:
     # \param[in] memSize : share memory size
     # \param[in] programName : program name of ns3
     # \param[in] path : current working directory
-    def __init__(self, shmKey, memSize, programName, path):
+    # \param[in] no_build : if specified, start out with self.dirty = False (i.e. don't build at startup)
+    def __init__(self, shmKey, memSize, programName, path, no_build=False):
         if self._created:
             raise Exception('Experiment is singleton')
         self._created = True
@@ -262,7 +263,7 @@ class Experiment:
         self.programName = programName
         self.path = path
         self.proc = None
-        self.dirty = True
+        self.dirty = not no_build
         Init(shmKey, memSize)
 
     def __del__(self):
