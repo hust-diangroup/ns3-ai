@@ -79,23 +79,38 @@ From `ai_thompson_sampling.py`:
 
 ## Build and run
 
-Copy this example to scratch:
+### Clone and build the example
 
 ```shell
-cp -r contrib/ns3-ai/examples/rate-control scratch/
-cd scratch/rate-control
+cd contrib
+git clone https://github.com/ShenMuyuan/ns3-ai.git
+cd ns3-ai
+git checkout -b improvements origin/improvements
+cd ../../
+./ns3 clean
+./ns3 configure --enable-examples
+./ns3 build ns3ai_ratecontrol
 ```
 
-### 1. Constant Rate Control
+### Running Constant Rate Control
 
 ```shell
-python3 ai_constant_rate.py
+# TODO
 ```
 
-### 2. Thompson Sampling Rate Control
+### Running Thompson Sampling Rate Control
+
+- On one terminal:
 
 ```shell
-python3 ai_thompson_sampling.py
+cd contrib/ns3-ai/examples/rate-control/thompson-sampling
+python ai_thompson_sampling.py
+```
+
+- On another:
+
+```shell
+./ns3 run ns3ai_ratecontrol
 ```
 
 ## Output
