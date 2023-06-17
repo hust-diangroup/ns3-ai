@@ -158,8 +158,8 @@ class AiThompsonSamplingWifiManager : public WifiRemoteStationManager
     //  uint16_t m_ns3ai_id;
 //    NS3AIRL<AiThompsonSamplingEnv, AiThompsonSamplingAct> *m_ns3ai_mod;
     int8_t m_ns3ai_manager_id;
-    std::vector<AiThompsonSamplingEnvStruct> *m_temp_env;
-    std::vector<AiThompsonSamplingActStruct> *m_temp_act;
+//    std::vector<AiThompsonSamplingEnvStruct> *m_temp_env;
+//    std::vector<AiThompsonSamplingActStruct> *m_temp_act;
 };
 
 } // namespace ns3

@@ -5,8 +5,8 @@
 #include <vector>
 #include <string>
 #include <cstddef>
+#include <boost/interprocess/managed_shared_memory.hpp>
 #include <boost/interprocess/containers/vector.hpp>
-#include <boost/interprocess/containers/string.hpp>
 #include <boost/interprocess/allocators/allocator.hpp>
 
 #include "sh_mem.h"
@@ -28,116 +28,96 @@ class NS3AIRL
     ~NS3AIRL();
 
     // for C++ side:
-    void set_env(std::vector<EnvType> &env);
-    void get_act(std::vector<ActType> &act);
+    void set_env_begin();
+    void set_env_end();
+    void get_act_begin();
+    void get_act_end();
 
     // for Python side:
-    void get_env(std::vector<EnvType> &env);
-    void set_act(std::vector<ActType> &act);
+    void get_env_begin();
+    void get_env_end();
+    void set_act_begin();
+    void set_act_end();
     bool is_finished();
 
-  private:
+    // data
     typedef boost::interprocess::allocator<EnvType, boost::interprocess::managed_shared_memory::segment_manager>  ShmemEnvAllocator;
-    typedef boost::interprocess::vector<EnvType, ShmemEnvAllocator> MyEnvVector;
+    typedef boost::interprocess::vector<EnvType, ShmemEnvAllocator> ShmemEnvVector;
     typedef boost::interprocess::allocator<ActType, boost::interprocess::managed_shared_memory::segment_manager>  ShmemActAllocator;
-    typedef boost::interprocess::vector<ActType, ShmemActAllocator> MyActVector;
-    void set_finished();    // for C++ side
+    typedef boost::interprocess::vector<ActType, ShmemActAllocator> ShmemActVector;
+    ShmemEnvVector *m_env;
+    ShmemActVector *m_act;
+
+  private:
+    void set_finished();    // for C++ side when exiting
+    RlShMemLockable *m_lockable;
     bool m_isCreator;
     bool m_isFinished;
     std::string m_segName;
-    MyEnvVector *m_env;
-    MyActVector *m_act;
-    RlShMemLockable *m_lockable;
 };
 
-template<typename EnvType, typename ActType>
-void NS3AIRL<EnvType, ActType>::set_env(std::vector<EnvType> &env) {
-    using namespace boost::interprocess;
-    scoped_lock<interprocess_mutex> env_lock(m_lockable->env_mutex);
-    if (m_lockable->env_in) {
-        m_lockable->cond_env_empty_for_cpp.wait(env_lock);
-    }
-
-    for (EnvType i : env) {
-        m_env->push_back(i);
-    }
-
-    //Notify to Python that a env is produced
-    m_lockable->cond_env_avail_for_python.notify_one();
-    m_lockable->env_in = true;
+template <typename EnvType, typename ActType>
+void
+NS3AIRL<EnvType, ActType>::set_env_begin()
+{
+    RlShMemLockable::sem_wait(&m_lockable->m_empty_env_count);
 }
 
-template<typename EnvType, typename ActType>
-void NS3AIRL<EnvType, ActType>::get_act(std::vector<ActType> &act) {
-    using namespace boost::interprocess;
-    scoped_lock<interprocess_mutex> act_lock(m_lockable->act_mutex);
-    if (!m_lockable->act_in) {
-        m_lockable->cond_act_avail_for_cpp.wait(act_lock);
-    }
+template <typename EnvType, typename ActType>
+void
+NS3AIRL<EnvType, ActType>::set_env_end()
+{
+    RlShMemLockable::sem_post(&m_lockable->m_full_env_count);
+}
 
-    act.clear();
-    for (ActType j : *m_act) {
-        act.push_back(j);
-    }
-    m_act->clear();
+template <typename EnvType, typename ActType>
+void
+NS3AIRL<EnvType, ActType>::get_act_begin()
+{
+    RlShMemLockable::sem_wait(&m_lockable->m_full_act_count);
+}
 
-    //Notify to Python that an act is consumed
-    m_lockable->cond_act_empty_for_python.notify_one();
-    m_lockable->act_in = false;
+template <typename EnvType, typename ActType>
+void
+NS3AIRL<EnvType, ActType>::get_act_end()
+{
+    RlShMemLockable::sem_post(&m_lockable->m_empty_act_count);
 }
 
 template<typename EnvType, typename ActType>
 void NS3AIRL<EnvType, ActType>::set_finished() {
-    using namespace boost::interprocess;
-    scoped_lock<interprocess_mutex> env_lock(m_lockable->env_mutex);
-    if (m_lockable->env_in) {
-        m_lockable->cond_env_empty_for_cpp.wait(env_lock);
-    }
-
+    RlShMemLockable::sem_wait(&m_lockable->m_empty_env_count);
     m_lockable->m_isFinished = true;
-
-    //Notify to Python that a env is produced
-    m_lockable->cond_env_avail_for_python.notify_one();
-    m_lockable->env_in = true;
+    RlShMemLockable::sem_post(&m_lockable->m_full_env_count);
 }
 
-template<typename EnvType, typename ActType>
-void NS3AIRL<EnvType, ActType>::get_env(std::vector<EnvType> &env) {
-    using namespace boost::interprocess;
-    scoped_lock<interprocess_mutex> env_lock(m_lockable->env_mutex);
-    if (!m_lockable->env_in){
-        m_lockable->cond_env_avail_for_python.wait(env_lock);
-    }
-
-    env.clear();
-    for (EnvType i : *m_env) {
-        env.push_back(i);
-    }
-    m_env->clear();
-
-    // get whether C++ side finished
-    m_isFinished =  m_lockable->m_isFinished;
-
-    //Notify to C++ that a env is consumed
-    m_lockable->cond_env_empty_for_cpp.notify_one();
-    m_lockable->env_in = false;
+template <typename EnvType, typename ActType>
+void
+NS3AIRL<EnvType, ActType>::get_env_begin()
+{
+    RlShMemLockable::sem_wait(&m_lockable->m_full_env_count);
+    m_isFinished = m_lockable->m_isFinished;
 }
 
-template<typename EnvType, typename ActType>
-void NS3AIRL<EnvType, ActType>::set_act(std::vector<ActType> &act) {
-    using namespace boost::interprocess;
-    scoped_lock<interprocess_mutex> act_lock(m_lockable->act_mutex);
-    if (m_lockable->act_in){
-        m_lockable->cond_act_empty_for_python.wait(act_lock);
-    }
+template <typename EnvType, typename ActType>
+void
+NS3AIRL<EnvType, ActType>::get_env_end()
+{
+    RlShMemLockable::sem_post(&m_lockable->m_empty_env_count);
+}
 
-    for (ActType i : act) {
-        m_act->push_back(i);
-    }
+template <typename EnvType, typename ActType>
+void
+NS3AIRL<EnvType, ActType>::set_act_begin()
+{
+    RlShMemLockable::sem_wait(&m_lockable->m_empty_act_count);
+}
 
-    //Notify to C++ that an action is produced
-    m_lockable->cond_act_avail_for_cpp.notify_one();
-    m_lockable->act_in = true;
+template <typename EnvType, typename ActType>
+void
+NS3AIRL<EnvType, ActType>::set_act_end()
+{
+    RlShMemLockable::sem_post(&m_lockable->m_full_act_count);
 }
 
 template<typename EnvType, typename ActType>
@@ -172,15 +152,15 @@ NS3AIRL<EnvType, ActType>::NS3AIRL(uint32_t size,
         static managed_shared_memory segment(create_only, m_segName.c_str(), size);
         static const ShmemEnvAllocator alloc_env(segment.get_segment_manager());
         static const ShmemEnvAllocator alloc_act(segment.get_segment_manager());
-        m_env = segment.construct<MyEnvVector>(env_name)(alloc_env);
-        m_act = segment.construct<MyActVector>(act_name)(alloc_act);
+        m_env = segment.construct<ShmemEnvVector>(env_name)(alloc_env);
+        m_act = segment.construct<ShmemActVector>(act_name)(alloc_act);
         m_lockable = segment.construct<RlShMemLockable>(lockable_name)();
     }
     else
     {
         static managed_shared_memory segment(open_only, segment_name);
-        m_env = segment.find<MyEnvVector>(env_name).first;
-        m_act = segment.find<MyActVector>(act_name).first;
+        m_env = segment.find<ShmemEnvVector>(env_name).first;
+        m_act = segment.find<ShmemActVector>(act_name).first;
         m_lockable = segment.find<RlShMemLockable>(lockable_name).first;
     }
 }

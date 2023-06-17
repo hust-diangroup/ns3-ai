@@ -1,33 +1,65 @@
 #ifndef SH_MEM_H
 #define SH_MEM_H
 
-#include <boost/interprocess/sync/interprocess_mutex.hpp>
-#include <boost/interprocess/sync/interprocess_condition.hpp>
 #include <boost/interprocess/managed_shared_memory.hpp>
+#include <boost/interprocess/sync/interprocess_semaphore.hpp>
+
+#define noop
 
 struct RlShMemLockable
 {
 
-    explicit RlShMemLockable()
-        : env_in(false), act_in(false), m_isFinished(false)
-    {}
+    explicit RlShMemLockable() = default;
 
-    //Mutex to protect access to the vector
-    boost::interprocess::interprocess_mutex      env_mutex;
-    boost::interprocess::interprocess_mutex      act_mutex;
+    static inline uint8_t atomic_read8(const volatile uint8_t *mem) {
+        uint8_t old_val = *mem;
+        __sync_synchronize();
+        return old_val;
+    }
 
-    //Conditions to wait
-    boost::interprocess::interprocess_condition  cond_env_avail_for_python;
-    boost::interprocess::interprocess_condition  cond_env_empty_for_cpp;
-    boost::interprocess::interprocess_condition  cond_act_avail_for_cpp;
-    boost::interprocess::interprocess_condition  cond_act_empty_for_python;
+    static inline uint8_t atomic_cas8(volatile uint8_t *mem, uint8_t with, uint8_t cmp) {
+        return __sync_val_compare_and_swap(const_cast<uint8_t *>(mem), cmp, with);
+    }
 
-    //Is there any message
-    bool env_in;
-    bool act_in;
+    static inline uint8_t atomic_add8(volatile uint8_t *mem, uint8_t val) {
+        return __sync_fetch_and_add(const_cast<uint8_t *>(mem), val);
+    }
+
+    static inline bool atomic_add_unless8(volatile uint8_t *mem, uint8_t value, uint8_t unless_this) {
+        uint8_t old;
+        uint8_t c(atomic_read8(mem));
+        while(c != unless_this && (old = atomic_cas8(mem, c + value, c)) != c){
+            c = old;
+        }
+        return c != unless_this;
+    }
+
+    static inline bool sem_try_wait(volatile uint8_t *mem) {
+        return atomic_add_unless8(mem, -1, 0);
+    }
+
+    static inline void sem_wait(volatile uint8_t *mem) {
+        if (!sem_try_wait(mem)) {
+            do {
+                if (sem_try_wait(mem)) {
+                    break;
+                }
+            } while (true);
+        }
+    }
+
+    static inline uint8_t sem_post(volatile uint8_t *mem) {
+        return atomic_add8(mem, 1);
+    }
+
+    volatile uint8_t m_empty_env_count{1};
+    volatile uint8_t m_full_env_count{0};
+    volatile uint8_t m_empty_act_count{1};
+    volatile uint8_t m_full_act_count{0};
 
     //Is communication finished
-    bool m_isFinished;
+    bool m_isFinished{false};
 };
+
 
 #endif // SH_MEM_H

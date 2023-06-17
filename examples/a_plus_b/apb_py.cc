@@ -1,3 +1,4 @@
+#include <iostream>
 #include <pybind11/pybind11.h>
 #include <pybind11/stl_bind.h>
 
@@ -6,8 +7,10 @@
 
 namespace py = pybind11;
 
-PYBIND11_MAKE_OPAQUE(std::vector<EnvStruct>);
-PYBIND11_MAKE_OPAQUE(std::vector<ActStruct>);
+PYBIND11_MAKE_OPAQUE(EnvStruct);
+PYBIND11_MAKE_OPAQUE(ActStruct);
+PYBIND11_MAKE_OPAQUE(ns3::NS3AIRL<EnvStruct, ActStruct>::ShmemEnvVector);
+PYBIND11_MAKE_OPAQUE(ns3::NS3AIRL<EnvStruct, ActStruct>::ShmemActVector);
 
 PYBIND11_MODULE(ns3ai_apb_py, m) {
 
@@ -20,14 +23,46 @@ PYBIND11_MODULE(ns3ai_apb_py, m) {
         .def(py::init<>())
         .def_readwrite("c", &ActStruct::act_c);
 
-    py::bind_vector<std::vector<EnvStruct>>(m, "PyEnvVector");
-    py::bind_vector<std::vector<ActStruct>>(m, "PyActVector");
+    py::class_<ns3::NS3AIRL<EnvStruct, ActStruct>::ShmemEnvVector>(m, "PyEnvVector")
+        .def("resize", static_cast
+             <void (ns3::NS3AIRL<EnvStruct, ActStruct>::ShmemEnvVector::*)
+                  (ns3::NS3AIRL<EnvStruct, ActStruct>::ShmemEnvVector::size_type, const EnvStruct&)>
+             (&ns3::NS3AIRL<EnvStruct, ActStruct>::ShmemEnvVector::resize))
+        .def("__len__", &ns3::NS3AIRL<EnvStruct, ActStruct>::ShmemEnvVector::size)
+        .def("__getitem__", [](ns3::NS3AIRL<EnvStruct, ActStruct>::ShmemEnvVector &vec, int i) -> EnvStruct & {
+            if (i < 0 || i >= vec.size()) {
+                std::cerr << "Invalid index " << i << " for vector, whose size is " << vec.size() << std::endl;
+                exit(1);
+            }
+            return vec.at(i);
+        }, py::return_value_policy::reference)
+        ;
+
+    py::class_<ns3::NS3AIRL<EnvStruct, ActStruct>::ShmemActVector>(m, "PyActVector")
+        .def("resize", static_cast
+             <void (ns3::NS3AIRL<EnvStruct, ActStruct>::ShmemActVector::*)
+                  (ns3::NS3AIRL<EnvStruct, ActStruct>::ShmemActVector::size_type, const ActStruct &)>
+             (&ns3::NS3AIRL<EnvStruct, ActStruct>::ShmemActVector::resize))
+        .def("__len__", &ns3::NS3AIRL<EnvStruct, ActStruct>::ShmemActVector::size)
+        .def("__getitem__", [](ns3::NS3AIRL<EnvStruct, ActStruct>::ShmemActVector &vec, int i) -> ActStruct & {
+            if (i < 0 || i >= vec.size()) {
+                std::cerr << "Invalid index " << i << " for vector, whose size is " << vec.size() << std::endl;
+                exit(1);
+            }
+            return vec.at(i);
+        }, py::return_value_policy::reference)
+        ;
 
     py::class_<ns3::NS3AIRL<EnvStruct, ActStruct>>(m, "NS3AIRL")
         .def(py::init<uint32_t, bool, const char*, const char*, const char*, const char*>())
-        .def("get_env", &ns3::NS3AIRL<EnvStruct, ActStruct>::get_env)
-        .def("set_act", &ns3::NS3AIRL<EnvStruct, ActStruct>::set_act)
-        .def("is_finished", &ns3::NS3AIRL<EnvStruct, ActStruct>::is_finished);
+        .def("get_env_begin", &ns3::NS3AIRL<EnvStruct, ActStruct>::get_env_begin)
+        .def("get_env_end", &ns3::NS3AIRL<EnvStruct, ActStruct>::get_env_end)
+        .def("set_act_begin", &ns3::NS3AIRL<EnvStruct, ActStruct>::set_act_begin)
+        .def("set_act_end", &ns3::NS3AIRL<EnvStruct, ActStruct>::set_act_end)
+        .def("is_finished", &ns3::NS3AIRL<EnvStruct, ActStruct>::is_finished)
+        .def_readwrite("m_env", &ns3::NS3AIRL<EnvStruct, ActStruct>::m_env)
+        .def_readwrite("m_act", &ns3::NS3AIRL<EnvStruct, ActStruct>::m_act)
+        ;
 
 }
 

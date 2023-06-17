@@ -34,7 +34,7 @@ namespace ns3
 
 NS3AIRL<AiThompsonSamplingEnvStruct, AiThompsonSamplingActStruct> m_ns3ai_mod =
     NS3AIRL<AiThompsonSamplingEnvStruct, AiThompsonSamplingActStruct>(4096);
-//bool ns3ai_initialized = false;
+bool ns3ai_initialized = false;
 
 /**
  * A structure containing parameters of a single rate and its
@@ -46,13 +46,6 @@ struct AiRateStats
     uint16_t channelWidth; ///< channel width in MHz
     uint8_t nss;           ///< Number of spatial streams
 };
-
-// GlobalValue gNS3AIRLUID (
-//   "NS3AIRLUID",
-//   "UID of Ns3AIRL",
-//   UintegerValue (2333),
-//   MakeUintegerChecker<uint16_t> ()
-//);
 
 /**
  * Holds station state and collected statistics.
@@ -112,34 +105,21 @@ AiThompsonSamplingWifiManager::AiThompsonSamplingWifiManager()
     act_struct.res = 0;
     act_struct.stats = zero_stats;
 
-    //  UintegerValue uv;
-    //  gNS3AIRLUID.GetValue (uv);
-    //  m_ns3ai_id = uv.Get ();
-    //  NS_LOG_UNCOND("m_ns3ai_id" << m_ns3ai_id);
-//    if (!ns3ai_initialized) {
-//        m_ns3ai_mod = NS3AIRL<AiThompsonSamplingEnv, AiThompsonSamplingAct>(4096);
-//        ns3ai_initialized = true;
-//    }
-    m_temp_env = new std::vector<AiThompsonSamplingEnvStruct>();
-    m_temp_act = new std::vector<AiThompsonSamplingActStruct>();
-    m_temp_env->push_back(env_struct);
-    m_temp_act->push_back(act_struct);
-    //  m_ns3ai_mod.SetCond (2, 0);
-    //
-    //  // set input, type 0x01
-    //  auto env = m_ns3ai_mod.EnvSetterCond ();
-    //  env->type = 0x01;
-    //  env->data.addr = static_cast<void *> (this);
-    //  m_ns3ai_mod.SetCompleted ();
-    m_temp_env->at(0).type = 0x01;
-    m_ns3ai_mod.set_env(*m_temp_env);
-    //
-    //  // get output
-    //  auto act = m_ns3ai_mod.ActionGetterCond ();
-    //  m_ns3ai_manager_id = act->managerId;
-    //  m_ns3ai_mod.GetCompleted ();
-    m_ns3ai_mod.get_act(*m_temp_act);
-    m_ns3ai_manager_id = m_temp_act->at(0).managerId;
+    if (!ns3ai_initialized) {
+        NS_ASSERT(m_ns3ai_mod.m_env->empty());
+        m_ns3ai_mod.m_env->resize(1, env_struct);
+        NS_ASSERT(m_ns3ai_mod.m_act->empty());
+        m_ns3ai_mod.m_act->resize(1, act_struct);
+        ns3ai_initialized = true;
+    }
+
+    m_ns3ai_mod.set_env_begin();
+    m_ns3ai_mod.m_env->at(0).type = 0x01;
+    m_ns3ai_mod.set_env_end();
+
+    m_ns3ai_mod.get_act_begin();
+    m_ns3ai_manager_id = m_ns3ai_mod.m_act->at(0).managerId;
+    m_ns3ai_mod.get_act_end();
 }
 
 AiThompsonSamplingWifiManager::~AiThompsonSamplingWifiManager()
@@ -153,23 +133,13 @@ AiThompsonSamplingWifiManager::DoCreateStation() const
     NS_LOG_FUNCTION(this);
     AiThompsonSamplingWifiRemoteStation* station = new AiThompsonSamplingWifiRemoteStation();
 
-    // set input, type 0x02
-    //  auto env = m_ns3ai_mod.EnvSetterCond ();
-    //  env->type = 0x02;
-    //  env->managerId = m_ns3ai_manager_id;
-    //  env->data.addr = static_cast<void *> (station);
-    //  m_ns3ai_mod.SetCompleted ();
-    m_temp_env->at(0).type = 0x02;
-    m_temp_env->at(0).managerId = m_ns3ai_manager_id;
+    m_ns3ai_mod.set_env_begin();
+    m_ns3ai_mod.m_env->at(0).type = 0x02;
+    m_ns3ai_mod.set_env_end();
 
-    m_ns3ai_mod.set_env(*m_temp_env);
-
-    // get output
-    //  auto act = m_ns3ai_mod.ActionGetterCond ();
-    //  station->m_ns3ai_station_id = act->stationId;
-    //  m_ns3ai_mod.GetCompleted ();
-    m_ns3ai_mod.get_act(*m_temp_act);
-    station->m_ns3ai_station_id = m_temp_act->at(0).stationId;
+    m_ns3ai_mod.get_act_begin();
+    station->m_ns3ai_station_id = m_ns3ai_mod.m_act->at(0).stationId;
+    m_ns3ai_mod.get_act_end();
 
     return station;
 }
@@ -207,7 +177,6 @@ AiThompsonSamplingWifiManager::InitializeStation(WifiRemoteStation* st) const
                         stats.mode = mode;
                         stats.channelWidth = j;
                         stats.nss = k;
-//                        NS_LOG_UNCOND("SMY: " << "in InitializeStation (1), nss=" << (int)k);
                         station->m_mcsStats.push_back(stats);
                     }
                 }
@@ -232,59 +201,34 @@ AiThompsonSamplingWifiManager::InitializeStation(WifiRemoteStation* st) const
                 stats.channelWidth = 20;
             }
             stats.nss = 1;
-//            NS_LOG_UNCOND("SMY: " << "in InitializeStation (2), nss=1");
             station->m_mcsStats.push_back(stats);
         }
     }
 
     NS_ASSERT_MSG(!station->m_mcsStats.empty(), "No usable MCS found");
 
-    // set input, type 0x03
-//    auto env = m_ns3ai_mod.EnvSetterCond();
-//    env->type = 0x03;
-//    env->managerId = m_ns3ai_manager_id;
-//    env->stationId = station->m_ns3ai_station_id;
-    m_temp_env->at(0).type = 0x03;
-    m_temp_env->at(0).managerId = m_ns3ai_manager_id;
-    m_temp_env->at(0).stationId = station->m_ns3ai_station_id;
+    m_ns3ai_mod.set_env_begin();
+    m_ns3ai_mod.m_env->at(0).type = 0x03;
+    m_ns3ai_mod.m_env->at(0).managerId = m_ns3ai_manager_id;
+    m_ns3ai_mod.m_env->at(0).stationId = station->m_ns3ai_station_id;
 
     NS_ASSERT_MSG(station->m_mcsStats.size() <= 64, "m_mcsStats too long");
-//    memset(env->data.stats, 0, sizeof(env->data.stats));
-//    auto s = env->data.stats;
-//    for (size_t i = 0; i < station->m_mcsStats.size(); i++)
-//    {
-//        const WifiMode mode{station->m_mcsStats.at(i).mode};
-//        s.at(i).nss = station->m_mcsStats.at(i).nss;
-//        s.at(i).channelWidth = station->m_mcsStats.at(i).channelWidth;
-//        s.at(i).guardInterval = GetModeGuardInterval(st, mode);
-//        s.at(i).dataRate = mode.GetDataRate(s.at(i).channelWidth, s.at(i).guardInterval, s.at(i).nss);
-//    }
-//    s[station->m_mcsStats.size()].lastDecay = -1.0; // mark end of array
-//    std::cout << (int)env->stationId << ' ' << station << ' ' << station->m_mcsStats.size()
-//              << std::endl;
-//    m_ns3ai_mod.SetCompleted();
-//    memset(m_temp_env[0].data.stats, 0, sizeof(m_temp_env[0].data.stats));
-    auto &s = m_temp_env->at(0).data.stats;
+
+    auto &s = m_ns3ai_mod.m_env->at(0).data.stats;
     for (size_t i = 0; i < station->m_mcsStats.size(); i++) {
         s.at(i) = {0, 0, 0, 0, 0, 0, 0};
         const WifiMode mode{station->m_mcsStats.at(i).mode};
         s.at(i).nss = station->m_mcsStats.at(i).nss;
-//        NS_LOG_UNCOND("SMY: " << "set env stats nss using station stats at " << i << ": " << (int)(s.at(i).nss));
         s.at(i).channelWidth = station->m_mcsStats.at(i).channelWidth;
-//        NS_LOG_UNCOND("SMY: " << "set env stats channelWidth using station stats at " << i << ": " << s.at(i).channelWidth);
         s.at(i).guardInterval = GetModeGuardInterval(st, mode);
-//        NS_LOG_UNCOND("SMY: " << "set env stats guardInterval using station stats at " << i << ": " << s.at(i).guardInterval);
         s.at(i).dataRate = mode.GetDataRate(s.at(i).channelWidth, s.at(i).guardInterval, s.at(i).nss);
     }
-    s[station->m_mcsStats.size()].lastDecay = -1.0; // mark end of array
-    m_ns3ai_mod.set_env(*m_temp_env);
+    s[station->m_mcsStats.size()].lastDecay = -1.0;
+    m_ns3ai_mod.set_env_end();
 
-    // get output
-//    auto act = m_ns3ai_mod.ActionGetterCond();
-//    NS_ASSERT_MSG(act->stationId == env->stationId, "Error 0x03");
-//    m_ns3ai_mod.GetCompleted();
-    m_ns3ai_mod.get_act(*m_temp_act);
-    NS_ASSERT_MSG(m_temp_act->at(0).stationId == m_temp_env->at(0).stationId, "Error 0x03");
+    m_ns3ai_mod.get_act_begin();
+    NS_ASSERT_MSG(m_ns3ai_mod.m_act->at(0).stationId == m_ns3ai_mod.m_env->at(0).stationId, "Error 0x03");
+    m_ns3ai_mod.get_act_end();
 
     UpdateNextMode(st);
 }
@@ -310,27 +254,17 @@ AiThompsonSamplingWifiManager::DoReportDataFailed(WifiRemoteStation* st)
     InitializeStation(st);
     auto station = static_cast<AiThompsonSamplingWifiRemoteStation*>(st);
 
-    // set input, type 0x05
-//    auto env = m_ns3ai_mod.EnvSetterCond();
-//    env->type = 0x05;
-//    env->managerId = m_ns3ai_manager_id;
-//    env->stationId = station->m_ns3ai_station_id;
-//    env->data.decay.decay = m_decay;
-//    env->data.decay.now = Simulator::Now().GetSeconds();
-//    m_ns3ai_mod.SetCompleted();
-    m_temp_env->at(0).type = 0x05;
-    m_temp_env->at(0).managerId = m_ns3ai_manager_id;
-    m_temp_env->at(0).stationId = station->m_ns3ai_station_id;
-    m_temp_env->at(0).data.decay.decay = m_decay;
-    m_temp_env->at(0).data.decay.now = Simulator::Now().GetSeconds();
-    m_ns3ai_mod.set_env(*m_temp_env);
+    m_ns3ai_mod.set_env_begin();
+    m_ns3ai_mod.m_env->at(0).type = 0x05;
+    m_ns3ai_mod.m_env->at(0).managerId = m_ns3ai_manager_id;
+    m_ns3ai_mod.m_env->at(0).stationId = station->m_ns3ai_station_id;
+    m_ns3ai_mod.m_env->at(0).data.decay.decay = m_decay;
+    m_ns3ai_mod.m_env->at(0).data.decay.now = Simulator::Now().GetSeconds();
+    m_ns3ai_mod.set_env_end();
 
-    // get output
-//    auto act = m_ns3ai_mod.ActionGetterCond();
-//    NS_ASSERT_MSG(act->stationId == env->stationId, "Error 0x05");
-//    m_ns3ai_mod.GetCompleted();
-    m_ns3ai_mod.get_act(*m_temp_act);
-    NS_ASSERT_MSG(m_temp_env->at(0).stationId == m_temp_env->at(0).stationId, "Error 0x05");
+    m_ns3ai_mod.get_act_begin();
+    NS_ASSERT_MSG(m_ns3ai_mod.m_act->at(0).stationId == m_ns3ai_mod.m_env->at(0).stationId, "Error 0x05");
+    m_ns3ai_mod.get_act_end();
 }
 
 void
@@ -349,27 +283,17 @@ AiThompsonSamplingWifiManager::UpdateNextMode(WifiRemoteStation* st) const
     auto station = static_cast<AiThompsonSamplingWifiRemoteStation*>(st);
     NS_ASSERT(!station->m_mcsStats.empty());
 
-    // set input, type 0x0a
-//    auto env = m_ns3ai_mod.EnvSetterCond();
-//    env->type = 0x0a;
-//    env->managerId = m_ns3ai_manager_id;
-//    env->stationId = station->m_ns3ai_station_id;
-//    env->data.decay.decay = m_decay;
-//    env->data.decay.now = Simulator::Now().GetSeconds();
-//    m_ns3ai_mod.SetCompleted();
-    m_temp_env->at(0).type = 0x0a;
-    m_temp_env->at(0).managerId = m_ns3ai_manager_id;
-    m_temp_env->at(0).stationId = station->m_ns3ai_station_id;
-    m_temp_env->at(0).data.decay.decay = m_decay;
-    m_temp_env->at(0).data.decay.now = Simulator::Now().GetSeconds();
-    m_ns3ai_mod.set_env(*m_temp_env);
+    m_ns3ai_mod.set_env_begin();
+    m_ns3ai_mod.m_env->at(0).type = 0x0a;
+    m_ns3ai_mod.m_env->at(0).managerId = m_ns3ai_manager_id;
+    m_ns3ai_mod.m_env->at(0).stationId = station->m_ns3ai_station_id;
+    m_ns3ai_mod.m_env->at(0).data.decay.decay = m_decay;
+    m_ns3ai_mod.m_env->at(0).data.decay.now = Simulator::Now().GetSeconds();
+    m_ns3ai_mod.set_env_end();
 
-    // get output
-//    auto act = m_ns3ai_mod.ActionGetterCond();
-//    NS_ASSERT_MSG(act->stationId == env->stationId, "Error 0x0a");
-//    m_ns3ai_mod.GetCompleted();
-    m_ns3ai_mod.get_act(*m_temp_act);
-    NS_ASSERT_MSG(m_temp_env->at(0).stationId == m_temp_env->at(0).stationId, "Error 0x0a");
+    m_ns3ai_mod.get_act_begin();
+    NS_ASSERT_MSG(m_ns3ai_mod.m_act->at(0).stationId == m_ns3ai_mod.m_env->at(0).stationId, "Error 0x0a");
+    m_ns3ai_mod.get_act_end();
 }
 
 void
@@ -384,27 +308,17 @@ AiThompsonSamplingWifiManager::DoReportDataOk(WifiRemoteStation* st,
     InitializeStation(st);
     auto station = static_cast<AiThompsonSamplingWifiRemoteStation*>(st);
 
-    // set input, type 0x06
-//    auto env = m_ns3ai_mod.EnvSetterCond();
-//    env->type = 0x06;
-//    env->managerId = m_ns3ai_manager_id;
-//    env->stationId = station->m_ns3ai_station_id;
-//    env->data.decay.decay = m_decay;
-//    env->data.decay.now = Simulator::Now().GetSeconds();
-//    m_ns3ai_mod.SetCompleted();
-    m_temp_env->at(0).type = 0x06;
-    m_temp_env->at(0).managerId = m_ns3ai_manager_id;
-    m_temp_env->at(0).stationId = station->m_ns3ai_station_id;
-    m_temp_env->at(0).data.decay.decay = m_decay;
-    m_temp_env->at(0).data.decay.now = Simulator::Now().GetSeconds();
-    m_ns3ai_mod.set_env(*m_temp_env);
+    m_ns3ai_mod.set_env_begin();
+    m_ns3ai_mod.m_env->at(0).type = 0x06;
+    m_ns3ai_mod.m_env->at(0).managerId = m_ns3ai_manager_id;
+    m_ns3ai_mod.m_env->at(0).stationId = station->m_ns3ai_station_id;
+    m_ns3ai_mod.m_env->at(0).data.decay.decay = m_decay;
+    m_ns3ai_mod.m_env->at(0).data.decay.now = Simulator::Now().GetSeconds();
+    m_ns3ai_mod.set_env_end();
 
-    // get output
-//    auto act = m_ns3ai_mod.ActionGetterCond();
-//    NS_ASSERT_MSG(act->stationId == env->stationId, "Error 0x06");
-//    m_ns3ai_mod.GetCompleted();
-    m_ns3ai_mod.get_act(*m_temp_act);
-    NS_ASSERT_MSG(m_temp_env->at(0).stationId == m_temp_env->at(0).stationId, "Error 0x06");
+    m_ns3ai_mod.get_act_begin();
+    NS_ASSERT_MSG(m_ns3ai_mod.m_act->at(0).stationId == m_ns3ai_mod.m_env->at(0).stationId, "Error 0x06");
+    m_ns3ai_mod.get_act_end();
 }
 
 void
@@ -420,29 +334,18 @@ AiThompsonSamplingWifiManager::DoReportAmpduTxStatus(WifiRemoteStation* st,
     InitializeStation(st);
     auto station = static_cast<AiThompsonSamplingWifiRemoteStation*>(st);
 
-    // set input, type 0x07
-//    auto env = m_ns3ai_mod.EnvSetterCond();
-//    env->type = 0x07;
-//    env->managerId = m_ns3ai_manager_id;
-//    env->stationId = station->m_ns3ai_station_id;
-//    env->var = (uint64_t)nSuccessfulMpdus << 32 | nFailedMpdus;
-//    env->data.decay.decay = m_decay;
-//    env->data.decay.now = Simulator::Now().GetSeconds();
-//    m_ns3ai_mod.SetCompleted();
-    m_temp_env->at(0).type = 0x07;
-    m_temp_env->at(0).managerId = m_ns3ai_manager_id;
-    m_temp_env->at(0).stationId = station->m_ns3ai_station_id;
-    m_temp_env->at(0).var = (uint64_t)nSuccessfulMpdus << 32 | nFailedMpdus;
-    m_temp_env->at(0).data.decay.decay = m_decay;
-    m_temp_env->at(0).data.decay.now = Simulator::Now().GetSeconds();
-    m_ns3ai_mod.set_env(*m_temp_env);
+    m_ns3ai_mod.set_env_begin();
+    m_ns3ai_mod.m_env->at(0).type = 0x07;
+    m_ns3ai_mod.m_env->at(0).managerId = m_ns3ai_manager_id;
+    m_ns3ai_mod.m_env->at(0).stationId = station->m_ns3ai_station_id;
+    m_ns3ai_mod.m_env->at(0).var = (uint64_t)nSuccessfulMpdus << 32 | nFailedMpdus;
+    m_ns3ai_mod.m_env->at(0).data.decay.decay = m_decay;
+    m_ns3ai_mod.m_env->at(0).data.decay.now = Simulator::Now().GetSeconds();
+    m_ns3ai_mod.set_env_end();
 
-    // get output
-//    auto act = m_ns3ai_mod.ActionGetterCond();
-//    NS_ASSERT_MSG(act->stationId == env->stationId, "Error 0x07");
-//    m_ns3ai_mod.GetCompleted();
-    m_ns3ai_mod.get_act(*m_temp_act);
-    NS_ASSERT_MSG(m_temp_env->at(0).stationId == m_temp_env->at(0).stationId, "Error 0x07");
+    m_ns3ai_mod.get_act_begin();
+    NS_ASSERT_MSG(m_ns3ai_mod.m_act->at(0).stationId == m_ns3ai_mod.m_env->at(0).stationId, "Error 0x07");
+    m_ns3ai_mod.get_act_end();
 }
 
 void
@@ -483,33 +386,18 @@ AiThompsonSamplingWifiManager::DoGetDataTxVector(WifiRemoteStation* st, uint16_t
     InitializeStation(st);
     auto station = static_cast<AiThompsonSamplingWifiRemoteStation*>(st);
 
-    // set input, type 0x08
-//    auto env = m_ns3ai_mod.EnvSetterCond();
-//    env->type = 0x08;
-//    env->managerId = m_ns3ai_manager_id;
-//    env->stationId = station->m_ns3ai_station_id;
-//    m_ns3ai_mod.SetCompleted();
-    m_temp_env->at(0).type = 0x08;
-    m_temp_env->at(0).managerId = m_ns3ai_manager_id;
-    m_temp_env->at(0).stationId = station->m_ns3ai_station_id;
-    m_ns3ai_mod.set_env(*m_temp_env);
+    m_ns3ai_mod.set_env_begin();
+    m_ns3ai_mod.m_env->at(0).type = 0x08;
+    m_ns3ai_mod.m_env->at(0).managerId = m_ns3ai_manager_id;
+    m_ns3ai_mod.m_env->at(0).stationId = station->m_ns3ai_station_id;
+    m_ns3ai_mod.set_env_end();
 
-    // get output
-//    auto act = m_ns3ai_mod.ActionGetterCond();
-//    WifiMode mode = station->m_mcsStats.at(act->res).mode;
-//    uint8_t nss = act->stats.nss;
-//    uint16_t channelWidth = std::min(act->stats.channelWidth, GetPhy()->GetChannelWidth());
-//    uint16_t guardInterval = act->stats.guardInterval;
-//    m_ns3ai_mod.GetCompleted();
-    m_ns3ai_mod.get_act(*m_temp_act);
-//    NS_LOG_UNCOND("SMY: " << "in DoGetDataTxVector, new mode's index in stat is " << m_temp_act->at(0).res
-//                  << ", size of stats is " << station->m_mcsStats.size());
-    WifiMode mode = station->m_mcsStats.at(m_temp_act->at(0).res).mode;
-//    NS_LOG_UNCOND("SMY: " << "in DoGetDataTxVector, new mode is " << mode);
-    uint8_t nss = m_temp_act->at(0).stats.nss;
-//    NS_LOG_UNCOND("SMY: " << "in DoGetDataTxVector, new nss is " << (int)nss);
-    uint16_t channelWidth = std::min(m_temp_act->at(0).stats.channelWidth, GetPhy()->GetChannelWidth());
-    uint16_t guardInterval = m_temp_act->at(0).stats.guardInterval;
+    m_ns3ai_mod.get_act_begin();
+    WifiMode mode = station->m_mcsStats.at(m_ns3ai_mod.m_act->at(0).res).mode;
+    uint8_t nss = m_ns3ai_mod.m_act->at(0).stats.nss;
+    uint16_t channelWidth = std::min(m_ns3ai_mod.m_act->at(0).stats.channelWidth, GetPhy()->GetChannelWidth());
+    uint16_t guardInterval = m_ns3ai_mod.m_act->at(0).stats.guardInterval;
+    m_ns3ai_mod.get_act_end();
 
     uint64_t rate = mode.GetDataRate(channelWidth, guardInterval, nss);
     if (m_currentRate != rate)
@@ -538,29 +426,18 @@ AiThompsonSamplingWifiManager::DoGetRtsTxVector(WifiRemoteStation* st)
     InitializeStation(st);
     auto station = static_cast<AiThompsonSamplingWifiRemoteStation*>(st);
 
-    // set input, type 0x09
-//    auto env = m_ns3ai_mod.EnvSetterCond();
-//    env->type = 0x09;
-//    env->managerId = m_ns3ai_manager_id;
-//    env->stationId = station->m_ns3ai_station_id;
-//    m_ns3ai_mod.SetCompleted();
-    m_temp_env->at(0).type = 0x09;
-    m_temp_env->at(0).managerId = m_ns3ai_manager_id;
-    m_temp_env->at(0).stationId = station->m_ns3ai_station_id;
-    m_ns3ai_mod.set_env(*m_temp_env);
+    m_ns3ai_mod.set_env_begin();
+    m_ns3ai_mod.m_env->at(0).type = 0x09;
+    m_ns3ai_mod.m_env->at(0).managerId = m_ns3ai_manager_id;
+    m_ns3ai_mod.m_env->at(0).stationId = station->m_ns3ai_station_id;
+    m_ns3ai_mod.set_env_end();
 
-    // get output
-//    auto act = m_ns3ai_mod.ActionGetterCond();
-//    WifiMode mode = station->m_mcsStats.at(act->res).mode;
-//    uint8_t nss = act->stats.nss;
-//    uint16_t channelWidth = std::min(act->stats.channelWidth, GetPhy()->GetChannelWidth());
-//    uint16_t guardInterval = act->stats.guardInterval;
-//    m_ns3ai_mod.GetCompleted();
-    m_ns3ai_mod.get_act(*m_temp_act);
-    WifiMode mode = station->m_mcsStats.at(m_temp_act->at(0).res).mode;
-    uint8_t nss = m_temp_act->at(0).stats.nss;
-    uint16_t channelWidth = std::min(m_temp_act->at(0).stats.channelWidth, GetPhy()->GetChannelWidth());
-    uint16_t guardInterval = m_temp_act->at(0).stats.guardInterval;
+    m_ns3ai_mod.get_act_begin();
+    WifiMode mode = station->m_mcsStats.at(m_ns3ai_mod.m_act->at(0).res).mode;
+    uint8_t nss = m_ns3ai_mod.m_act->at(0).stats.nss;
+    uint16_t channelWidth = std::min(m_ns3ai_mod.m_act->at(0).stats.channelWidth, GetPhy()->GetChannelWidth());
+    uint16_t guardInterval = m_ns3ai_mod.m_act->at(0).stats.guardInterval;
+    m_ns3ai_mod.get_act_end();
 
     // Make sure control frames are sent using 1 spatial stream.
     NS_ASSERT(nss == 1);

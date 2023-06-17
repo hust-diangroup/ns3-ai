@@ -32,60 +32,6 @@ sys.path.append("../../../utils")
 import ns3_util
 import ns3ai_ratecontrol_ts_py as ts
 
-#
-# class ThompsonSamplingRateStats(Structure):
-#     _pack_ = 1
-#     _fields_ = [
-#         ('nss', c_uint8),
-#         ('channelWidth', c_uint16),
-#         ('guardInterval', c_uint16),
-#         ('dataRate', c_uint64),
-#         ('success', c_double),
-#         ('fails', c_double),
-#         ('lastDecay', c_double)  # Time
-#     ]
-#
-#
-# class AiThompsonSamplingEnvDecay(Structure):
-#     _pack_ = 1
-#     _fields_ = [
-#         ('decayIdx', c_int8),
-#         ('decay', c_double),
-#         ('now', c_double)  # Time
-#     ]
-#
-#
-# class AiThompsonSamplingEnvPayload(Union):
-#     _pack_ = 1
-#     _fields_ = [
-#         ('addr', c_void_p),
-#         ('stats', ThompsonSamplingRateStats * 64),
-#         ('decay', AiThompsonSamplingEnvDecay)
-#     ]
-#
-#
-# class AiThompsonSamplingEnv(Structure):
-#     _pack_ = 1
-#     _anonymous_ = ['data']
-#     _fields_ = [
-#         ('type', c_int8),
-#         ('managerId', c_int8),
-#         ('stationId', c_int8),
-#         ('var', c_uint64),
-#         ('data', AiThompsonSamplingEnvPayload)
-#     ]
-#
-#
-# class AiThompsonSamplingAct(Structure):
-#     _pack_ = 1
-#     _fields_ = [
-#         ('managerId', c_int8),
-#         ('stationId', c_int8),
-#         ('res', c_uint64),
-#         ('stats', ThompsonSamplingRateStats)
-#     ]
-
-
 class AiThompsonSamplingStation:
     _id = -1
     # _addr = 0
@@ -180,7 +126,8 @@ class AiThompsonSamplingContainer:
         del self.rl
 
     # get action
-    def do(self, env: ts.PyEnvStruct, act: ts.PyActStruct) -> ts.PyActStruct:
+    # def do(self, env: ts.PyEnvStruct, act: ts.PyActStruct) -> ts.PyActStruct:
+    def do(self, env: ts.PyEnvStruct, act: ts.PyActStruct):
         if env.type == 0x01:  # AiThompsonSamplingWifiManager
             n_manager = len(self.wifiManager)
             # self.wifiManager.append(AiThompsonSamplingManager(addr=env.addr, id=n_manager, stream=self.default_stream))
@@ -263,7 +210,7 @@ class AiThompsonSamplingContainer:
             man.UpdateNextMode(sta, env.data.decay.decay, env.data.decay.now)
             act.stationId = env.stationId  # only for check
 
-        return act
+        # return act
 
 
 if __name__ == '__main__':
@@ -277,22 +224,27 @@ if __name__ == '__main__':
     random_stream = 100
     c = AiThompsonSamplingContainer(stream=random_stream)
 
-    myenvs = ts.PyEnvVector()
-    myacts = ts.PyActVector()
-    temp_env = ts.PyEnvStruct()
-    temp_act = ts.PyActStruct()
+    # myenvs = ts.PyEnvVector()
+    # myacts = ts.PyActVector()
+    # temp_env = ts.PyEnvStruct()
+    # temp_act = ts.PyActStruct()
 
     # pro = exp.run(setting=ns3Settings, show_output=True)
     # print("run rate-control", ns3Settings)
     while True:
-        myacts.clear()
-        c.rl.get_env(myenvs)
+        # myacts.clear()
+        # c.rl.get_env(myenvs)
+        c.rl.get_env_begin()
+        c.rl.set_act_begin()
         if c.rl.is_finished():
             break
-        temp_env = myenvs[0]
-        temp_act = c.do(temp_env, temp_act)
-        myacts.append(temp_act)
+        # temp_env = myenvs[0]
+        # temp_act = c.do(temp_env, temp_act)
+        c.do(c.rl.m_env[0], c.rl.m_act[0])
+        c.rl.get_env_end()
+        c.rl.set_act_end()
+        # myacts.append(temp_act)
         # print("SMY: before set_act: act.res set to {}".format(myacts[0].res))
-        c.rl.set_act(myacts)
+        # c.rl.set_act(myacts)
 
     del c
