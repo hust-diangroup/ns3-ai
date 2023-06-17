@@ -1,17 +1,11 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/stl_bind.h>
-#include <pybind11/stl.h>
-#include <pybind11/complex.h>
-#include <pybind11/functional.h>
-#include <pybind11/chrono.h>
 
 #include <ns3/ns3-ai-new-rl.h>
 #include "ai-thompson-sampling-wifi-manager.h"
 
 namespace py = pybind11;
 
-//PYBIND11_MAKE_OPAQUE(std::vector<ns3::AiThompsonSamplingEnvStruct>);
-//PYBIND11_MAKE_OPAQUE(std::vector<ns3::AiThompsonSamplingActStruct>);
 PYBIND11_MAKE_OPAQUE(ns3::AiThompsonSamplingEnvStruct);
 PYBIND11_MAKE_OPAQUE(ns3::AiThompsonSamplingActStruct);
 PYBIND11_MAKE_OPAQUE(ns3::NS3AIRL<ns3::AiThompsonSamplingEnvStruct, ns3::AiThompsonSamplingActStruct>::ShmemEnvVector);
@@ -108,9 +102,6 @@ PYBIND11_MODULE(ns3ai_ratecontrol_ts_py, m) {
                 return vec.at(i);
             }, py::return_value_policy::reference)
         ;
-
-//    py::bind_vector<std::vector<ns3::AiThompsonSamplingEnvStruct>>(m, "PyEnvVector");
-//    py::bind_vector<std::vector<ns3::AiThompsonSamplingActStruct>>(m, "PyActVector");
 
     py::class_<ns3::NS3AIRL<ns3::AiThompsonSamplingEnvStruct, ns3::AiThompsonSamplingActStruct>>(m, "NS3AIRL")
         .def(py::init<uint32_t, bool, const char*, const char*, const char*, const char*>())

@@ -51,11 +51,6 @@ typedef struct ThompsonSamplingEnvDecay
     double now; // Time
 } ThompsonSamplingEnvDecay;
 
-//typedef union ThompsonSamplingEnvPayloadUnion {
-//    std::array<ThompsonSamplingRateStats, 64> stats;
-//    ThompsonSamplingEnvDecay decay;
-//} ThompsonSamplingEnvPayloadUnion;
-
 typedef struct ThompsonSamplingEnvPayloadStruct {
     std::array<ThompsonSamplingRateStats, 64> stats;
     ThompsonSamplingEnvDecay decay;
@@ -155,11 +150,7 @@ class AiThompsonSamplingWifiManager : public WifiRemoteStationManager
 
     TracedValue<uint64_t> m_currentRate; //!< Trace rate changes
 
-    //  uint16_t m_ns3ai_id;
-//    NS3AIRL<AiThompsonSamplingEnv, AiThompsonSamplingAct> *m_ns3ai_mod;
     int8_t m_ns3ai_manager_id;
-//    std::vector<AiThompsonSamplingEnvStruct> *m_temp_env;
-//    std::vector<AiThompsonSamplingActStruct> *m_temp_act;
 };
 
 } // namespace ns3

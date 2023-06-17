@@ -18,35 +18,24 @@
 # Author: Xun Deng <dorence@hust.edu.cn>
 #         Hao Yin <haoyin@uw.edu>
 
-from ctypes import *
-from py_interface import *
+# import sys
+# sys.path.append("../../../utils")
+# import ns3_util
 
-class AiConstantRateEnv(Structure):
-    _pack_ = 1
-    _fields_ = [
-        ('transmitStreams', c_ubyte),
-        ('supportedStreams', c_ubyte),
-        ('msc', c_ubyte)
-    ]
-
-
-class AiConstantRateAct(Structure):
-    _pack_ = 1
-    _fields_ = [
-        ('nss', c_ubyte),
-        ('next_mcs', c_ubyte)
-    ]
-
+import ns3ai_ratecontrol_constant_py as cr
 
 class AiConstantRateContainer:
     use_ns3ai = True
 
-    def __init__(self, uid: int = 2333) -> None:
-        self.rl = Ns3AIRL(uid, AiConstantRateEnv, AiConstantRateAct)
+    def __init__(self) -> None:
+        self.rl = cr.NS3AIRL(4096, True, "My Seg", "My Env", "My Act", "My Lockable")
         # print('({})size: Env {} Act {}'.format(uid, sizeof(AiConstantRateEnv), sizeof(AiConstantRateAct)))
         pass
 
-    def do(self, env: AiConstantRateEnv, act: AiConstantRateAct) -> AiConstantRateAct:
+    def __del__(self):
+        del self.rl
+
+    def do(self, env: cr.PyEnvStruct, act: cr.PyActStruct):
         # DoGetDataTxVector
         act.nss = min(env.transmitStreams, env.supportedStreams)
         if env.msc != 0xff:
@@ -56,27 +45,26 @@ class AiConstantRateContainer:
 
         # uncomment to specify arbitrary MCS
         # act.next_mcs = 5
-        return act
 
 
 if __name__ == '__main__':
-    ns3Settings = {'raa': 'AiConstantRate', 'nWifi': 3, 'standard': '11ac', 'duration': 5}
-    mempool_key = 1234 # memory pool key, arbitrary integer large than 1000
-    mem_size = 4096 # memory pool size in bytes
-    exp = Experiment(mempool_key, mem_size, 'rate-control', '../../', using_waf=False)
-    exp.reset()
+    # ns3Settings = {'raa': 'AiConstantRate', 'nWifi': 3, 'standard': '11ac', 'duration': 5}
+    # mempool_key = 1234 # memory pool key, arbitrary integer large than 1000
+    # mem_size = 4096 # memory pool size in bytes
+    # exp = Experiment(mempool_key, mem_size, 'rate-control', '../../', using_waf=False)
+    # exp.reset()
 
-    memblock_key = 2333 # memory block key in the memory pool, arbitrary integer, and need to keep the same in the ns-3 script
-    c = AiConstantRateContainer(memblock_key)
+    c = AiConstantRateContainer()
 
-    pro = exp.run(setting=ns3Settings, show_output=True)
-    print("run rate-control", ns3Settings)
-    while not c.rl.isFinish():
-        with c.rl as data:
-            if data == None:
-                break
-            data.act = c.do(data.env, data.act)
-            pass
-    
-    pro.wait()
-    del exp
+    # pro = exp.run(setting=ns3Settings, show_output=True)
+    # print("run rate-control", ns3Settings)
+    while True:
+        c.rl.get_env_begin()
+        c.rl.set_act_begin()
+        if c.rl.is_finished():
+            break
+        c.do(c.rl.m_env[0], c.rl.m_act[0])
+        c.rl.get_env_end()
+        c.rl.set_act_end()
+
+    del c
