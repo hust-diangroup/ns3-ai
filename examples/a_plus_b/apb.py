@@ -1,11 +1,13 @@
 import ns3ai_apb_py as apb
 
-rl = apb.NS3AIRL(4096, True, "My Seg", "My Env", "My Act", "My Lockable")
+APB_SIZE = 3
 
-temp_act = apb.PyActStruct()
-temp_act.c = 1
+rl = apb.NS3AIRL(4096, True, True, "My Seg", "My Env", "My Act", "My Lockable")
+
 assert len(rl.m_act) == 0
-rl.m_act.resize(3, temp_act)
+rl.m_act.resize(APB_SIZE)
+assert len(rl.m_env) == 0
+rl.m_env.resize(APB_SIZE)
 
 while True:
     rl.get_env_begin()
@@ -18,4 +20,3 @@ while True:
     rl.set_act_end()
 
 del rl
-

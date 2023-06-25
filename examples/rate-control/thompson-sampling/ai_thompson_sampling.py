@@ -103,7 +103,7 @@ class AiThompsonSamplingContainer:
     wifiStation: List[AiThompsonSamplingStation] = []
 
     def __init__(self, stream=1) -> None:
-        self.rl = ts.NS3AIRL(4096, True, "My Seg", "My Env", "My Act", "My Lockable")
+        self.rl = ts.NS3AIRL(4096, False, True, "My Seg", "My Env", "My Act", "My Lockable")
         self.default_stream = stream
         pass
 
@@ -202,7 +202,7 @@ if __name__ == '__main__':
         c.rl.set_act_begin()
         if c.rl.is_finished():
             break
-        c.do(c.rl.m_env[0], c.rl.m_act[0])
+        c.do(c.rl.m_single_env, c.rl.m_single_act)
         c.rl.get_env_end()
         c.rl.set_act_end()
 

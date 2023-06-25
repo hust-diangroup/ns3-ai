@@ -16,30 +16,43 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  * Author: Mathieu Lacage <mathieu.lacage@sophia.inria.fr>
- * Modify: Xun Deng <dorence@hust.edu.cn> 
+ * Modify: Xun Deng <dorence@hust.edu.cn>
  *         Hao Yin <haoyin@uw.edu>
  */
-
 
 #ifndef AI_CONSTANT_RATE_WIFI_MANAGER_H
 #define AI_CONSTANT_RATE_WIFI_MANAGER_H
 
-#include <ns3/wifi-remote-station-manager.h>
 #include <ns3/ns3-ai-module.h>
+#include <ns3/wifi-remote-station-manager.h>
 
-namespace ns3 {
-
-typedef struct AiConstantRateEnvStruct
+namespace ns3
 {
-  uint8_t transmitStreams;
-  uint8_t supportedStreams;
-  uint8_t mcs;
+
+typedef struct _AiConstantRateEnvStruct
+{
+    uint8_t transmitStreams;
+    uint8_t supportedStreams;
+    uint8_t mcs;
+
+    _AiConstantRateEnvStruct()
+        : transmitStreams(0),
+          supportedStreams(0),
+          mcs(0)
+    {
+    }
 } AiConstantRateEnvStruct;
 
-typedef struct AiConstantRateActStruct
+typedef struct _AiConstantRateActStruct
 {
-  uint8_t nss;
-  uint8_t next_mcs;
+    uint8_t nss;
+    uint8_t next_mcs;
+
+    _AiConstantRateActStruct()
+        : nss(0),
+          next_mcs(0)
+    {
+    }
 } AiConstantRateActStruct;
 
 /**
@@ -51,36 +64,39 @@ typedef struct AiConstantRateActStruct
  */
 class AiConstantRateWifiManager : public WifiRemoteStationManager
 {
-public:
-  /**
-   * \brief Get the type ID.
-   * \return the object TypeId
-   */
-  static TypeId GetTypeId ();
-  AiConstantRateWifiManager();
-  ~AiConstantRateWifiManager() override;
+  public:
+    /**
+     * \brief Get the type ID.
+     * \return the object TypeId
+     */
+    static TypeId GetTypeId();
+    AiConstantRateWifiManager();
+    ~AiConstantRateWifiManager() override;
 
+  private:
+    WifiRemoteStation* DoCreateStation() const override;
+    void DoReportRxOk(WifiRemoteStation* station, double rxSnr, WifiMode txMode) override;
+    void DoReportRtsFailed(WifiRemoteStation* station) override;
+    void DoReportDataFailed(WifiRemoteStation* station) override;
+    void DoReportRtsOk(WifiRemoteStation* station,
+                       double ctsSnr,
+                       WifiMode ctsMode,
+                       double rtsSnr) override;
+    void DoReportDataOk(WifiRemoteStation* station,
+                        double ackSnr,
+                        WifiMode ackMode,
+                        double dataSnr,
+                        uint16_t dataChannelWidth,
+                        uint8_t dataNss) override;
+    void DoReportFinalRtsFailed(WifiRemoteStation* station) override;
+    void DoReportFinalDataFailed(WifiRemoteStation* station) override;
+    WifiTxVector DoGetDataTxVector(WifiRemoteStation* station, uint16_t allowedWidth) override;
+    WifiTxVector DoGetRtsTxVector(WifiRemoteStation* station) override;
 
-private:
-  WifiRemoteStation* DoCreateStation() const override;
-  void DoReportRxOk(WifiRemoteStation *station,
-                     double rxSnr, WifiMode txMode) override;
-  void DoReportRtsFailed(WifiRemoteStation *station) override;
-  void DoReportDataFailed(WifiRemoteStation *station) override;
-  void DoReportRtsOk(WifiRemoteStation *station,
-                      double ctsSnr, WifiMode ctsMode, double rtsSnr) override;
-  void DoReportDataOk (WifiRemoteStation *station, double ackSnr, WifiMode ackMode,
-                       double dataSnr, uint16_t dataChannelWidth, uint8_t dataNss) override;
-  void DoReportFinalRtsFailed(WifiRemoteStation *station) override;
-  void DoReportFinalDataFailed(WifiRemoteStation *station) override;
-  WifiTxVector DoGetDataTxVector(WifiRemoteStation *station, uint16_t allowedWidth) override;
-  WifiTxVector DoGetRtsTxVector(WifiRemoteStation *station) override;
-
-  WifiMode m_dataMode; //!< Wifi mode for unicast Data frames
-  WifiMode m_ctlMode;  //!< Wifi mode for RTS frames
-
+    WifiMode m_dataMode; //!< Wifi mode for unicast Data frames
+    WifiMode m_ctlMode;  //!< Wifi mode for RTS frames
 };
 
-} //namespace ns3
+} // namespace ns3
 
 #endif /* AI_CONSTANT_RATE_WIFI_MANAGER_H */

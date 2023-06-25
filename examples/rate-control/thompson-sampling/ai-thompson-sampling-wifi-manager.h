@@ -23,17 +23,17 @@
 #ifndef AI_THOMPSON_SAMPLING_WIFI_MANAGER_H
 #define AI_THOMPSON_SAMPLING_WIFI_MANAGER_H
 
-#include <array>
-
 #include <ns3/ns3-ai-module.h>
 #include <ns3/random-variable-stream.h>
-#include <ns3/wifi-remote-station-manager.h>
 #include <ns3/traced-value.h>
+#include <ns3/wifi-remote-station-manager.h>
+
+#include <array>
 
 namespace ns3
 {
 
-typedef struct ThompsonSamplingRateStats
+typedef struct _ThompsonSamplingRateStats
 {
     uint8_t nss;
     uint16_t channelWidth;
@@ -41,36 +41,78 @@ typedef struct ThompsonSamplingRateStats
     uint64_t dataRate;
     double success;
     double fails;
-    double lastDecay; // Time
+    double lastDecay;
+
+    _ThompsonSamplingRateStats()
+        : nss(0),
+          channelWidth(0),
+          guardInterval(0),
+          dataRate(0),
+          success(0),
+          fails(0),
+          lastDecay(0)
+    {
+    }
 } ThompsonSamplingRateStats;
 
-typedef struct ThompsonSamplingEnvDecay
+typedef struct _ThompsonSamplingEnvDecay
 {
     int8_t decayIdx;
     double decay;
-    double now; // Time
+    double now;
+
+    _ThompsonSamplingEnvDecay()
+        : decayIdx(0),
+          decay(0),
+          now(0)
+    {
+    }
 } ThompsonSamplingEnvDecay;
 
-typedef struct ThompsonSamplingEnvPayloadStruct {
+typedef struct _ThompsonSamplingEnvPayloadStruct
+{
     std::array<ThompsonSamplingRateStats, 64> stats;
     ThompsonSamplingEnvDecay decay;
+
+    _ThompsonSamplingEnvPayloadStruct()
+        : stats(),
+          decay()
+    {
+    }
 } ThompsonSamplingEnvPayloadStruct;
 
-typedef struct AiThompsonSamplingEnvStruct
+typedef struct _AiThompsonSamplingEnvStruct
 {
     int8_t type;
     int8_t managerId;
     int8_t stationId;
     uint64_t var;
     ThompsonSamplingEnvPayloadStruct data;
+
+    _AiThompsonSamplingEnvStruct()
+        : type(0),
+          managerId(0),
+          stationId(0),
+          var(0),
+          data()
+    {
+    }
 } AiThompsonSamplingEnvStruct;
 
-typedef struct AiThompsonSamplingActStruct
+typedef struct _AiThompsonSamplingActStruct
 {
     int8_t managerId;
     int8_t stationId;
     uint64_t res;
     ThompsonSamplingRateStats stats;
+
+    _AiThompsonSamplingActStruct()
+        : managerId(0),
+          stationId(0),
+          res(0),
+          stats()
+    {
+    }
 } AiThompsonSamplingActStruct;
 
 /**

@@ -20,11 +20,12 @@ class NS3AIRL
   public:
     NS3AIRL() = delete;
     explicit NS3AIRL(uint32_t size,
-                     bool is_memory_creator = false, // true for Python side
-                     const char *segment_name = "My Seg",
-                     const char *env_name = "My Env",
-                     const char *act_name = "My Act",
-                     const char *lockable_name = "My Lockable");
+                     bool use_vector = true,
+                     bool is_memory_creator = false,
+                     const char* segment_name = "My Seg",
+                     const char* env_name = "My Env",
+                     const char* act_name = "My Act",
+                     const char* lockable_name = "My Lockable");
     ~NS3AIRL();
 
     // for C++ side:
@@ -40,7 +41,11 @@ class NS3AIRL
     void set_act_end();
     bool is_finished();
 
-    // data
+    // use structure for the simple case
+    EnvType *m_single_env;
+    ActType *m_single_act;
+
+    // use vector for passing multiple structures at once
     typedef boost::interprocess::allocator<EnvType, boost::interprocess::managed_shared_memory::segment_manager>  ShmemEnvAllocator;
     typedef boost::interprocess::vector<EnvType, ShmemEnvAllocator> ShmemEnvVector;
     typedef boost::interprocess::allocator<ActType, boost::interprocess::managed_shared_memory::segment_manager>  ShmemActAllocator;
@@ -138,11 +143,12 @@ NS3AIRL<EnvType, ActType>::~NS3AIRL() {
 
 template <typename EnvType, typename ActType>
 NS3AIRL<EnvType, ActType>::NS3AIRL(uint32_t size,
+                                   bool use_vector,
                                    bool is_memory_creator,
-                                   const char *segment_name,
-                                   const char *env_name,
-                                   const char *act_name,
-                                   const char *lockable_name)
+                                   const char* segment_name,
+                                   const char* env_name,
+                                   const char* act_name,
+                                   const char* lockable_name)
     : m_isCreator(is_memory_creator), m_isFinished(false), m_segName(segment_name)
 {
     using namespace boost::interprocess;
@@ -150,17 +156,37 @@ NS3AIRL<EnvType, ActType>::NS3AIRL(uint32_t size,
     {
         shared_memory_object::remove(m_segName.c_str());
         static managed_shared_memory segment(create_only, m_segName.c_str(), size);
-        static const ShmemEnvAllocator alloc_env(segment.get_segment_manager());
-        static const ShmemEnvAllocator alloc_act(segment.get_segment_manager());
-        m_env = segment.construct<ShmemEnvVector>(env_name)(alloc_env);
-        m_act = segment.construct<ShmemActVector>(act_name)(alloc_act);
+        if (use_vector) {
+            static const ShmemEnvAllocator alloc_env(segment.get_segment_manager());
+            static const ShmemEnvAllocator alloc_act(segment.get_segment_manager());
+            m_env = segment.construct<ShmemEnvVector>(env_name)(alloc_env);
+            m_act = segment.construct<ShmemActVector>(act_name)(alloc_act);
+            m_single_env = nullptr;
+            m_single_act = nullptr;
+        }
+        else {
+            m_env = nullptr;
+            m_act = nullptr;
+            m_single_env = segment.construct<EnvType>(env_name)();
+            m_single_act = segment.construct<ActType>(act_name)();
+        }
         m_lockable = segment.construct<RlShMemLockable>(lockable_name)();
     }
     else
     {
         static managed_shared_memory segment(open_only, segment_name);
-        m_env = segment.find<ShmemEnvVector>(env_name).first;
-        m_act = segment.find<ShmemActVector>(act_name).first;
+        if (use_vector) {
+            m_env = segment.find<ShmemEnvVector>(env_name).first;
+            m_act = segment.find<ShmemActVector>(act_name).first;
+            m_single_env = nullptr;
+            m_single_act = nullptr;
+        }
+        else {
+            m_env = nullptr;
+            m_act = nullptr;
+            m_single_env = segment.find<EnvType>(env_name).first;
+            m_single_act = segment.find<ActType>(act_name).first;
+        }
         m_lockable = segment.find<RlShMemLockable>(lockable_name).first;
     }
 }

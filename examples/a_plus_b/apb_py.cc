@@ -7,8 +7,6 @@
 
 namespace py = pybind11;
 
-PYBIND11_MAKE_OPAQUE(EnvStruct);
-PYBIND11_MAKE_OPAQUE(ActStruct);
 PYBIND11_MAKE_OPAQUE(ns3::NS3AIRL<EnvStruct, ActStruct>::ShmemEnvVector);
 PYBIND11_MAKE_OPAQUE(ns3::NS3AIRL<EnvStruct, ActStruct>::ShmemActVector);
 
@@ -26,7 +24,7 @@ PYBIND11_MODULE(ns3ai_apb_py, m) {
     py::class_<ns3::NS3AIRL<EnvStruct, ActStruct>::ShmemEnvVector>(m, "PyEnvVector")
         .def("resize", static_cast
              <void (ns3::NS3AIRL<EnvStruct, ActStruct>::ShmemEnvVector::*)
-                  (ns3::NS3AIRL<EnvStruct, ActStruct>::ShmemEnvVector::size_type, const EnvStruct&)>
+                  (ns3::NS3AIRL<EnvStruct, ActStruct>::ShmemEnvVector::size_type)>
              (&ns3::NS3AIRL<EnvStruct, ActStruct>::ShmemEnvVector::resize))
         .def("__len__", &ns3::NS3AIRL<EnvStruct, ActStruct>::ShmemEnvVector::size)
         .def("__getitem__", [](ns3::NS3AIRL<EnvStruct, ActStruct>::ShmemEnvVector &vec, int i) -> EnvStruct & {
@@ -41,7 +39,7 @@ PYBIND11_MODULE(ns3ai_apb_py, m) {
     py::class_<ns3::NS3AIRL<EnvStruct, ActStruct>::ShmemActVector>(m, "PyActVector")
         .def("resize", static_cast
              <void (ns3::NS3AIRL<EnvStruct, ActStruct>::ShmemActVector::*)
-                  (ns3::NS3AIRL<EnvStruct, ActStruct>::ShmemActVector::size_type, const ActStruct &)>
+                  (ns3::NS3AIRL<EnvStruct, ActStruct>::ShmemActVector::size_type)>
              (&ns3::NS3AIRL<EnvStruct, ActStruct>::ShmemActVector::resize))
         .def("__len__", &ns3::NS3AIRL<EnvStruct, ActStruct>::ShmemActVector::size)
         .def("__getitem__", [](ns3::NS3AIRL<EnvStruct, ActStruct>::ShmemActVector &vec, int i) -> ActStruct & {
@@ -54,7 +52,7 @@ PYBIND11_MODULE(ns3ai_apb_py, m) {
         ;
 
     py::class_<ns3::NS3AIRL<EnvStruct, ActStruct>>(m, "NS3AIRL")
-        .def(py::init<uint32_t, bool, const char*, const char*, const char*, const char*>())
+        .def(py::init<uint32_t, bool, bool, const char*, const char*, const char*, const char*>())
         .def("get_env_begin", &ns3::NS3AIRL<EnvStruct, ActStruct>::get_env_begin)
         .def("get_env_end", &ns3::NS3AIRL<EnvStruct, ActStruct>::get_env_end)
         .def("set_act_begin", &ns3::NS3AIRL<EnvStruct, ActStruct>::set_act_begin)

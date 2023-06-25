@@ -6,10 +6,6 @@
 
 namespace py = pybind11;
 
-PYBIND11_MAKE_OPAQUE(ns3::AiThompsonSamplingEnvStruct);
-PYBIND11_MAKE_OPAQUE(ns3::AiThompsonSamplingActStruct);
-PYBIND11_MAKE_OPAQUE(ns3::NS3AIRL<ns3::AiThompsonSamplingEnvStruct, ns3::AiThompsonSamplingActStruct>::ShmemEnvVector);
-PYBIND11_MAKE_OPAQUE(ns3::NS3AIRL<ns3::AiThompsonSamplingEnvStruct, ns3::AiThompsonSamplingActStruct>::ShmemActVector);
 PYBIND11_MAKE_OPAQUE(std::array<ns3::ThompsonSamplingRateStats, 64>);
 
 PYBIND11_MODULE(ns3ai_ratecontrol_ts_py, m) {
@@ -73,45 +69,15 @@ PYBIND11_MODULE(ns3ai_ratecontrol_ts_py, m) {
         .def_readwrite("stats", &ns3::AiThompsonSamplingActStruct::stats)
         ;
 
-    py::class_<ns3::NS3AIRL<ns3::AiThompsonSamplingEnvStruct, ns3::AiThompsonSamplingActStruct>::ShmemEnvVector>(m, "PyEnvVector")
-        .def("resize", static_cast
-             <void (ns3::NS3AIRL<ns3::AiThompsonSamplingEnvStruct, ns3::AiThompsonSamplingActStruct>::ShmemEnvVector::*)
-                  (ns3::NS3AIRL<ns3::AiThompsonSamplingEnvStruct, ns3::AiThompsonSamplingActStruct>::ShmemEnvVector::size_type, const ns3::AiThompsonSamplingEnvStruct &)>
-             (&ns3::NS3AIRL<ns3::AiThompsonSamplingEnvStruct, ns3::AiThompsonSamplingActStruct>::ShmemEnvVector::resize))
-        .def("__len__", &ns3::NS3AIRL<ns3::AiThompsonSamplingEnvStruct, ns3::AiThompsonSamplingActStruct>::ShmemEnvVector::size)
-        .def("__getitem__", [](ns3::NS3AIRL<ns3::AiThompsonSamplingEnvStruct, ns3::AiThompsonSamplingActStruct>::ShmemEnvVector &vec, int i) -> ns3::AiThompsonSamplingEnvStruct & {
-                if (i < 0 || i >= vec.size()) {
-                    std::cerr << "Invalid index " << i << " for vector, whose size is " << vec.size() << std::endl;
-                    exit(1);
-                }
-                return vec.at(i);
-            }, py::return_value_policy::reference)
-        ;
-
-    py::class_<ns3::NS3AIRL<ns3::AiThompsonSamplingEnvStruct, ns3::AiThompsonSamplingActStruct>::ShmemActVector>(m, "PyActVector")
-        .def("resize", static_cast
-             <void (ns3::NS3AIRL<ns3::AiThompsonSamplingEnvStruct, ns3::AiThompsonSamplingActStruct>::ShmemActVector::*)
-                  (ns3::NS3AIRL<ns3::AiThompsonSamplingEnvStruct, ns3::AiThompsonSamplingActStruct>::ShmemActVector::size_type, const ns3::AiThompsonSamplingActStruct &)>
-             (&ns3::NS3AIRL<ns3::AiThompsonSamplingEnvStruct, ns3::AiThompsonSamplingActStruct>::ShmemActVector::resize))
-        .def("__len__", &ns3::NS3AIRL<ns3::AiThompsonSamplingEnvStruct, ns3::AiThompsonSamplingActStruct>::ShmemActVector::size)
-        .def("__getitem__", [](ns3::NS3AIRL<ns3::AiThompsonSamplingEnvStruct, ns3::AiThompsonSamplingActStruct>::ShmemActVector &vec, int i) -> ns3::AiThompsonSamplingActStruct & {
-                if (i < 0 || i >= vec.size()) {
-                    std::cerr << "Invalid index " << i << " for vector, whose size is " << vec.size() << std::endl;
-                    exit(1);
-                }
-                return vec.at(i);
-            }, py::return_value_policy::reference)
-        ;
-
     py::class_<ns3::NS3AIRL<ns3::AiThompsonSamplingEnvStruct, ns3::AiThompsonSamplingActStruct>>(m, "NS3AIRL")
-        .def(py::init<uint32_t, bool, const char*, const char*, const char*, const char*>())
+        .def(py::init<uint32_t, bool, bool, const char*, const char*, const char*, const char*>())
         .def("get_env_begin", &ns3::NS3AIRL<ns3::AiThompsonSamplingEnvStruct, ns3::AiThompsonSamplingActStruct>::get_env_begin)
         .def("get_env_end", &ns3::NS3AIRL<ns3::AiThompsonSamplingEnvStruct, ns3::AiThompsonSamplingActStruct>::get_env_end)
         .def("set_act_begin", &ns3::NS3AIRL<ns3::AiThompsonSamplingEnvStruct, ns3::AiThompsonSamplingActStruct>::set_act_begin)
         .def("set_act_end", &ns3::NS3AIRL<ns3::AiThompsonSamplingEnvStruct, ns3::AiThompsonSamplingActStruct>::set_act_end)
         .def("is_finished", &ns3::NS3AIRL<ns3::AiThompsonSamplingEnvStruct, ns3::AiThompsonSamplingActStruct>::is_finished)
-        .def_readwrite("m_env", &ns3::NS3AIRL<ns3::AiThompsonSamplingEnvStruct, ns3::AiThompsonSamplingActStruct>::m_env)
-        .def_readwrite("m_act", &ns3::NS3AIRL<ns3::AiThompsonSamplingEnvStruct, ns3::AiThompsonSamplingActStruct>::m_act)
+        .def_readwrite("m_single_env", &ns3::NS3AIRL<ns3::AiThompsonSamplingEnvStruct, ns3::AiThompsonSamplingActStruct>::m_single_env)
+        .def_readwrite("m_single_act", &ns3::NS3AIRL<ns3::AiThompsonSamplingEnvStruct, ns3::AiThompsonSamplingActStruct>::m_single_act)
         ;
 
 }

@@ -38,8 +38,7 @@ NS_LOG_COMPONENT_DEFINE("AiConstantRateWifiManager");
 NS_OBJECT_ENSURE_REGISTERED(AiConstantRateWifiManager);
 
 NS3AIRL<AiConstantRateEnvStruct, AiConstantRateActStruct> m_ns3ai_mod =
-    NS3AIRL<AiConstantRateEnvStruct, AiConstantRateActStruct>(4096);
-bool ns3ai_initialized = false;
+    NS3AIRL<AiConstantRateEnvStruct, AiConstantRateActStruct>(4096, false);
 
 TypeId
 AiConstantRateWifiManager::GetTypeId()
@@ -65,18 +64,6 @@ AiConstantRateWifiManager::GetTypeId()
 AiConstantRateWifiManager::AiConstantRateWifiManager()
 {
     NS_LOG_FUNCTION(this);
-
-    AiConstantRateEnvStruct env_struct{0, 0, 0};
-    AiConstantRateActStruct act_struct{0, 0};
-
-    if (!ns3ai_initialized)
-    {
-        NS_ASSERT(m_ns3ai_mod.m_env->empty());
-        m_ns3ai_mod.m_env->resize(1, env_struct);
-        NS_ASSERT(m_ns3ai_mod.m_act->empty());
-        m_ns3ai_mod.m_act->resize(1, act_struct);
-        ns3ai_initialized = true;
-    }
 }
 
 AiConstantRateWifiManager::~AiConstantRateWifiManager()
@@ -148,18 +135,18 @@ AiConstantRateWifiManager::DoGetDataTxVector(WifiRemoteStation* st, uint16_t all
     NS_LOG_FUNCTION(this << st);
 
     m_ns3ai_mod.set_env_begin();
-    m_ns3ai_mod.m_env->at(0).transmitStreams = GetMaxNumberOfTransmitStreams();
-    m_ns3ai_mod.m_env->at(0).supportedStreams = GetNumberOfSupportedStreams(st);
+    m_ns3ai_mod.m_single_env->transmitStreams = GetMaxNumberOfTransmitStreams();
+    m_ns3ai_mod.m_single_env->supportedStreams = GetNumberOfSupportedStreams(st);
     if (m_dataMode.GetModulationClass() == WIFI_MOD_CLASS_HT) {
-        m_ns3ai_mod.m_env->at(0).mcs = m_dataMode.GetMcsValue();
+        m_ns3ai_mod.m_single_env->mcs = m_dataMode.GetMcsValue();
     } else {
-        m_ns3ai_mod.m_env->at(0).mcs = 0xffU;
+        m_ns3ai_mod.m_single_env->mcs = 0xffU;
     }
     m_ns3ai_mod.set_env_end();
 
     m_ns3ai_mod.get_act_begin();
-    uint8_t nss = m_ns3ai_mod.m_act->at(0).nss;
-    uint8_t next_mcs = m_ns3ai_mod.m_act->at(0).next_mcs;
+    uint8_t nss = m_ns3ai_mod.m_single_act->nss;
+    uint8_t next_mcs = m_ns3ai_mod.m_single_act->next_mcs;
     NS_LOG_FUNCTION(next_mcs);
     m_ns3ai_mod.get_act_end();
 
