@@ -2,9 +2,12 @@
 
 ## Introduction
 
-In `ns3ai_apb` example, C++ side sets a vector in shared memory that containes 3 structures. Each structure contains 2 random numbers which can be seen as environment in RL. Python side gets the vector and compute the sum for each structure, and sets another vector in shared memory that contains the sums, which can be seen as action in RL. C++ then gets the actions and prints them. The procedure is repeated many times, as defined by the macro ENV_NUM on C++ side.
+In `ns3ai_apb` example, C++ side sets a vector in shared memory that containes 3 structures. Each structure contains 2
+random numbers which can be seen as environment in RL. Python side gets the vector and compute the sum for each
+structure, and sets another vector in shared memory that contains the sums, which can be seen as action in RL. C++ then
+gets the actions and prints them. The procedure is repeated many times, as defined by the macro ENV_NUM on C++ side.
 
-## Running the example
+## Running the example (shared vector interface)
 
 1. Clone the repository under `contrib`, checkout `improvements` branch
 
@@ -16,7 +19,8 @@ git checkout -b improvements origin/improvements
 cd ../../
 ```
 
-2. Use `./ns3` script to build the example. This builds both C++ and Python modules. An `.so` shared library will be placed in the example directory, which can be imported by Python.
+2. Use `./ns3` script to build the example. This builds both C++ and Python modules. An `.so` shared library will be
+   placed in the example directory, which can be imported by Python.
 
 ```bash
 ./ns3 clean
@@ -37,7 +41,25 @@ python apb.py
 ./ns3 run ns3ai_apb
 ```
 
-5. You should see output like this on C++ side. The numbers are random, we only care about the sum.
+## Running the example (Gym-like interface)
+
+Steps 1-2. Same as previous interface
+
+3. Setup Python module and run Python side
+
+```bash
+cd contrib/ns3-ai/examples/a_plus_b/py_interface
+pip install -e .
+cd ../
+python apb_use_gym.py
+```
+
+4. Same as previous interface
+
+## Output
+
+No matter which interface you use, you will see output like this on C++ side. The numbers are random, we only care about
+the sum.
 
 ```
 CPP env to set: 2,5;5,6;2,5;
