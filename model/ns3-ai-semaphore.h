@@ -1,15 +1,13 @@
-#ifndef SH_MEM_H
-#define SH_MEM_H
+#ifndef NS3_AI_SEMAPHORE_H
+#define NS3_AI_SEMAPHORE_H
 
 #include <boost/interprocess/managed_shared_memory.hpp>
 #include <boost/interprocess/sync/interprocess_semaphore.hpp>
 
-#define noop
-
-struct RlShMemLockable
+struct Ns3AiSemaphore
 {
 
-    explicit RlShMemLockable() = default;
+    explicit Ns3AiSemaphore() = default;
 
     static inline uint8_t atomic_read8(const volatile uint8_t *mem) {
         uint8_t old_val = *mem;
@@ -51,15 +49,7 @@ struct RlShMemLockable
     static inline uint8_t sem_post(volatile uint8_t *mem) {
         return atomic_add8(mem, 1);
     }
-
-    volatile uint8_t m_empty_env_count{1};
-    volatile uint8_t m_full_env_count{0};
-    volatile uint8_t m_empty_act_count{1};
-    volatile uint8_t m_full_act_count{0};
-
-    //Is communication finished
-    bool m_isFinished{false};
 };
 
 
-#endif // SH_MEM_H
+#endif // NS3_AI_SEMAPHORE_H

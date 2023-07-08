@@ -29,31 +29,31 @@
 namespace ns3
 {
 
-typedef struct _AiConstantRateEnvStruct
+struct AiConstantRateEnvStruct
 {
     uint8_t transmitStreams;
     uint8_t supportedStreams;
     uint8_t mcs;
 
-    _AiConstantRateEnvStruct()
+    AiConstantRateEnvStruct()
         : transmitStreams(0),
           supportedStreams(0),
           mcs(0)
     {
     }
-} AiConstantRateEnvStruct;
+};
 
-typedef struct _AiConstantRateActStruct
+struct AiConstantRateActStruct
 {
     uint8_t nss;
     uint8_t next_mcs;
 
-    _AiConstantRateActStruct()
+    AiConstantRateActStruct()
         : nss(0),
           next_mcs(0)
     {
     }
-} AiConstantRateActStruct;
+};
 
 /**
  * \ingroup wifi

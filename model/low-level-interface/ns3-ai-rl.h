@@ -1,32 +1,40 @@
 #ifndef NS3_AI_RL_H
 #define NS3_AI_RL_H
 
-#include <cstdint>
-#include <vector>
-#include <string>
-#include <cstddef>
-#include <boost/interprocess/managed_shared_memory.hpp>
-#include <boost/interprocess/containers/vector.hpp>
-#include <boost/interprocess/allocators/allocator.hpp>
+#include "../ns3-ai-semaphore.h"
 
-#include "sh_mem.h"
+#include <boost/interprocess/allocators/allocator.hpp>
+#include <boost/interprocess/containers/vector.hpp>
+#include <boost/interprocess/managed_shared_memory.hpp>
+#include <cstddef>
+#include <cstdint>
+#include <string>
+#include <vector>
 
 namespace ns3
 {
 
+struct Ns3AiRlSync {
+    volatile uint8_t m_empty_env_count{1};
+    volatile uint8_t m_full_env_count{0};
+    volatile uint8_t m_empty_act_count{1};
+    volatile uint8_t m_full_act_count{0};
+    bool m_isFinished{false};
+};
+
 template <typename EnvType, typename ActType>
-class NS3AIRL
+class Ns3AiRl
 {
   public:
-    NS3AIRL() = delete;
-    explicit NS3AIRL(uint32_t size,
+    Ns3AiRl() = delete;
+    explicit Ns3AiRl(uint32_t size,
                      bool use_vector = true,
                      bool is_memory_creator = false,
                      const char* segment_name = "My Seg",
                      const char* env_name = "My Env",
                      const char* act_name = "My Act",
                      const char* lockable_name = "My Lockable");
-    ~NS3AIRL();
+    ~Ns3AiRl();
 
     // for C++ side:
     void set_env_begin();
@@ -55,7 +63,7 @@ class NS3AIRL
 
   private:
     void set_finished();    // for C++ side when exiting
-    RlShMemLockable *m_lockable;
+    Ns3AiRlSync *m_sync;
     bool m_isCreator;
     bool m_isFinished;
     std::string m_segName;
@@ -63,75 +71,77 @@ class NS3AIRL
 
 template <typename EnvType, typename ActType>
 void
-NS3AIRL<EnvType, ActType>::set_env_begin()
+Ns3AiRl<EnvType, ActType>::set_env_begin()
 {
-    RlShMemLockable::sem_wait(&m_lockable->m_empty_env_count);
+    Ns3AiSemaphore::sem_wait(&m_sync->m_empty_env_count);
 }
 
 template <typename EnvType, typename ActType>
 void
-NS3AIRL<EnvType, ActType>::set_env_end()
+Ns3AiRl<EnvType, ActType>::set_env_end()
 {
-    RlShMemLockable::sem_post(&m_lockable->m_full_env_count);
+    Ns3AiSemaphore::sem_post(&m_sync->m_full_env_count);
 }
 
 template <typename EnvType, typename ActType>
 void
-NS3AIRL<EnvType, ActType>::get_act_begin()
+Ns3AiRl<EnvType, ActType>::get_act_begin()
 {
-    RlShMemLockable::sem_wait(&m_lockable->m_full_act_count);
+    Ns3AiSemaphore::sem_wait(&m_sync->m_full_act_count);
 }
 
 template <typename EnvType, typename ActType>
 void
-NS3AIRL<EnvType, ActType>::get_act_end()
+Ns3AiRl<EnvType, ActType>::get_act_end()
 {
-    RlShMemLockable::sem_post(&m_lockable->m_empty_act_count);
+    Ns3AiSemaphore::sem_post(&m_sync->m_empty_act_count);
 }
 
 template<typename EnvType, typename ActType>
-void NS3AIRL<EnvType, ActType>::set_finished() {
-    RlShMemLockable::sem_wait(&m_lockable->m_empty_env_count);
-    m_lockable->m_isFinished = true;
-    RlShMemLockable::sem_post(&m_lockable->m_full_env_count);
+void
+Ns3AiRl<EnvType, ActType>::set_finished() {
+    Ns3AiSemaphore::sem_wait(&m_sync->m_empty_env_count);
+    m_sync->m_isFinished = true;
+    Ns3AiSemaphore::sem_post(&m_sync->m_full_env_count);
 }
 
 template <typename EnvType, typename ActType>
 void
-NS3AIRL<EnvType, ActType>::get_env_begin()
+Ns3AiRl<EnvType, ActType>::get_env_begin()
 {
-    RlShMemLockable::sem_wait(&m_lockable->m_full_env_count);
-    m_isFinished = m_lockable->m_isFinished;
+    Ns3AiSemaphore::sem_wait(&m_sync->m_full_env_count);
+    m_isFinished = m_sync->m_isFinished;
 }
 
 template <typename EnvType, typename ActType>
 void
-NS3AIRL<EnvType, ActType>::get_env_end()
+Ns3AiRl<EnvType, ActType>::get_env_end()
 {
-    RlShMemLockable::sem_post(&m_lockable->m_empty_env_count);
+    Ns3AiSemaphore::sem_post(&m_sync->m_empty_env_count);
 }
 
 template <typename EnvType, typename ActType>
 void
-NS3AIRL<EnvType, ActType>::set_act_begin()
+Ns3AiRl<EnvType, ActType>::set_act_begin()
 {
-    RlShMemLockable::sem_wait(&m_lockable->m_empty_act_count);
+    Ns3AiSemaphore::sem_wait(&m_sync->m_empty_act_count);
 }
 
 template <typename EnvType, typename ActType>
 void
-NS3AIRL<EnvType, ActType>::set_act_end()
+Ns3AiRl<EnvType, ActType>::set_act_end()
 {
-    RlShMemLockable::sem_post(&m_lockable->m_full_act_count);
+    Ns3AiSemaphore::sem_post(&m_sync->m_full_act_count);
 }
 
 template<typename EnvType, typename ActType>
-bool NS3AIRL<EnvType, ActType>::is_finished() {
+bool
+Ns3AiRl<EnvType, ActType>::is_finished() {
     return m_isFinished;
 }
 
 template<typename EnvType, typename ActType>
-NS3AIRL<EnvType, ActType>::~NS3AIRL() {
+Ns3AiRl<EnvType, ActType>::~Ns3AiRl() {
     if (m_isCreator)
     {
         boost::interprocess::shared_memory_object::remove(m_segName.c_str());
@@ -142,7 +152,7 @@ NS3AIRL<EnvType, ActType>::~NS3AIRL() {
 }
 
 template <typename EnvType, typename ActType>
-NS3AIRL<EnvType, ActType>::NS3AIRL(uint32_t size,
+Ns3AiRl<EnvType, ActType>::Ns3AiRl(uint32_t size,
                                    bool use_vector,
                                    bool is_memory_creator,
                                    const char* segment_name,
@@ -170,7 +180,7 @@ NS3AIRL<EnvType, ActType>::NS3AIRL(uint32_t size,
             m_single_env = segment.construct<EnvType>(env_name)();
             m_single_act = segment.construct<ActType>(act_name)();
         }
-        m_lockable = segment.construct<RlShMemLockable>(lockable_name)();
+        m_sync = segment.construct<Ns3AiRlSync>(lockable_name)();
     }
     else
     {
@@ -187,7 +197,7 @@ NS3AIRL<EnvType, ActType>::NS3AIRL(uint32_t size,
             m_single_env = segment.find<EnvType>(env_name).first;
             m_single_act = segment.find<ActType>(act_name).first;
         }
-        m_lockable = segment.find<RlShMemLockable>(lockable_name).first;
+        m_sync = segment.find<Ns3AiRlSync>(lockable_name).first;
     }
 }
 

@@ -2,7 +2,6 @@
 #include <random>
 #include <chrono>
 
-#include <ns3/ns3-ai-new-rl.h>
 #include "apb.h"
 
 #define NUM_ENV 10000
@@ -11,7 +10,7 @@
 using namespace ns3;
 
 int main() {
-    NS3AIRL<EnvStruct, ActStruct> cpp_side(4096, true);
+    Ns3AiRl<EnvStruct, ActStruct> cpp_side(4096, true);
 
     // Should run after Python
     assert(cpp_side.m_env->size() == APB_SIZE);

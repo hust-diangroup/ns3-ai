@@ -10,8 +10,8 @@ find_package(pybind11 REQUIRED)
 
 build_lib(
         LIBNAME ns3-ai
-        SOURCE_FILES model/ns3-ai-new-rl.cc
-        HEADER_FILES model/ns3-ai-new-rl.h
+        SOURCE_FILES model/low-level-interface/ns3-ai-rl.cc # you must have a source here, although it's an empty one
+        HEADER_FILES model/low-level-interface/ns3-ai-rl.h
         LIBRARIES_TO_LINK ${libcore} Boost::program_options
 )
 

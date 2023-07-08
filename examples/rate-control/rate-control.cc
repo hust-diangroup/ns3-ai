@@ -59,7 +59,7 @@ struct DataForThpt
   }
 } data; //data is a structure variable which will store all these global variables.
 
-double duration = 1.0; // Duration of simulation (s)
+double duration = 5.0; // Duration of simulation (s)
 double statInterval = 0.1; // Time interval of calling function Throughput
 
 // This function is being called every 'statInterval' seconds, It measures delay and throughput in every 'statInterval' time window.

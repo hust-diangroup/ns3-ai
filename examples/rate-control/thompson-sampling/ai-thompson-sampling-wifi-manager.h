@@ -33,7 +33,7 @@
 namespace ns3
 {
 
-typedef struct _ThompsonSamplingRateStats
+struct ThompsonSamplingRateStats
 {
     uint8_t nss;
     uint16_t channelWidth;
@@ -43,7 +43,7 @@ typedef struct _ThompsonSamplingRateStats
     double fails;
     double lastDecay;
 
-    _ThompsonSamplingRateStats()
+    ThompsonSamplingRateStats()
         : nss(0),
           channelWidth(0),
           guardInterval(0),
@@ -53,35 +53,35 @@ typedef struct _ThompsonSamplingRateStats
           lastDecay(0)
     {
     }
-} ThompsonSamplingRateStats;
+};
 
-typedef struct _ThompsonSamplingEnvDecay
+struct ThompsonSamplingEnvDecay
 {
     int8_t decayIdx;
     double decay;
     double now;
 
-    _ThompsonSamplingEnvDecay()
+    ThompsonSamplingEnvDecay()
         : decayIdx(0),
           decay(0),
           now(0)
     {
     }
-} ThompsonSamplingEnvDecay;
+};
 
-typedef struct _ThompsonSamplingEnvPayloadStruct
+struct ThompsonSamplingEnvPayloadStruct
 {
     std::array<ThompsonSamplingRateStats, 64> stats;
     ThompsonSamplingEnvDecay decay;
 
-    _ThompsonSamplingEnvPayloadStruct()
+    ThompsonSamplingEnvPayloadStruct()
         : stats(),
           decay()
     {
     }
-} ThompsonSamplingEnvPayloadStruct;
+};
 
-typedef struct _AiThompsonSamplingEnvStruct
+struct AiThompsonSamplingEnvStruct
 {
     int8_t type;
     int8_t managerId;
@@ -89,7 +89,7 @@ typedef struct _AiThompsonSamplingEnvStruct
     uint64_t var;
     ThompsonSamplingEnvPayloadStruct data;
 
-    _AiThompsonSamplingEnvStruct()
+    AiThompsonSamplingEnvStruct()
         : type(0),
           managerId(0),
           stationId(0),
@@ -97,23 +97,23 @@ typedef struct _AiThompsonSamplingEnvStruct
           data()
     {
     }
-} AiThompsonSamplingEnvStruct;
+};
 
-typedef struct _AiThompsonSamplingActStruct
+struct AiThompsonSamplingActStruct
 {
     int8_t managerId;
     int8_t stationId;
     uint64_t res;
     ThompsonSamplingRateStats stats;
 
-    _AiThompsonSamplingActStruct()
+    AiThompsonSamplingActStruct()
         : managerId(0),
           stationId(0),
           res(0),
           stats()
     {
     }
-} AiThompsonSamplingActStruct;
+};
 
 /**
  * \brief Thompson Sampling rate control algorithm

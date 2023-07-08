@@ -1,7 +1,7 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/stl_bind.h>
 
-#include <ns3/ns3-ai-new-rl.h>
+#include <ns3/ns3-ai-rl.h>
 #include "ai-thompson-sampling-wifi-manager.h"
 
 namespace py = pybind11;
@@ -69,15 +69,15 @@ PYBIND11_MODULE(ns3ai_ratecontrol_ts_py, m) {
         .def_readwrite("stats", &ns3::AiThompsonSamplingActStruct::stats)
         ;
 
-    py::class_<ns3::NS3AIRL<ns3::AiThompsonSamplingEnvStruct, ns3::AiThompsonSamplingActStruct>>(m, "NS3AIRL")
+    py::class_<ns3::Ns3AiRl<ns3::AiThompsonSamplingEnvStruct, ns3::AiThompsonSamplingActStruct>>(m, "Ns3AiRl")
         .def(py::init<uint32_t, bool, bool, const char*, const char*, const char*, const char*>())
-        .def("get_env_begin", &ns3::NS3AIRL<ns3::AiThompsonSamplingEnvStruct, ns3::AiThompsonSamplingActStruct>::get_env_begin)
-        .def("get_env_end", &ns3::NS3AIRL<ns3::AiThompsonSamplingEnvStruct, ns3::AiThompsonSamplingActStruct>::get_env_end)
-        .def("set_act_begin", &ns3::NS3AIRL<ns3::AiThompsonSamplingEnvStruct, ns3::AiThompsonSamplingActStruct>::set_act_begin)
-        .def("set_act_end", &ns3::NS3AIRL<ns3::AiThompsonSamplingEnvStruct, ns3::AiThompsonSamplingActStruct>::set_act_end)
-        .def("is_finished", &ns3::NS3AIRL<ns3::AiThompsonSamplingEnvStruct, ns3::AiThompsonSamplingActStruct>::is_finished)
-        .def_readwrite("m_single_env", &ns3::NS3AIRL<ns3::AiThompsonSamplingEnvStruct, ns3::AiThompsonSamplingActStruct>::m_single_env)
-        .def_readwrite("m_single_act", &ns3::NS3AIRL<ns3::AiThompsonSamplingEnvStruct, ns3::AiThompsonSamplingActStruct>::m_single_act)
+        .def("get_env_begin", &ns3::Ns3AiRl<ns3::AiThompsonSamplingEnvStruct, ns3::AiThompsonSamplingActStruct>::get_env_begin)
+        .def("get_env_end", &ns3::Ns3AiRl<ns3::AiThompsonSamplingEnvStruct, ns3::AiThompsonSamplingActStruct>::get_env_end)
+        .def("set_act_begin", &ns3::Ns3AiRl<ns3::AiThompsonSamplingEnvStruct, ns3::AiThompsonSamplingActStruct>::set_act_begin)
+        .def("set_act_end", &ns3::Ns3AiRl<ns3::AiThompsonSamplingEnvStruct, ns3::AiThompsonSamplingActStruct>::set_act_end)
+        .def("is_finished", &ns3::Ns3AiRl<ns3::AiThompsonSamplingEnvStruct, ns3::AiThompsonSamplingActStruct>::is_finished)
+        .def_readwrite("m_single_env", &ns3::Ns3AiRl<ns3::AiThompsonSamplingEnvStruct, ns3::AiThompsonSamplingActStruct>::m_single_env)
+        .def_readwrite("m_single_act", &ns3::Ns3AiRl<ns3::AiThompsonSamplingEnvStruct, ns3::AiThompsonSamplingActStruct>::m_single_act)
         ;
 
 }

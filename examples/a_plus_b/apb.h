@@ -1,6 +1,8 @@
 #ifndef APB_H
 #define APB_H
 
+#include <ns3/ns3-ai-module.h>
+
 typedef struct _EnvStruct
 {
     uint32_t env_a;

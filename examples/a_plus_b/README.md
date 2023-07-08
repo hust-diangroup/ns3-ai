@@ -48,7 +48,7 @@ Steps 1-2. Same as previous interface
 3. Setup Python module and run Python side
 
 ```bash
-cd contrib/ns3-ai/examples/a_plus_b/py_interface
+cd contrib/ns3-ai/examples/a_plus_b/gym_interface
 pip install -e .
 cd ../
 python apb_use_gym.py

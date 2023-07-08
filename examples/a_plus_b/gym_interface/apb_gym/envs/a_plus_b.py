@@ -17,7 +17,7 @@ class APlusBEnv(gym.Env):
         self.action_space = spaces.Box(low=0, high=20, shape=(APB_SIZE,), dtype=int)
 
         # create and prepare shared memory
-        self._rl = apb.NS3AIRL(4096, True, True, "My Seg", "My Env", "My Act", "My Lockable")
+        self._rl = apb.Ns3AiRl(4096, True, True, "My Seg", "My Env", "My Act", "My Lockable")
         assert len(self._rl.m_act) == 0
         self._rl.m_act.resize(APB_SIZE)
         assert len(self._rl.m_env) == 0

@@ -38,8 +38,8 @@ NS_OBJECT_ENSURE_REGISTERED(AiThompsonSamplingWifiManager);
 
 NS_LOG_COMPONENT_DEFINE("AiThompsonSamplingWifiManager");
 
-NS3AIRL<AiThompsonSamplingEnvStruct, AiThompsonSamplingActStruct> m_ns3ai_mod =
-    NS3AIRL<AiThompsonSamplingEnvStruct, AiThompsonSamplingActStruct>(4096, false);
+Ns3AiRl<AiThompsonSamplingEnvStruct, AiThompsonSamplingActStruct> m_ns3ai_mod =
+    Ns3AiRl<AiThompsonSamplingEnvStruct, AiThompsonSamplingActStruct>(4096, false);
 
 /**
  * A structure containing parameters of a single rate and its

@@ -37,8 +37,8 @@ NS_LOG_COMPONENT_DEFINE("AiConstantRateWifiManager");
 
 NS_OBJECT_ENSURE_REGISTERED(AiConstantRateWifiManager);
 
-NS3AIRL<AiConstantRateEnvStruct, AiConstantRateActStruct> m_ns3ai_mod =
-    NS3AIRL<AiConstantRateEnvStruct, AiConstantRateActStruct>(4096, false);
+Ns3AiRl<AiConstantRateEnvStruct, AiConstantRateActStruct> m_ns3ai_mod =
+    Ns3AiRl<AiConstantRateEnvStruct, AiConstantRateActStruct>(4096, false);
 
 TypeId
 AiConstantRateWifiManager::GetTypeId()

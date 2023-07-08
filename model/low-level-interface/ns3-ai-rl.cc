@@ -1,4 +1,4 @@
-#include "ns3-ai-new-rl.h"
+#include "ns3-ai-rl.h"
 
 namespace ns3
 {

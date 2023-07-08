@@ -2,7 +2,7 @@ import ns3ai_apb_py as apb
 
 APB_SIZE = 3
 
-rl = apb.NS3AIRL(4096, True, True, "My Seg", "My Env", "My Act", "My Lockable")
+rl = apb.Ns3AiRl(4096, True, True, "My Seg", "My Env", "My Act", "My Lockable")
 
 assert len(rl.m_act) == 0
 rl.m_act.resize(APB_SIZE)
