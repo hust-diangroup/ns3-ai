@@ -103,7 +103,7 @@ class AiThompsonSamplingContainer:
     wifiStation: List[AiThompsonSamplingStation] = []
 
     def __init__(self, stream=1) -> None:
-        self.rl = ts.Ns3AiRl(4096, False, True, "My Seg", "My Env", "My Act", "My Lockable")
+        self.rl = ts.Ns3AiMsgInterface(4096, False, True, "My Seg", "My Env", "My Act", "My Lockable")
         self.default_stream = stream
         pass
 
@@ -198,12 +198,12 @@ if __name__ == '__main__':
     # pro = exp.run(setting=ns3Settings, show_output=True)
     # print("run rate-control", ns3Settings)
     while True:
-        c.rl.get_env_begin()
-        c.rl.set_act_begin()
-        if c.rl.is_finished():
+        c.rl.py_recv_begin()
+        c.rl.py_send_begin()
+        if c.rl.py_check_finished():
             break
-        c.do(c.rl.m_single_env, c.rl.m_single_act)
-        c.rl.get_env_end()
-        c.rl.set_act_end()
+        c.do(c.rl.m_single_cpp2py_msg, c.rl.m_single_py2cpp_msg)
+        c.rl.py_recv_end()
+        c.rl.py_send_end()
 
     del c

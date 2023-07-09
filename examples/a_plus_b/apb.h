@@ -1,28 +1,26 @@
 #ifndef APB_H
 #define APB_H
 
-#include <ns3/ns3-ai-module.h>
-
-typedef struct _EnvStruct
+struct EnvStruct
 {
     uint32_t env_a;
     uint32_t env_b;
 
-    _EnvStruct()
+    EnvStruct()
         : env_a(0),
           env_b(0)
     {
     }
-} EnvStruct;
+};
 
-typedef struct _ActStruct
+struct ActStruct
 {
     uint32_t act_c;
 
-    _ActStruct()
+    ActStruct()
         : act_c(0)
     {
     }
-} ActStruct;
+};
 
 #endif // APB_H

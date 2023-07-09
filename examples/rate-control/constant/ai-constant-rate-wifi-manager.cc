@@ -37,8 +37,8 @@ NS_LOG_COMPONENT_DEFINE("AiConstantRateWifiManager");
 
 NS_OBJECT_ENSURE_REGISTERED(AiConstantRateWifiManager);
 
-Ns3AiRl<AiConstantRateEnvStruct, AiConstantRateActStruct> m_ns3ai_mod =
-    Ns3AiRl<AiConstantRateEnvStruct, AiConstantRateActStruct>(4096, false);
+Ns3AiMsgInterface<AiConstantRateEnvStruct, AiConstantRateActStruct> m_ns3ai_mod =
+    Ns3AiMsgInterface<AiConstantRateEnvStruct, AiConstantRateActStruct>(4096, false);
 
 TypeId
 AiConstantRateWifiManager::GetTypeId()
@@ -134,21 +134,21 @@ AiConstantRateWifiManager::DoGetDataTxVector(WifiRemoteStation* st, uint16_t all
 {
     NS_LOG_FUNCTION(this << st);
 
-    m_ns3ai_mod.set_env_begin();
-    m_ns3ai_mod.m_single_env->transmitStreams = GetMaxNumberOfTransmitStreams();
-    m_ns3ai_mod.m_single_env->supportedStreams = GetNumberOfSupportedStreams(st);
+    m_ns3ai_mod.cpp_send_begin();
+    m_ns3ai_mod.m_single_cpp2py_msg->transmitStreams = GetMaxNumberOfTransmitStreams();
+    m_ns3ai_mod.m_single_cpp2py_msg->supportedStreams = GetNumberOfSupportedStreams(st);
     if (m_dataMode.GetModulationClass() == WIFI_MOD_CLASS_HT) {
-        m_ns3ai_mod.m_single_env->mcs = m_dataMode.GetMcsValue();
+        m_ns3ai_mod.m_single_cpp2py_msg->mcs = m_dataMode.GetMcsValue();
     } else {
-        m_ns3ai_mod.m_single_env->mcs = 0xffU;
+        m_ns3ai_mod.m_single_cpp2py_msg->mcs = 0xffU;
     }
-    m_ns3ai_mod.set_env_end();
+    m_ns3ai_mod.cpp_send_end();
 
-    m_ns3ai_mod.get_act_begin();
-    uint8_t nss = m_ns3ai_mod.m_single_act->nss;
-    uint8_t next_mcs = m_ns3ai_mod.m_single_act->next_mcs;
+    m_ns3ai_mod.cpp_recv_begin();
+    uint8_t nss = m_ns3ai_mod.m_single_py2cpp_msg->nss;
+    uint8_t next_mcs = m_ns3ai_mod.m_single_py2cpp_msg->next_mcs;
     NS_LOG_FUNCTION(next_mcs);
-    m_ns3ai_mod.get_act_end();
+    m_ns3ai_mod.cpp_recv_end();
 
     // uncomment to specify arbitrary MCS
     // m_dataMode = GetMcsSupported (st, next_mcs);

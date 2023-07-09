@@ -20,15 +20,25 @@ PYBIND11_MODULE(ns3ai_ratecontrol_constant_py, m) {
         .def_readwrite("next_mcs", &ns3::AiConstantRateActStruct::next_mcs)
         ;
 
-    py::class_<ns3::Ns3AiRl<ns3::AiConstantRateEnvStruct, ns3::AiConstantRateActStruct>>(m, "Ns3AiRl")
+    py::class_<ns3::Ns3AiMsgInterface<ns3::AiConstantRateEnvStruct, ns3::AiConstantRateActStruct>>(m, "Ns3AiMsgInterface")
         .def(py::init<uint32_t, bool, bool, const char*, const char*, const char*, const char*>())
-        .def("get_env_begin", &ns3::Ns3AiRl<ns3::AiConstantRateEnvStruct, ns3::AiConstantRateActStruct>::get_env_begin)
-        .def("get_env_end", &ns3::Ns3AiRl<ns3::AiConstantRateEnvStruct, ns3::AiConstantRateActStruct>::get_env_end)
-        .def("set_act_begin", &ns3::Ns3AiRl<ns3::AiConstantRateEnvStruct, ns3::AiConstantRateActStruct>::set_act_begin)
-        .def("set_act_end", &ns3::Ns3AiRl<ns3::AiConstantRateEnvStruct, ns3::AiConstantRateActStruct>::set_act_end)
-        .def("is_finished", &ns3::Ns3AiRl<ns3::AiConstantRateEnvStruct, ns3::AiConstantRateActStruct>::is_finished)
-        .def_readwrite("m_single_env", &ns3::Ns3AiRl<ns3::AiConstantRateEnvStruct, ns3::AiConstantRateActStruct>::m_single_env)
-        .def_readwrite("m_single_act", &ns3::Ns3AiRl<ns3::AiConstantRateEnvStruct, ns3::AiConstantRateActStruct>::m_single_act)
+        .def("py_recv_begin",
+             &ns3::Ns3AiMsgInterface<ns3::AiConstantRateEnvStruct,
+                                     ns3::AiConstantRateActStruct>::py_recv_begin)
+        .def("py_recv_end",
+             &ns3::Ns3AiMsgInterface<ns3::AiConstantRateEnvStruct,
+                                     ns3::AiConstantRateActStruct>::py_recv_end)
+        .def("py_send_begin",
+             &ns3::Ns3AiMsgInterface<ns3::AiConstantRateEnvStruct,
+                                     ns3::AiConstantRateActStruct>::py_send_begin)
+        .def("py_send_end",
+             &ns3::Ns3AiMsgInterface<ns3::AiConstantRateEnvStruct,
+                                     ns3::AiConstantRateActStruct>::py_send_end)
+        .def("py_check_finished",
+             &ns3::Ns3AiMsgInterface<ns3::AiConstantRateEnvStruct,
+                                     ns3::AiConstantRateActStruct>::py_check_finished)
+        .def_readwrite("m_single_cpp2py_msg", &ns3::Ns3AiMsgInterface<ns3::AiConstantRateEnvStruct, ns3::AiConstantRateActStruct>::m_single_cpp2py_msg)
+        .def_readwrite("m_single_py2cpp_msg", &ns3::Ns3AiMsgInterface<ns3::AiConstantRateEnvStruct, ns3::AiConstantRateActStruct>::m_single_py2cpp_msg)
         ;
 
 }

@@ -17,11 +17,11 @@ class APlusBEnv(gym.Env):
         self.action_space = spaces.Box(low=0, high=20, shape=(APB_SIZE,), dtype=int)
 
         # create and prepare shared memory
-        self._rl = apb.Ns3AiRl(4096, True, True, "My Seg", "My Env", "My Act", "My Lockable")
-        assert len(self._rl.m_act) == 0
-        self._rl.m_act.resize(APB_SIZE)
-        assert len(self._rl.m_env) == 0
-        self._rl.m_env.resize(APB_SIZE)
+        self._rl = apb.Ns3AiMsgInterface(4096, True, True, "My Seg", "My Env", "My Act", "My Lockable")
+        assert len(self._rl.m_py2cpp_msg) == 0
+        self._rl.m_py2cpp_msg.resize(APB_SIZE)
+        assert len(self._rl.m_cpp2py_msg) == 0
+        self._rl.m_cpp2py_msg.resize(APB_SIZE)
 
         # init observation and info
         self._obs = np.zeros((APB_SIZE, 2), dtype=int)
@@ -38,14 +38,14 @@ class APlusBEnv(gym.Env):
 
     def _get_env_from_shared_mem(self):
         # get obs and info(sum of two envs)
-        if self._rl.is_finished():
+        if self._rl.py_check_finished():
             self._is_finished = True
             return
-        self._rl.get_env_begin()
+        self._rl.py_recv_begin()
         for i in range(APB_SIZE):
-            self._obs[i] = [self._rl.m_env[i].a, self._rl.m_env[i].b]
-            self._info["sum"][i] = self._rl.m_env[i].a + self._rl.m_env[i].b
-        self._rl.get_env_end()
+            self._obs[i] = [self._rl.m_cpp2py_msg[i].a, self._rl.m_cpp2py_msg[i].b]
+            self._info["sum"][i] = self._rl.m_cpp2py_msg[i].a + self._rl.m_cpp2py_msg[i].b
+        self._rl.py_recv_end()
 
     def reset(self, seed=None, options=None):
         # seed self._np_random
@@ -59,10 +59,10 @@ class APlusBEnv(gym.Env):
         return observation, info
 
     def step(self, action):
-        self._rl.set_act_begin()
+        self._rl.py_send_begin()
         for i in range(APB_SIZE):
-            self._rl.m_act[i].c = action[i]
-        self._rl.set_act_end()
+            self._rl.m_py2cpp_msg[i].c = action[i]
+        self._rl.py_send_end()
 
         self._get_env_from_shared_mem()
         terminated = self._is_finished
