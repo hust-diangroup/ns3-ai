@@ -16,13 +16,13 @@ build_lib(
         SOURCE_FILES
             model/msg-interface/ns3-ai-msg-interface.cc
             model/gym-interface/messages.proto
-#            model/gym-interface/ns3-ai-gym-interface.cc
-#            model/gym-interface/ns3-ai-gym-env.cc
-#            model/gym-interface/container.cc
-#            model/gym-interface/spaces.cc
+            model/gym-interface/ns3-ai-gym-interface.cc
+            model/gym-interface/ns3-ai-gym-env.cc
+            model/gym-interface/container.cc
+            model/gym-interface/spaces.cc
         HEADER_FILES
             model/msg-interface/ns3-ai-msg-interface.h
-#            model/gym-interface/ns3-ai-gym-interface.h
+            model/gym-interface/ns3-ai-gym-interface.h
         LIBRARIES_TO_LINK ${libcore} Boost::program_options protobuf::libprotobuf
 )
 

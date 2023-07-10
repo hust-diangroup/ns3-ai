@@ -93,10 +93,10 @@ message DictDataContainer {
 
 //--------Messages--------//
 message SimInitMsg {
-	uint64 simProcessId = 1;
-	uint64 wafShellProcessId = 2;
-	SpaceDescription obsSpace = 3;
-	SpaceDescription actSpace = 4;
+//	uint64 simProcessId = 1;
+//	uint64 wafShellProcessId = 2;
+	SpaceDescription obsSpace = 1;
+	SpaceDescription actSpace = 2;
 }
 
 message SimInitAck {

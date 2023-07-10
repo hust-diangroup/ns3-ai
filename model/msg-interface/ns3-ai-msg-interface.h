@@ -32,8 +32,8 @@ class Ns3AiMsgInterface
                                bool use_vector,
                                uint32_t size = 4096,
                                const char* segment_name = "My Seg",
-                               const char* cpp2py_msg_name = "My Env",
-                               const char* py2cpp_msg_name = "My Act",
+                               const char* cpp2py_msg_name = "My Cpp to Python Msg",
+                               const char* py2cpp_msg_name = "My Python to Cpp Msg",
                                const char* lockable_name = "My Lockable");
     ~Ns3AiMsgInterface();
 

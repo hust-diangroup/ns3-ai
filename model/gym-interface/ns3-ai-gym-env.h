@@ -25,7 +25,8 @@
 
 #include "ns3/object.h"
 
-namespace ns3 {
+namespace ns3
+{
 
 class OpenGymSpace;
 class OpenGymDataContainer;
@@ -33,35 +34,32 @@ class OpenGymInterface;
 
 class OpenGymEnv : public Object
 {
-public:
-  OpenGymEnv ();
-  virtual ~OpenGymEnv ();
+  public:
+    OpenGymEnv();
+    ~OpenGymEnv() override;
 
-  static TypeId GetTypeId ();
+    static TypeId GetTypeId();
 
-  virtual Ptr<OpenGymSpace> GetActionSpace() = 0;
-  virtual Ptr<OpenGymSpace> GetObservationSpace() = 0;
-  // TODO:  get all in one function like below, do we need it?
-  //virtual void GetEnvState(Ptr<OpenGymDataContainer>  &obs, float &reward, bool &done, std::string &info) = 0;
-  virtual bool GetGameOver() = 0;
-  virtual Ptr<OpenGymDataContainer> GetObservation() = 0;
-  virtual float GetReward() = 0;
-  virtual std::string GetExtraInfo() = 0;
-  virtual bool ExecuteActions(Ptr<OpenGymDataContainer> action) = 0;
+    virtual Ptr<OpenGymSpace> GetActionSpace() = 0;
+    virtual Ptr<OpenGymSpace> GetObservationSpace() = 0;
+    virtual bool GetGameOver() = 0;
+    virtual Ptr<OpenGymDataContainer> GetObservation() = 0;
+    virtual float GetReward() = 0;
+    virtual std::string GetExtraInfo() = 0;
+    virtual bool ExecuteActions(Ptr<OpenGymDataContainer> action) = 0;
 
-  void SetOpenGymInterface(Ptr<OpenGymInterface> openGymInterface);
-  void Notify();
-  void NotifySimulationEnd();
+    void SetOpenGymInterface(Ptr<OpenGymInterface> openGymInterface);
+    void Notify();
+    void NotifySimulationEnd();
 
+  protected:
+    // Inherited
+    void DoInitialize() override;
+    void DoDispose() override;
 
-protected:
-  // Inherited
-  virtual void DoInitialize (void);
-  virtual void DoDispose (void);
+    Ptr<OpenGymInterface> m_openGymInterface;
 
-  Ptr<OpenGymInterface> m_openGymInterface;
-private:
-
+  private:
 };
 
 } // end of namespace ns3

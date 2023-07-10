@@ -17,7 +17,7 @@ class APlusBEnv(gym.Env):
         self.action_space = spaces.Box(low=0, high=20, shape=(APB_SIZE,), dtype=int)
 
         # create and prepare shared memory
-        self._rl = apb.Ns3AiMsgInterface(True, True, 4096, "My Seg", "My Env", "My Act", "My Lockable")
+        self._rl = apb.Ns3AiMsgInterface(True, True, 4096, "My Seg", "My Cpp to Python Msg", "My Python to Cpp Msg", "My Lockable")
         assert len(self._rl.m_py2cpp_msg) == 0
         self._rl.m_py2cpp_msg.resize(APB_SIZE)
         assert len(self._rl.m_cpp2py_msg) == 0

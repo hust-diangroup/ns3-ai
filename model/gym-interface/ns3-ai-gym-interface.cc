@@ -20,6 +20,11 @@
  *
  */
 
+/*
+ * Note: The Gym interface class is only for C++ side. Do not create Python binding
+ *       for this interface.
+ */
+
 #include "ns3-ai-gym-interface.h"
 
 #include "container.h"
@@ -37,13 +42,22 @@
 namespace ns3
 {
 
-OpenGymInterface::OpenGymInterface(bool is_creator,
-                                   uint32_t seg_size,
-                                   const char* seg_name,
-                                   const char* buf_name)
+NS_LOG_COMPONENT_DEFINE("OpenGymInterface");
+NS_OBJECT_ENSURE_REGISTERED(OpenGymInterface);
+
+Ptr<OpenGymInterface>
+OpenGymInterface::Get()
+{
+    NS_LOG_FUNCTION_NOARGS();
+    return *DoGet();
+}
+
+OpenGymInterface::OpenGymInterface()
     : m_simEnd(false),
       m_stopEnvRequested(false),
-      m_initSimMsgSent(false)
+      m_initSimMsgSent(false),
+      m_segName("My Gym Segment"),
+      m_msgInterface(false, false, 2 * MSG_BUFFER_SIZE, m_segName.c_str())
 {
 }
 
@@ -51,56 +65,14 @@ OpenGymInterface::~OpenGymInterface()
 {
 }
 
-void
-OpenGymInterface::DoDispose()
+TypeId
+OpenGymInterface::GetTypeId()
 {
-}
-
-void
-OpenGymInterface::DoInitialize()
-{
-}
-
-void
-OpenGymInterface::SetGetActionSpaceCb(Callback<Ptr<OpenGymSpace>> cb)
-{
-    m_actionSpaceCb = cb;
-}
-
-void
-OpenGymInterface::SetGetObservationSpaceCb(Callback<Ptr<OpenGymSpace>> cb)
-{
-    m_observationSpaceCb = cb;
-}
-
-void
-OpenGymInterface::SetGetGameOverCb(Callback<bool> cb)
-{
-    m_gameOverCb = cb;
-}
-
-void
-OpenGymInterface::SetGetObservationCb(Callback<Ptr<OpenGymDataContainer>> cb)
-{
-    m_obsCb = cb;
-}
-
-void
-OpenGymInterface::SetGetRewardCb(Callback<float> cb)
-{
-    m_rewardCb = cb;
-}
-
-void
-OpenGymInterface::SetGetExtraInfoCb(Callback<std::string> cb)
-{
-    m_extraInfoCb = cb;
-}
-
-void
-OpenGymInterface::SetExecuteActionsCb(Callback<bool, Ptr<OpenGymDataContainer>> cb)
-{
-    m_actionCb = cb;
+    static TypeId tid = TypeId("OpenGymInterface")
+                            .SetParent<Object>()
+                            .SetGroupName("OpenGym")
+                            .AddConstructor<OpenGymInterface>();
+    return tid;
 }
 
 void
@@ -113,50 +85,38 @@ OpenGymInterface::Init()
     }
     m_initSimMsgSent = true;
 
-    std::string connectAddr = "tcp://localhost:" + std::to_string(m_port);
-    zmq_connect((void*)m_zmq_socket, connectAddr.c_str());
-
     Ptr<OpenGymSpace> obsSpace = GetObservationSpace();
     Ptr<OpenGymSpace> actionSpace = GetActionSpace();
 
-    NS_LOG_UNCOND("Simulation process id: " << ::getpid()
-                                            << " (parent (waf shell) id: " << ::getppid() << ")");
-    NS_LOG_UNCOND("Waiting for Python process to connect on port: " << connectAddr);
-    NS_LOG_UNCOND("Please start proper Python Gym Agent");
-
-    ns3opengym::SimInitMsg simInitMsg;
-    simInitMsg.set_simprocessid(::getpid());
-    simInitMsg.set_wafshellprocessid(::getppid());
-
+    ns3_ai_gym::SimInitMsg simInitMsg;
     if (obsSpace)
     {
-        ns3opengym::SpaceDescription spaceDesc;
+        ns3_ai_gym::SpaceDescription spaceDesc;
         spaceDesc = obsSpace->GetSpaceDescription();
         simInitMsg.mutable_obsspace()->CopyFrom(spaceDesc);
     }
-
     if (actionSpace)
     {
-        ns3opengym::SpaceDescription spaceDesc;
+        ns3_ai_gym::SpaceDescription spaceDesc;
         spaceDesc = actionSpace->GetSpaceDescription();
         simInitMsg.mutable_actspace()->CopyFrom(spaceDesc);
     }
 
     // send init msg to python
-    zmq::message_t request(simInitMsg.ByteSizeLong());
-    ;
-    simInitMsg.SerializeToArray(request.data(), simInitMsg.ByteSizeLong());
-    m_zmq_socket.send(request, zmq::send_flags::none);
+    m_msgInterface.cpp_send_begin();
+    m_msgInterface.m_single_cpp2py_msg->size = simInitMsg.ByteSizeLong();
+    assert(m_msgInterface.m_single_cpp2py_msg->size <= MSG_BUFFER_SIZE);
+    simInitMsg.SerializeToArray(m_msgInterface.m_single_cpp2py_msg->buffer, m_msgInterface.m_single_cpp2py_msg->size);
+    m_msgInterface.cpp_send_end();
 
     // receive init ack msg form python
-    ns3opengym::SimInitAck simInitAck;
-    zmq::message_t reply;
-    (void)m_zmq_socket.recv(reply, zmq::recv_flags::none);
-    simInitAck.ParseFromArray(reply.data(), reply.size());
+    ns3_ai_gym::SimInitAck simInitAck;
+    m_msgInterface.cpp_recv_begin();
+    simInitAck.ParseFromArray(m_msgInterface.m_single_py2cpp_msg->buffer, m_msgInterface.m_single_py2cpp_msg->size);
+    m_msgInterface.cpp_recv_end();
 
     bool done = simInitAck.done();
     NS_LOG_DEBUG("Sim Init Ack: " << done);
-
     bool stopSim = simInitAck.stopsimreq();
     if (stopSim)
     {
@@ -171,27 +131,22 @@ OpenGymInterface::Init()
 void
 OpenGymInterface::NotifyCurrentState()
 {
-    NS_LOG_FUNCTION(this);
-
     if (!m_initSimMsgSent)
     {
         Init();
     }
-
     if (m_stopEnvRequested)
     {
         return;
     }
-
     // collect current env state
     Ptr<OpenGymDataContainer> obsDataContainer = GetObservation();
     float reward = GetReward();
     bool isGameOver = IsGameOver();
     std::string extraInfo = GetExtraInfo();
-
-    ns3opengym::EnvStateMsg envStateMsg;
+    ns3_ai_gym::EnvStateMsg envStateMsg;
     // observation
-    ns3opengym::DataContainer obsDataContainerPbMsg;
+    ns3_ai_gym::DataContainer obsDataContainerPbMsg;
     if (obsDataContainer)
     {
         obsDataContainerPbMsg = obsDataContainer->GetDataContainerPbMsg();
@@ -206,28 +161,28 @@ OpenGymInterface::NotifyCurrentState()
         envStateMsg.set_isgameover(true);
         if (m_simEnd)
         {
-            envStateMsg.set_reason(ns3opengym::EnvStateMsg::SimulationEnd);
+            envStateMsg.set_reason(ns3_ai_gym::EnvStateMsg::SimulationEnd);
         }
         else
         {
-            envStateMsg.set_reason(ns3opengym::EnvStateMsg::GameOver);
+            envStateMsg.set_reason(ns3_ai_gym::EnvStateMsg::GameOver);
         }
     }
-
     // extra info
     envStateMsg.set_info(extraInfo);
 
     // send env state msg to python
-    zmq::message_t request(envStateMsg.ByteSizeLong());
-    ;
-    envStateMsg.SerializeToArray(request.data(), envStateMsg.ByteSizeLong());
-    m_zmq_socket.send(request, zmq::send_flags::none);
+    m_msgInterface.cpp_send_begin();
+    m_msgInterface.m_single_cpp2py_msg->size = envStateMsg.ByteSizeLong();
+    assert(m_msgInterface.m_single_cpp2py_msg->size <= MSG_BUFFER_SIZE);
+    envStateMsg.SerializeToArray(m_msgInterface.m_single_cpp2py_msg->buffer, m_msgInterface.m_single_cpp2py_msg->size);
+    m_msgInterface.cpp_send_end();
 
     // receive act msg form python
-    ns3opengym::EnvActMsg envActMsg;
-    zmq::message_t reply;
-    (void)m_zmq_socket.recv(reply, zmq::recv_flags::none);
-    envActMsg.ParseFromArray(reply.data(), reply.size());
+    ns3_ai_gym::EnvActMsg envActMsg;
+    m_msgInterface.cpp_recv_begin();
+    envActMsg.ParseFromArray(m_msgInterface.m_single_py2cpp_msg->buffer, m_msgInterface.m_single_py2cpp_msg->size);
+    m_msgInterface.cpp_recv_end();
 
     if (m_simEnd)
     {
@@ -246,7 +201,7 @@ OpenGymInterface::NotifyCurrentState()
     }
 
     // first step after reset is called without actions, just to get current state
-    ns3opengym::DataContainer actDataContainerPbMsg = envActMsg.actdata();
+    ns3_ai_gym::DataContainer actDataContainerPbMsg = envActMsg.actdata();
     Ptr<OpenGymDataContainer> actDataContainer =
         OpenGymDataContainer::CreateFromDataContainerPbMsg(actDataContainerPbMsg);
     ExecuteActions(actDataContainer);
@@ -269,18 +224,6 @@ OpenGymInterface::NotifySimulationEnd()
     {
         WaitForStop();
     }
-}
-
-bool
-OpenGymInterface::IsGameOver()
-{
-    NS_LOG_FUNCTION(this);
-    bool gameOver = false;
-    if (!m_gameOverCb.IsNull())
-    {
-        gameOver = m_gameOverCb();
-    }
-    return (gameOver || m_simEnd);
 }
 
 Ptr<OpenGymSpace>
@@ -331,6 +274,18 @@ OpenGymInterface::GetReward()
     return reward;
 }
 
+bool
+OpenGymInterface::IsGameOver()
+{
+    NS_LOG_FUNCTION(this);
+    bool gameOver = false;
+    if (!m_gameOverCb.IsNull())
+    {
+        gameOver = m_gameOverCb();
+    }
+    return (gameOver || m_simEnd);
+}
+
 std::string
 OpenGymInterface::GetExtraInfo()
 {
@@ -356,6 +311,60 @@ OpenGymInterface::ExecuteActions(Ptr<OpenGymDataContainer> action)
 }
 
 void
+OpenGymInterface::SetGetActionSpaceCb(Callback<Ptr<OpenGymSpace>> cb)
+{
+    m_actionSpaceCb = cb;
+}
+
+void
+OpenGymInterface::SetGetObservationSpaceCb(Callback<Ptr<OpenGymSpace>> cb)
+{
+    m_observationSpaceCb = cb;
+}
+
+void
+OpenGymInterface::SetGetGameOverCb(Callback<bool> cb)
+{
+    m_gameOverCb = cb;
+}
+
+void
+OpenGymInterface::SetGetObservationCb(Callback<Ptr<OpenGymDataContainer>> cb)
+{
+    m_obsCb = cb;
+}
+
+void
+OpenGymInterface::SetGetRewardCb(Callback<float> cb)
+{
+    m_rewardCb = cb;
+}
+
+void
+OpenGymInterface::SetGetExtraInfoCb(Callback<std::string> cb)
+{
+    m_extraInfoCb = cb;
+}
+
+void
+OpenGymInterface::SetExecuteActionsCb(Callback<bool, Ptr<OpenGymDataContainer>> cb)
+{
+    m_actionCb = cb;
+}
+
+void
+OpenGymInterface::DoInitialize ()
+{
+    NS_LOG_FUNCTION (this);
+}
+
+void
+OpenGymInterface::DoDispose ()
+{
+    NS_LOG_FUNCTION (this);
+}
+
+void
 OpenGymInterface::Notify(Ptr<OpenGymEnv> entity)
 {
     NS_LOG_FUNCTION(this);
@@ -368,5 +377,23 @@ OpenGymInterface::Notify(Ptr<OpenGymEnv> entity)
 
     NotifyCurrentState();
 }
+
+Ptr<OpenGymInterface>*
+OpenGymInterface::DoGet()
+{
+    static Ptr<OpenGymInterface> ptr = CreateObject<OpenGymInterface>();
+    Config::RegisterRootNamespaceObject(ptr);
+    Simulator::ScheduleDestroy(&OpenGymInterface::Delete);
+    return &ptr;
+}
+
+void
+OpenGymInterface::Delete()
+{
+    NS_LOG_FUNCTION_NOARGS();
+    Config::UnregisterRootNamespaceObject(Get());
+    (*DoGet()) = nullptr;
+}
+
 
 } // namespace ns3

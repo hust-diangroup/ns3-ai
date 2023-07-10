@@ -28,7 +28,7 @@ class AiConstantRateContainer:
     use_ns3ai = True
 
     def __init__(self) -> None:
-        self.rl = cr.Ns3AiMsgInterface(True, False, 4096, "My Seg", "My Env", "My Act", "My Lockable")
+        self.rl = cr.Ns3AiMsgInterface(True, False, 4096, "My Seg", "My Cpp to Python Msg", "My Python to Cpp Msg", "My Lockable")
         # print('({})size: Env {} Act {}'.format(uid, sizeof(AiConstantRateEnv), sizeof(AiConstantRateAct)))
         pass
 

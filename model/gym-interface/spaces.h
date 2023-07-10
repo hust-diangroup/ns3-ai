@@ -23,158 +23,164 @@
 #ifndef OPENGYM_SPACES_H
 #define OPENGYM_SPACES_H
 
-#include "ns3/object.h"
 #include "messages.pb.h"
 
-namespace ns3 {
+#include "ns3/object.h"
+
+namespace ns3
+{
 
 class OpenGymSpace : public Object
 {
-public:
-  OpenGymSpace ();
-  virtual ~OpenGymSpace ();
+  public:
+    OpenGymSpace();
+    ~OpenGymSpace() override;
 
-  static TypeId GetTypeId ();
+    static TypeId GetTypeId();
 
-  virtual ns3opengym::SpaceDescription GetSpaceDescription() = 0;
-  virtual void Print(std::ostream& where) const = 0;
-protected:
-  // Inherited
-  virtual void DoInitialize (void);
-  virtual void DoDispose (void);
+    virtual ns3_ai_gym::SpaceDescription GetSpaceDescription() = 0;
+    virtual void Print(std::ostream& where) const = 0;
+
+  protected:
+    // Inherited
+    void DoInitialize() override;
+    void DoDispose() override;
 };
-
 
 class OpenGymDiscreteSpace : public OpenGymSpace
 {
-public:
-  OpenGymDiscreteSpace ();
-  OpenGymDiscreteSpace (int n);
-  virtual ~OpenGymDiscreteSpace ();
+  public:
+    OpenGymDiscreteSpace();
+    OpenGymDiscreteSpace(int n);
+    ~OpenGymDiscreteSpace() override;
 
-  static TypeId GetTypeId ();
+    static TypeId GetTypeId();
 
-  virtual ns3opengym::SpaceDescription GetSpaceDescription();
+    ns3_ai_gym::SpaceDescription GetSpaceDescription() override;
 
-  int GetN(void);
-  virtual void Print(std::ostream& where) const;
-  friend std::ostream& operator<< (std::ostream& os, const Ptr<OpenGymDiscreteSpace> space)
-  {
-    space->Print(os);
-    return os;
-  }
+    int GetN();
+    void Print(std::ostream& where) const override;
 
-protected:
-  // Inherited
-  virtual void DoInitialize (void);
-  virtual void DoDispose (void);
+    friend std::ostream& operator<<(std::ostream& os, const Ptr<OpenGymDiscreteSpace> space)
+    {
+        space->Print(os);
+        return os;
+    }
 
-private:
-	int m_n;
+  protected:
+    // Inherited
+    void DoInitialize() override;
+    void DoDispose() override;
+
+  private:
+    int m_n;
 };
 
 class OpenGymBoxSpace : public OpenGymSpace
 {
-public:
-  OpenGymBoxSpace ();
-  OpenGymBoxSpace (float low, float high, std::vector<uint32_t> shape, std::string dtype);
-  OpenGymBoxSpace (std::vector<float> low, std::vector<float> high, std::vector<uint32_t> shape, std::string dtype);
-  virtual ~OpenGymBoxSpace ();
+  public:
+    OpenGymBoxSpace();
+    OpenGymBoxSpace(float low, float high, std::vector<uint32_t> shape, std::string dtype);
+    OpenGymBoxSpace(std::vector<float> low,
+                    std::vector<float> high,
+                    std::vector<uint32_t> shape,
+                    std::string dtype);
+    ~OpenGymBoxSpace() override;
 
-  static TypeId GetTypeId ();
+    static TypeId GetTypeId();
 
-  virtual ns3opengym::SpaceDescription GetSpaceDescription();
+    ns3_ai_gym::SpaceDescription GetSpaceDescription() override;
 
-  float GetLow();
-  float GetHigh();
-  std::vector<uint32_t> GetShape();
+    float GetLow();
+    float GetHigh();
+    std::vector<uint32_t> GetShape();
 
-  virtual void Print(std::ostream& where) const;
-  friend std::ostream& operator<< (std::ostream& os, const Ptr<OpenGymBoxSpace> space)
-  {
-    space->Print(os);
-    return os;
-  }
+    void Print(std::ostream& where) const override;
 
-protected:
-  // Inherited
-  virtual void DoInitialize (void);
-  virtual void DoDispose (void);
+    friend std::ostream& operator<<(std::ostream& os, const Ptr<OpenGymBoxSpace> space)
+    {
+        space->Print(os);
+        return os;
+    }
 
-private:
-  void SetDtype ();
+  protected:
+    // Inherited
+    void DoInitialize() override;
+    void DoDispose() override;
 
-	float m_low;
-	float m_high;
-	std::vector<uint32_t> m_shape;
-  std::string m_dtypeName;
-  std::vector<float> m_lowVec;
-  std::vector<float> m_highVec;
+  private:
+    void SetDtype();
 
-  ns3opengym::Dtype m_dtype;
+    float m_low;
+    float m_high;
+    std::vector<uint32_t> m_shape;
+    std::string m_dtypeName;
+    std::vector<float> m_lowVec;
+    std::vector<float> m_highVec;
+
+    ns3_ai_gym::Dtype m_dtype;
 };
-
 
 class OpenGymTupleSpace : public OpenGymSpace
 {
-public:
-  OpenGymTupleSpace ();
-  virtual ~OpenGymTupleSpace ();
+  public:
+    OpenGymTupleSpace();
+    ~OpenGymTupleSpace() override;
 
-  static TypeId GetTypeId ();
+    static TypeId GetTypeId();
 
-  virtual ns3opengym::SpaceDescription GetSpaceDescription();
+    ns3_ai_gym::SpaceDescription GetSpaceDescription() override;
 
-  bool Add(Ptr<OpenGymSpace> space);
-  Ptr<OpenGymSpace> Get(uint32_t idx);
+    bool Add(Ptr<OpenGymSpace> space);
+    Ptr<OpenGymSpace> Get(uint32_t idx);
 
-  virtual void Print(std::ostream& where) const;
-  friend std::ostream& operator<< (std::ostream& os, const Ptr<OpenGymTupleSpace> space)
-  {
-    space->Print(os);
-    return os;
-  }
+    void Print(std::ostream& where) const override;
 
-protected:
-  // Inherited
-  virtual void DoInitialize (void);
-  virtual void DoDispose (void);
+    friend std::ostream& operator<<(std::ostream& os, const Ptr<OpenGymTupleSpace> space)
+    {
+        space->Print(os);
+        return os;
+    }
 
-private:
-  std::vector< Ptr<OpenGymSpace> > m_tuple;
+  protected:
+    // Inherited
+    void DoInitialize() override;
+    void DoDispose() override;
+
+  private:
+    std::vector<Ptr<OpenGymSpace>> m_tuple;
 };
-
 
 class OpenGymDictSpace : public OpenGymSpace
 {
-public:
-  OpenGymDictSpace ();
-  virtual ~OpenGymDictSpace ();
+  public:
+    OpenGymDictSpace();
+    ~OpenGymDictSpace() override;
 
-  static TypeId GetTypeId ();
+    static TypeId GetTypeId();
 
-  virtual ns3opengym::SpaceDescription GetSpaceDescription();
+    ns3_ai_gym::SpaceDescription GetSpaceDescription() override;
 
-  bool Add(std::string key, Ptr<OpenGymSpace> value);
-  Ptr<OpenGymSpace> Get(std::string key);
+    bool Add(std::string key, Ptr<OpenGymSpace> value);
+    Ptr<OpenGymSpace> Get(std::string key);
 
-  virtual void Print(std::ostream& where) const;
-  friend std::ostream& operator<< (std::ostream& os, const Ptr<OpenGymDictSpace> space)
-  {
-    space->Print(os);
-    return os;
-  }
+    void Print(std::ostream& where) const override;
 
-protected:
-  // Inherited
-  virtual void DoInitialize (void);
-  virtual void DoDispose (void);
+    friend std::ostream& operator<<(std::ostream& os, const Ptr<OpenGymDictSpace> space)
+    {
+        space->Print(os);
+        return os;
+    }
 
-private:
-  std::map< std::string, Ptr<OpenGymSpace> > m_dict;
+  protected:
+    // Inherited
+    void DoInitialize() override;
+    void DoDispose() override;
+
+  private:
+    std::map<std::string, Ptr<OpenGymSpace>> m_dict;
 };
 
 } // end of namespace ns3
 
 #endif /* OPENGYM_SPACES_H */
-

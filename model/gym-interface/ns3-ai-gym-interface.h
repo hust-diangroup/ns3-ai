@@ -23,9 +23,13 @@
 #ifndef NS3_NS3_AI_GYM_INTERFACE_H
 #define NS3_NS3_AI_GYM_INTERFACE_H
 
-#include <ns3/ns3-ai-module.h>
 #include <ns3/callback.h>
+#include <ns3/ns3-ai-module.h>
+#include <ns3/object.h>
 #include <ns3/ptr.h>
+#include <ns3/type-id.h>
+
+#define MSG_BUFFER_SIZE 1024
 
 namespace ns3
 {
@@ -34,14 +38,19 @@ class OpenGymSpace;
 class OpenGymDataContainer;
 class OpenGymEnv;
 
-class OpenGymInterface
+struct Ns3AiGymMsg
+{
+    uint8_t buffer[MSG_BUFFER_SIZE];
+    uint32_t size;
+};
+
+class OpenGymInterface : public Object
 {
   public:
-    OpenGymInterface(bool is_creator,
-                     uint32_t seg_size = 4096,
-                     const char* seg_name = "My Seg",
-                     const char* buf_name = "My Buf");
-    ~OpenGymInterface();
+    static Ptr<OpenGymInterface> Get();
+    OpenGymInterface();
+    ~OpenGymInterface() override;
+    static TypeId GetTypeId();
 
     void Init();
     void NotifyCurrentState();
@@ -68,10 +77,13 @@ class OpenGymInterface
 
   protected:
     // Inherited
-    virtual void DoInitialize();
-    virtual void DoDispose();
+    void DoInitialize() override;
+    void DoDispose() override;
 
   private:
+    static Ptr<OpenGymInterface>* DoGet();
+    static void Delete();
+
     bool m_simEnd;
     bool m_stopEnvRequested;
     bool m_initSimMsgSent;
@@ -85,7 +97,7 @@ class OpenGymInterface
     Callback<bool, Ptr<OpenGymDataContainer>> m_actionCb;
 
     std::string m_segName;
-    struct Ns3AiGymSync *m_sync;
+    Ns3AiMsgInterface<Ns3AiGymMsg, Ns3AiGymMsg> m_msgInterface;
 };
 
 } // end of namespace ns3

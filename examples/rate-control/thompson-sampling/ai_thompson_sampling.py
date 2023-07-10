@@ -103,7 +103,7 @@ class AiThompsonSamplingContainer:
     wifiStation: List[AiThompsonSamplingStation] = []
 
     def __init__(self, stream=1) -> None:
-        self.rl = ts.Ns3AiMsgInterface(True, False, 4096, "My Seg", "My Env", "My Act", "My Lockable")
+        self.rl = ts.Ns3AiMsgInterface(True, False, 4096, "My Seg", "My Cpp to Python Msg", "My Python to Cpp Msg", "My Lockable")
         self.default_stream = stream
         pass
 
