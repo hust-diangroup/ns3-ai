@@ -38,3 +38,8 @@ __pycache__
 # Custom
 *.egg-info/
 .DS_Store
+
+# Protobuf files
+*.pb.cc
+*.pb.h
+*_pb2.py
