@@ -28,13 +28,15 @@ class Ns3AiMsgInterface
 {
   public:
     Ns3AiMsgInterface() = delete;
-    explicit Ns3AiMsgInterface(uint32_t size,
-                     bool use_vector = true,
-                     bool is_memory_creator = false,
-                     const char* segment_name = "My Seg",
-                     const char* env_name = "My Env",
-                     const char* act_name = "My Act",
-                     const char* lockable_name = "My Lockable");
+    explicit Ns3AiMsgInterface(
+        bool is_memory_creator,
+        bool use_vector,
+        uint32_t size = 4096,
+        const char* segment_name = "My Seg",
+        const char* env_name = "My Env",
+        const char* act_name = "My Act",
+        const char* lockable_name = "My Lockable"
+        );
     ~Ns3AiMsgInterface();
 
     // for C++ side:
@@ -157,13 +159,15 @@ Ns3AiMsgInterface<Cpp2PyMsgType, Py2CppMsgType>::~Ns3AiMsgInterface() {
 }
 
 template <typename Cpp2PyMsgType, typename Py2CppMsgType>
-Ns3AiMsgInterface<Cpp2PyMsgType, Py2CppMsgType>::Ns3AiMsgInterface(uint32_t size,
-                                   bool use_vector,
-                                   bool is_memory_creator,
-                                   const char* segment_name,
-                                   const char* env_name,
-                                   const char* act_name,
-                                   const char* lockable_name)
+Ns3AiMsgInterface<Cpp2PyMsgType, Py2CppMsgType>::Ns3AiMsgInterface(
+    bool is_memory_creator,
+    bool use_vector,
+    uint32_t size,
+    const char* segment_name,
+    const char* env_name,
+    const char* act_name,
+    const char* lockable_name
+    )
     : m_isCreator(is_memory_creator), m_isFinished(false), m_segName(segment_name)
 {
     using namespace boost::interprocess;

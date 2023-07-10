@@ -1,9 +1,6 @@
 #ifndef NS3_AI_SEMAPHORE_H
 #define NS3_AI_SEMAPHORE_H
 
-#include <boost/interprocess/managed_shared_memory.hpp>
-#include <boost/interprocess/sync/interprocess_semaphore.hpp>
-
 struct Ns3AiSemaphore
 {
 

@@ -52,7 +52,7 @@ PYBIND11_MODULE(ns3ai_apb_py, m) {
         ;
 
     py::class_<ns3::Ns3AiMsgInterface<EnvStruct, ActStruct>>(m, "Ns3AiMsgInterface")
-        .def(py::init<uint32_t, bool, bool, const char*, const char*, const char*, const char*>())
+        .def(py::init<bool, bool, uint32_t, const char*, const char*, const char*, const char*>())
         .def("py_recv_begin", &ns3::Ns3AiMsgInterface<EnvStruct, ActStruct>::py_recv_begin)
         .def("py_recv_end", &ns3::Ns3AiMsgInterface<EnvStruct, ActStruct>::py_recv_end)
         .def("py_send_begin", &ns3::Ns3AiMsgInterface<EnvStruct, ActStruct>::py_send_begin)
