@@ -1,6 +1,6 @@
 #include <pybind11/pybind11.h>
 
-#include <ns3/ns3-ai-rl.h>
+#include <ns3/ns3-ai-module.h>
 #include "ai-constant-rate-wifi-manager.h"
 
 namespace py = pybind11;

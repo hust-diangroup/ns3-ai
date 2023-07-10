@@ -1,5 +1,5 @@
-#ifndef NS3_AI_RL_H
-#define NS3_AI_RL_H
+#ifndef NS3_AI_MSG_INTERFACE_H
+#define NS3_AI_MSG_INTERFACE_H
 
 #include "../ns3-ai-semaphore.h"
 
@@ -208,4 +208,4 @@ Ns3AiMsgInterface<Cpp2PyMsgType, Py2CppMsgType>::Ns3AiMsgInterface(uint32_t size
 
 }
 
-#endif // NS3_AI_RL_H
+#endif // NS3_AI_MSG_INTERFACE_H
