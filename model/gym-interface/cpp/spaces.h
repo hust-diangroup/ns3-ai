@@ -23,7 +23,7 @@
 #ifndef OPENGYM_SPACES_H
 #define OPENGYM_SPACES_H
 
-#include "messages.pb.h"
+#include "../messages.pb.h"
 
 #include "ns3/object.h"
 

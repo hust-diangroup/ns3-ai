@@ -27,8 +27,8 @@
 
 #include "ns3-ai-gym-interface.h"
 
+#include "../messages.pb.h"
 #include "container.h"
-#include "messages.pb.h"
 #include "ns3-ai-gym-env.h"
 #include "spaces.h"
 

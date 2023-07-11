@@ -16,13 +16,13 @@ build_lib(
         SOURCE_FILES
             model/msg-interface/ns3-ai-msg-interface.cc
             model/gym-interface/messages.proto
-            model/gym-interface/ns3-ai-gym-interface.cc
-            model/gym-interface/ns3-ai-gym-env.cc
-            model/gym-interface/container.cc
-            model/gym-interface/spaces.cc
+            model/gym-interface/cpp/ns3-ai-gym-interface.cc
+            model/gym-interface/cpp/ns3-ai-gym-env.cc
+            model/gym-interface/cpp/container.cc
+            model/gym-interface/cpp/spaces.cc
         HEADER_FILES
             model/msg-interface/ns3-ai-msg-interface.h
-            model/gym-interface/ns3-ai-gym-interface.h
+            model/gym-interface/cpp/ns3-ai-gym-interface.h
         LIBRARIES_TO_LINK ${libcore} Boost::program_options protobuf::libprotobuf
 )
 
@@ -32,3 +32,12 @@ protobuf_generate(
         LANGUAGE cpp
         PROTOC_OUT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/model/gym-interface"
 )
+
+protobuf_generate(
+        TARGET ${libns3-ai-obj}
+        IMPORT_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/model/gym-interface"
+        LANGUAGE python
+        PROTOC_OUT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/model/gym-interface/py/ns3ai_gym_env/envs"
+)
+
+add_subdirectory(model/gym-interface/py)

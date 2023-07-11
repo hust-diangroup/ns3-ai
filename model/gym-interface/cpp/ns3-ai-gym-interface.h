@@ -29,7 +29,7 @@
 #include <ns3/ptr.h>
 #include <ns3/type-id.h>
 
-#define MSG_BUFFER_SIZE 1024
+#include "../ns3-ai-gym-msg.h"
 
 namespace ns3
 {
@@ -37,12 +37,6 @@ namespace ns3
 class OpenGymSpace;
 class OpenGymDataContainer;
 class OpenGymEnv;
-
-struct Ns3AiGymMsg
-{
-    uint8_t buffer[MSG_BUFFER_SIZE];
-    uint32_t size;
-};
 
 class OpenGymInterface : public Object
 {

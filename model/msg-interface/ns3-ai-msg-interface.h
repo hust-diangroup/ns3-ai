@@ -1,7 +1,7 @@
 #ifndef NS3_AI_MSG_INTERFACE_H
 #define NS3_AI_MSG_INTERFACE_H
 
-#include "../ns3-ai-semaphore.h"
+#include "ns3-ai-semaphore.h"
 
 #include <boost/interprocess/allocators/allocator.hpp>
 #include <boost/interprocess/containers/vector.hpp>
