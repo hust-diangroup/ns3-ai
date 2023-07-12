@@ -24,6 +24,7 @@ from collections import OrderedDict
 from copy import copy
 
 import psutil
+import shutil
 
 try:
     from collections.abc import Iterable
@@ -108,7 +109,15 @@ def build_ns3(path):
     return ok
 
 
-def run_single_ns3(path, pname, setting=None, env=None, show_output=False, build=True):
+def check_program_installed(program_name: str) -> str:
+    program_path = shutil.which(program_name)
+    if program_path is None:
+        print("Executable '{program}' was not found".format(program=program_name.capitalize()))
+        exit(-1)
+    return program_path
+
+
+def run_single_ns3(path, pname, setting=None, env=None, show_output=False, profile_ns3=False, build=True):
     if build and not build_ns3(path):
         raise RuntimeError("run_single_ns3(): requested to build ns3, but build failed!")
     if env:
@@ -117,10 +126,15 @@ def run_single_ns3(path, pname, setting=None, env=None, show_output=False, build
     exec_path = os.path.join(path, 'build', 'scratch')
     # TODO hotfix for cmake-built ns3: executable seems to be placed differently, so take 1st file from exec_path
     exec_name = [f for f in os.listdir(os.path.join(exec_path, pname)) if f.startswith("ns")][0]
-    if not setting:
-        cmd = f'./{pname}/{exec_name}'
-    else:
-        cmd = f'./{pname}/{exec_name}{get_setting(setting)}'
+    cmd: str = f'./{pname}/{exec_name}'
+    if setting:
+        cmd += get_setting(setting)
+    if profile_ns3:
+        perf_cmd = check_program_installed("perf")
+        base_out_dir = str(setting["outDir"]) if (setting is not None and "outDir" in setting) else "."
+        perf_out_file = os.path.join(base_out_dir, "perf.data")
+        perf_options = f"record -o {perf_out_file} -g -a -e cpu-cycles,context-switches"
+        cmd = f"{perf_cmd} {perf_options} bash -c \'{cmd}\'k"
     if show_output:
         proc = subprocess.Popen(
             cmd, shell=True, universal_newlines=True, cwd=exec_path, env=env)
