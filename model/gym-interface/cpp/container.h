@@ -23,7 +23,7 @@
 #ifndef OPENGYM_CONTAINER_H
 #define OPENGYM_CONTAINER_H
 
-#include "../messages.pb.h"
+#include "messages.pb.h"
 
 #include "ns3/object.h"
 #include "ns3/type-name.h"

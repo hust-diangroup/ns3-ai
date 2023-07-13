@@ -17,10 +17,17 @@ PYBIND11_MODULE(ns3ai_gym_msg_py, m) {
                     msg.size
                 );
         })
+        .def("get_buffer_full", [](Ns3AiGymMsg &msg){
+            // Get memoryview of the buffer
+            return py::memoryview::from_memory(
+                (void *)msg.buffer,
+                MSG_BUFFER_SIZE
+            );
+        })
         ;
 
     py::class_<ns3::Ns3AiMsgInterface<Ns3AiGymMsg, Ns3AiGymMsg>>(m, "Ns3AiMsgInterface")
-        .def(py::init<bool, bool, uint32_t, const char*, const char*, const char*, const char*>())
+        .def(py::init<bool, bool, bool, uint32_t, const char*, const char*, const char*, const char*>())
         .def("py_recv_begin",
              &ns3::Ns3AiMsgInterface<Ns3AiGymMsg,
                                      Ns3AiGymMsg>::py_recv_begin)
@@ -33,9 +40,6 @@ PYBIND11_MODULE(ns3ai_gym_msg_py, m) {
         .def("py_send_end",
              &ns3::Ns3AiMsgInterface<Ns3AiGymMsg,
                                      Ns3AiGymMsg>::py_send_end)
-        .def("py_check_finished",
-             &ns3::Ns3AiMsgInterface<Ns3AiGymMsg,
-                                     Ns3AiGymMsg>::py_check_finished)
         .def_readwrite("m_single_cpp2py_msg", &ns3::Ns3AiMsgInterface<Ns3AiGymMsg, Ns3AiGymMsg>::m_single_cpp2py_msg)
         .def_readwrite("m_single_py2cpp_msg", &ns3::Ns3AiMsgInterface<Ns3AiGymMsg, Ns3AiGymMsg>::m_single_py2cpp_msg)
         ;

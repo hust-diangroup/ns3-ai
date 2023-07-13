@@ -8,6 +8,7 @@
 #include <boost/interprocess/managed_shared_memory.hpp>
 #include <cstddef>
 #include <cstdint>
+#include <iostream>
 #include <string>
 #include <vector>
 
@@ -30,6 +31,7 @@ class Ns3AiMsgInterface
     Ns3AiMsgInterface() = delete;
     explicit Ns3AiMsgInterface(bool is_memory_creator,
                                bool use_vector,
+                               bool handle_finish,
                                uint32_t size = 4096,
                                const char* segment_name = "My Seg",
                                const char* cpp2py_msg_name = "My Cpp to Python Msg",
@@ -42,13 +44,14 @@ class Ns3AiMsgInterface
     void cpp_send_end();
     void cpp_recv_begin();
     void cpp_recv_end();
+    void cpp_set_finished();
 
     // for Python side:
     void py_recv_begin();
     void py_recv_end();
     void py_send_begin();
     void py_send_end();
-    bool py_check_finished();
+    bool py_get_finished();
 
     // use structure for the simple case
     Cpp2PyMsgType* m_single_cpp2py_msg;
@@ -67,11 +70,11 @@ class Ns3AiMsgInterface
     Py2CppMsgVector* m_py2cpp_msg;
 
   private:
-    void set_finished(); // for C++ side when exiting
     Ns3AiMsgSync* m_sync;
-    bool m_isCreator;
+    const bool m_isCreator;
+    const bool m_handleFinish;
+    const std::string m_segName;
     bool m_isFinished;
-    std::string m_segName;
 };
 
 template <typename Cpp2PyMsgType, typename Py2CppMsgType>
@@ -104,11 +107,13 @@ Ns3AiMsgInterface<Cpp2PyMsgType, Py2CppMsgType>::cpp_recv_end()
 
 template <typename Cpp2PyMsgType, typename Py2CppMsgType>
 void
-Ns3AiMsgInterface<Cpp2PyMsgType, Py2CppMsgType>::set_finished()
+Ns3AiMsgInterface<Cpp2PyMsgType, Py2CppMsgType>::cpp_set_finished()
 {
-    Ns3AiSemaphore::sem_wait(&m_sync->m_cpp2py_empty_count);
+    assert(m_handleFinish);
+    m_isFinished = true;
+    cpp_send_begin();
     m_sync->m_isFinished = true;
-    Ns3AiSemaphore::sem_post(&m_sync->m_cpp2py_full_count);
+    cpp_send_end();
 }
 
 template <typename Cpp2PyMsgType, typename Py2CppMsgType>
@@ -116,7 +121,10 @@ void
 Ns3AiMsgInterface<Cpp2PyMsgType, Py2CppMsgType>::py_recv_begin()
 {
     Ns3AiSemaphore::sem_wait(&m_sync->m_cpp2py_full_count);
-    m_isFinished = m_sync->m_isFinished;
+    if (m_handleFinish)
+    {
+        m_isFinished = m_sync->m_isFinished;
+    }
 }
 
 template <typename Cpp2PyMsgType, typename Py2CppMsgType>
@@ -142,8 +150,9 @@ Ns3AiMsgInterface<Cpp2PyMsgType, Py2CppMsgType>::py_send_end()
 
 template <typename Cpp2PyMsgType, typename Py2CppMsgType>
 bool
-Ns3AiMsgInterface<Cpp2PyMsgType, Py2CppMsgType>::py_check_finished()
+Ns3AiMsgInterface<Cpp2PyMsgType, Py2CppMsgType>::py_get_finished()
 {
+    assert(m_handleFinish);
     return m_isFinished;
 }
 
@@ -156,21 +165,26 @@ Ns3AiMsgInterface<Cpp2PyMsgType, Py2CppMsgType>::~Ns3AiMsgInterface()
     }
     else
     {
-        set_finished();
+        if (m_handleFinish)
+        {
+            cpp_set_finished();
+        }
     }
 }
 
 template <typename Cpp2PyMsgType, typename Py2CppMsgType>
 Ns3AiMsgInterface<Cpp2PyMsgType, Py2CppMsgType>::Ns3AiMsgInterface(bool is_memory_creator,
                                                                    bool use_vector,
+                                                                   bool handle_finish,
                                                                    uint32_t size,
                                                                    const char* segment_name,
                                                                    const char* cpp2py_msg_name,
                                                                    const char* py2cpp_msg_name,
                                                                    const char* lockable_name)
     : m_isCreator(is_memory_creator),
-      m_isFinished(false),
-      m_segName(segment_name)
+      m_handleFinish(handle_finish),
+      m_segName(segment_name),
+      m_isFinished(false)
 {
     using namespace boost::interprocess;
     if (m_isCreator)

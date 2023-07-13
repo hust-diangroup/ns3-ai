@@ -27,7 +27,7 @@
 
 #include "ns3-ai-gym-interface.h"
 
-#include "../messages.pb.h"
+#include "messages.pb.h"
 #include "container.h"
 #include "ns3-ai-gym-env.h"
 #include "spaces.h"
@@ -57,7 +57,7 @@ OpenGymInterface::OpenGymInterface()
       m_stopEnvRequested(false),
       m_initSimMsgSent(false),
       m_segName("My Gym Segment"),
-      m_msgInterface(false, false, 2 * MSG_BUFFER_SIZE, m_segName.c_str())
+      m_msgInterface(false, false, false)
 {
 }
 
@@ -186,7 +186,7 @@ OpenGymInterface::NotifyCurrentState()
 
     if (m_simEnd)
     {
-        // if sim end only rx ms and quit
+        // if sim end only rx msg and quit
         return;
     }
 
@@ -211,7 +211,7 @@ void
 OpenGymInterface::WaitForStop()
 {
     NS_LOG_FUNCTION(this);
-    NS_LOG_UNCOND("Wait for stop message");
+//    NS_LOG_UNCOND("Wait for stop message");
     NotifyCurrentState();
 }
 
@@ -382,18 +382,18 @@ Ptr<OpenGymInterface>*
 OpenGymInterface::DoGet()
 {
     static Ptr<OpenGymInterface> ptr = CreateObject<OpenGymInterface>();
-    Config::RegisterRootNamespaceObject(ptr);
-    Simulator::ScheduleDestroy(&OpenGymInterface::Delete);
+//    Config::RegisterRootNamespaceObject(ptr);
+//    Simulator::ScheduleDestroy(&OpenGymInterface::Delete);
     return &ptr;
 }
 
-void
-OpenGymInterface::Delete()
-{
-    NS_LOG_FUNCTION_NOARGS();
-    Config::UnregisterRootNamespaceObject(Get());
-    (*DoGet()) = nullptr;
-}
+//void
+//OpenGymInterface::Delete()
+//{
+//    NS_LOG_FUNCTION_NOARGS();
+//    Config::UnregisterRootNamespaceObject(Get());
+//    (*DoGet()) = nullptr;
+//}
 
 
 } // namespace ns3

@@ -1,0 +1,19 @@
+build_lib_example(
+        NAME ns3ai_rltcp_gym
+        SOURCE_FILES
+            use_gym/sim.cc
+            use_gym/tcp-rl-env.cc
+            use_gym/tcp-rl.cc
+        LIBRARIES_TO_LINK
+            ${libns3-ai}
+            ${libcore}
+            ${libpoint-to-point}
+            ${libpoint-to-point-layout}
+            ${libnetwork}
+            ${libapplications}
+            ${libmobility}
+            ${libcsma}
+            ${libinternet}
+            ${libwifi}
+            ${libflow-monitor}
+)

@@ -21,7 +21,7 @@ PYBIND11_MODULE(ns3ai_ratecontrol_constant_py, m) {
         ;
 
     py::class_<ns3::Ns3AiMsgInterface<ns3::AiConstantRateEnvStruct, ns3::AiConstantRateActStruct>>(m, "Ns3AiMsgInterface")
-        .def(py::init<bool, bool, uint32_t, const char*, const char*, const char*, const char*>())
+        .def(py::init<bool, bool, bool, uint32_t, const char*, const char*, const char*, const char*>())
         .def("py_recv_begin",
              &ns3::Ns3AiMsgInterface<ns3::AiConstantRateEnvStruct,
                                      ns3::AiConstantRateActStruct>::py_recv_begin)
@@ -34,9 +34,9 @@ PYBIND11_MODULE(ns3ai_ratecontrol_constant_py, m) {
         .def("py_send_end",
              &ns3::Ns3AiMsgInterface<ns3::AiConstantRateEnvStruct,
                                      ns3::AiConstantRateActStruct>::py_send_end)
-        .def("py_check_finished",
+        .def("py_get_finished",
              &ns3::Ns3AiMsgInterface<ns3::AiConstantRateEnvStruct,
-                                     ns3::AiConstantRateActStruct>::py_check_finished)
+                                     ns3::AiConstantRateActStruct>::py_get_finished)
         .def_readwrite("m_single_cpp2py_msg", &ns3::Ns3AiMsgInterface<ns3::AiConstantRateEnvStruct, ns3::AiConstantRateActStruct>::m_single_cpp2py_msg)
         .def_readwrite("m_single_py2cpp_msg", &ns3::Ns3AiMsgInterface<ns3::AiConstantRateEnvStruct, ns3::AiConstantRateActStruct>::m_single_py2cpp_msg)
         ;

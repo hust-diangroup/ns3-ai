@@ -103,7 +103,7 @@ class AiThompsonSamplingContainer:
     wifiStation: List[AiThompsonSamplingStation] = []
 
     def __init__(self, stream=1) -> None:
-        self.rl = ts.Ns3AiMsgInterface(True, False, 4096, "My Seg", "My Cpp to Python Msg", "My Python to Cpp Msg", "My Lockable")
+        self.rl = ts.Ns3AiMsgInterface(True, False, True, 4096, "My Seg", "My Cpp to Python Msg", "My Python to Cpp Msg", "My Lockable")
         self.default_stream = stream
         pass
 
@@ -200,7 +200,7 @@ if __name__ == '__main__':
     while True:
         c.rl.py_recv_begin()
         c.rl.py_send_begin()
-        if c.rl.py_check_finished():
+        if c.rl.py_get_finished():
             break
         c.do(c.rl.m_single_cpp2py_msg, c.rl.m_single_py2cpp_msg)
         c.rl.py_recv_end()

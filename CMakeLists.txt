@@ -15,29 +15,37 @@ build_lib(
         LIBNAME ns3-ai
         SOURCE_FILES
             model/msg-interface/ns3-ai-msg-interface.cc
-            model/gym-interface/messages.proto
+#            model/gym-interface/messages.proto
             model/gym-interface/cpp/ns3-ai-gym-interface.cc
             model/gym-interface/cpp/ns3-ai-gym-env.cc
             model/gym-interface/cpp/container.cc
             model/gym-interface/cpp/spaces.cc
+            model/gym-interface/cpp/messages.pb.cc
         HEADER_FILES
             model/msg-interface/ns3-ai-msg-interface.h
             model/gym-interface/cpp/ns3-ai-gym-interface.h
+            model/gym-interface/cpp/ns3-ai-gym-env.h
+            model/gym-interface/cpp/container.h
+            model/gym-interface/cpp/spaces.h
         LIBRARIES_TO_LINK ${libcore} Boost::program_options protobuf::libprotobuf
 )
 
+add_library(proto-objects OBJECT "${CMAKE_CURRENT_SOURCE_DIR}/model/gym-interface/messages.proto")
+
 protobuf_generate(
-        TARGET ${libns3-ai-obj}
+        TARGET proto-objects
         IMPORT_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/model/gym-interface"
         LANGUAGE cpp
-        PROTOC_OUT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/model/gym-interface"
+        PROTOC_OUT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/model/gym-interface/cpp"
 )
 
 protobuf_generate(
-        TARGET ${libns3-ai-obj}
+        TARGET proto-objects
         IMPORT_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/model/gym-interface"
         LANGUAGE python
-        PROTOC_OUT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/model/gym-interface/py/ns3ai_gym_env/envs"
+        PROTOC_OUT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/model/gym-interface/py"
 )
+
+add_dependencies(${libns3-ai} proto-objects)
 
 add_subdirectory(model/gym-interface/py)

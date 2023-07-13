@@ -11,7 +11,7 @@
 using namespace ns3;
 
 int main() {
-    Ns3AiMsgInterface<EnvStruct, ActStruct> cpp_side(false, true);
+    Ns3AiMsgInterface<EnvStruct, ActStruct> cpp_side(false, true, true);
 
     // Should run after Python
     assert(cpp_side.m_cpp2py_msg->size() == APB_SIZE);

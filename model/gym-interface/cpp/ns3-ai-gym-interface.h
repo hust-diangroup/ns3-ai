@@ -76,7 +76,7 @@ class OpenGymInterface : public Object
 
   private:
     static Ptr<OpenGymInterface>* DoGet();
-    static void Delete();
+//    static void Delete();
 
     bool m_simEnd;
     bool m_stopEnvRequested;
