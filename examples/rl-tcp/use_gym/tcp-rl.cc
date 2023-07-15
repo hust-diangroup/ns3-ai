@@ -268,7 +268,7 @@ TcpRl::GetTypeId (void)
                                           DoubleValue (1.0),
                                           MakeDoubleAccessor (&TcpRl::m_reward),
                                           MakeDoubleChecker<double> ())
-                            .AddAttribute ("Penalty", "Reward when increasing congestion window.",
+                            .AddAttribute ("Penalty", "Penalty after a loss event.",
                                           DoubleValue (-10.0),
                                           MakeDoubleAccessor (&TcpRl::m_penalty),
                                           MakeDoubleChecker<double> ())

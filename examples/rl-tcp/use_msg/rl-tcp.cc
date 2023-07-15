@@ -169,23 +169,25 @@ main (int argc, char *argv[])
 
   Config::SetDefault ("ns3::TcpL4Protocol::RecoveryType",
                       TypeIdValue (TypeId::LookupByName (recovery)));
-  // Select TCP variant
-  if (transport_prot.compare ("ns3::TcpWestwoodPlus") == 0)
-    {
-      // TcpWestwoodPlus is not an actual TypeId name; we need TcpWestwood here
-      Config::SetDefault ("ns3::TcpL4Protocol::SocketType",
-                          TypeIdValue (TcpWestwood::GetTypeId ()));
-      // the default protocol type in ns3::TcpWestwood is WESTWOOD
-      Config::SetDefault ("ns3::TcpWestwood::ProtocolType", EnumValue (TcpWestwood::WESTWOODPLUS));
-    }
-  else
-    {
-      TypeId tcpTid;
-      NS_ABORT_MSG_UNLESS (TypeId::LookupByNameFailSafe (transport_prot, &tcpTid),
-                           "TypeId " << transport_prot << " not found");
-      Config::SetDefault ("ns3::TcpL4Protocol::SocketType",
-                          TypeIdValue (TypeId::LookupByName (transport_prot)));
-    }
+//  // Select TCP variant
+//  if (transport_prot.compare ("ns3::TcpWestwoodPlus") == 0)
+//    {
+//      // TcpWestwoodPlus is not an actual TypeId name; we need TcpWestwood here
+//      Config::SetDefault ("ns3::TcpL4Protocol::SocketType",
+//                          TypeIdValue (TcpWestwood::GetTypeId ()));
+//      // the default protocol type in ns3::TcpWestwood is WESTWOOD
+//      Config::SetDefault ("ns3::TcpWestwood::ProtocolType", EnumValue (TcpWestwood::WESTWOODPLUS));
+//    }
+//  else
+//    {
+//      TypeId tcpTid;
+//      NS_ABORT_MSG_UNLESS (TypeId::LookupByNameFailSafe (transport_prot, &tcpTid),
+//                           "TypeId " << transport_prot << " not found");
+//      Config::SetDefault ("ns3::TcpL4Protocol::SocketType",
+//                          TypeIdValue (TypeId::LookupByName (transport_prot)));
+//    }
+  Config::SetDefault ("ns3::TcpL4Protocol::SocketType",
+                     TypeIdValue (TypeId::LookupByName (transport_prot)));
 
   // Configure the error model
   // Here we use RateErrorModel with packet error rate
@@ -232,12 +234,12 @@ main (int argc, char *argv[])
   Config::SetDefault ("ns3::CoDelQueueDisc::MaxSize",
                       QueueSizeValue (QueueSize (QueueSizeUnit::BYTES, size)));
 
-  if (queue_disc_type.compare ("ns3::PfifoFastQueueDisc") == 0)
+  if (queue_disc_type == "ns3::PfifoFastQueueDisc")
     {
       tchPfifo.Install (d.GetLeft ()->GetDevice (1));
       tchPfifo.Install (d.GetRight ()->GetDevice (1));
     }
-  else if (queue_disc_type.compare ("ns3::CoDelQueueDisc") == 0)
+  else if (queue_disc_type == "ns3::CoDelQueueDisc")
     {
       tchCoDel.Install (d.GetLeft ()->GetDevice (1));
       tchCoDel.Install (d.GetRight ()->GetDevice (1));

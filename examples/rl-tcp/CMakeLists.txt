@@ -17,3 +17,23 @@ build_lib_example(
             ${libwifi}
             ${libflow-monitor}
 )
+
+build_lib_example(
+        NAME ns3ai_rltcp_msg
+        SOURCE_FILES
+            use_msg/rl-tcp.cc
+            use_msg/tcp-rl.cc
+            use_msg/tcp-rl-env.cc
+        LIBRARIES_TO_LINK
+            ${libns3-ai}
+            ${libcore}
+            ${libpoint-to-point}
+            ${libpoint-to-point-layout}
+            ${libnetwork}
+            ${libapplications}
+            ${libmobility}
+            ${libcsma}
+            ${libinternet}
+            ${libwifi}
+            ${libflow-monitor}
+)
