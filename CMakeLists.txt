@@ -15,7 +15,6 @@ build_lib(
         LIBNAME ns3-ai
         SOURCE_FILES
             model/msg-interface/ns3-ai-msg-interface.cc
-#            model/gym-interface/messages.proto
             model/gym-interface/cpp/ns3-ai-gym-interface.cc
             model/gym-interface/cpp/ns3-ai-gym-env.cc
             model/gym-interface/cpp/container.cc

@@ -21,27 +21,53 @@
  */
 
 #include <numeric>
+#include <iostream>
 #include "tcp-rl-env.h"
+
 namespace ns3
 {
-NS_LOG_COMPONENT_DEFINE("ns3::TcpRlEnv");
-TcpRlEnv::TcpRlEnv(uint16_t id) : Ns3AIRL<sTcpRlEnv, TcpRlAct>(id)
+
+NS_LOG_COMPONENT_DEFINE("ns3::TcpTimeStepEnv");
+NS_OBJECT_ENSURE_REGISTERED(TcpTimeStepEnv);
+
+Ns3AiMsgInterface<TcpRlEnv, TcpRlAct> m_msgInterface =
+    Ns3AiMsgInterface<TcpRlEnv, TcpRlAct>(false, false, true);
+
+TcpTimeStepEnv::TcpTimeStepEnv()
 {
-  SetCond(2, 0);
+//    std::cerr << "in TcpTimeStepEnv(), this = " << this << std::endl;
 }
-void TcpRlEnv::SetNodeId(uint32_t id)
+
+TcpTimeStepEnv::~TcpTimeStepEnv()
+{
+//    std::cerr << "in ~TcpTimeStepEnv(), this = " << this << std::endl;
+}
+
+TypeId
+TcpTimeStepEnv::GetTypeId()
+{
+    static TypeId tid = TypeId ("ns3::TcpTimeStepGymEnv")
+                            .SetParent<Object> ()
+                            .SetGroupName ("Ns3Ai")
+                            .AddConstructor<TcpTimeStepEnv> ()
+        ;
+
+    return tid;
+}
+
+void TcpTimeStepEnv::SetNodeId(uint32_t id)
 {
   NS_LOG_FUNCTION(this);
   m_nodeId = id;
 }
 
-void TcpRlEnv::SetSocketUuid(uint32_t id)
+void TcpTimeStepEnv::SetSocketUuid(uint32_t id)
 {
   NS_LOG_FUNCTION(this);
   m_socketUuid = id;
 }
 
-void TcpRlEnv::TxPktTrace(Ptr<const Packet>, const TcpHeader &, Ptr<const TcpSocketBase>)
+void TcpTimeStepEnv::TxPktTrace(Ptr<const Packet>, const TcpHeader &, Ptr<const TcpSocketBase>)
 {
   //   NS_LOG_FUNCTION (this);
   if (m_lastPktTxTime > MicroSeconds(0.0))
@@ -54,7 +80,7 @@ void TcpRlEnv::TxPktTrace(Ptr<const Packet>, const TcpHeader &, Ptr<const TcpSoc
   m_lastPktTxTime = Simulator::Now();
 }
 
-void TcpRlEnv::RxPktTrace(Ptr<const Packet>, const TcpHeader &, Ptr<const TcpSocketBase>)
+void TcpTimeStepEnv::RxPktTrace(Ptr<const Packet>, const TcpHeader &, Ptr<const TcpSocketBase>)
 {
   //   NS_LOG_FUNCTION (this);
   if (m_lastPktRxTime > MicroSeconds(0.0))
@@ -67,21 +93,13 @@ void TcpRlEnv::RxPktTrace(Ptr<const Packet>, const TcpHeader &, Ptr<const TcpSoc
   m_lastPktRxTime = Simulator::Now();
 }
 
-
-TcpTimeStepEnv::TcpTimeStepEnv(uint16_t id) : TcpRlEnv(id)
-{
-}
-
 void TcpTimeStepEnv::ScheduleNextStateRead()
 {
-  //   NS_LOG_FUNCTION (this);
-  // std::cerr << m_timeStep.GetMilliSeconds() << std::endl;
-  Simulator::Schedule(m_timeStep, &TcpTimeStepEnv::ScheduleNextStateRead, this);
-  //   Notify();
-  // while (GetVersion() % 2 != 0)
-  //   ;
 
-  auto env = EnvSetterCond();
+  Simulator::Schedule(m_timeStep, &TcpTimeStepEnv::ScheduleNextStateRead, this);
+
+  m_msgInterface.cpp_send_begin();
+  auto env = m_msgInterface.m_single_cpp2py_msg;
   env->socketUid = m_socketUuid;
   env->envType = 1;
   env->simTime_us = Simulator::Now().GetMicroSeconds();
@@ -105,14 +123,18 @@ void TcpTimeStepEnv::ScheduleNextStateRead()
             << " segmentAcked=" << env->segmentsAcked
             << " bytesInFlightSum=" << bytesInFlightSum
             << std::endl;
-  SetCompleted();
-  // std::cerr<<"GetVersion () "<<(int)GetVersion ()<<std::endl;
-  // while (GetVersion() % 2 != 0)
-  //   ;
-  auto act = ActionGetterCond();
+  m_msgInterface.cpp_send_end();
+
+  m_msgInterface.cpp_recv_begin();
+  auto act = m_msgInterface.m_single_py2cpp_msg;
   m_new_cWnd = act->new_cWnd;
   m_new_ssThresh = act->new_ssThresh;
-  GetCompleted();
+  m_msgInterface.cpp_recv_end();
+
+  std::cerr << "\taction --"
+            << " new_cWnd=" << m_new_cWnd
+            << " new_ssThresh=" << m_new_ssThresh
+            << std::endl;
   m_rttSampleNum = 0;
   m_rttSum = MicroSeconds(0.0);
 
@@ -121,20 +143,6 @@ void TcpTimeStepEnv::ScheduleNextStateRead()
 
   m_interRxTimeNum = 0;
   m_interRxTimeSum = MicroSeconds(0.0);
-  //   Time avgRtt = Seconds (0.0);
-  //   if (m_rttSampleNum)
-  //     avgRtt = m_rttSum / m_rttSampleNum;
-  //   env->rtt = avgRtt.GetMicroSeconds ();
-
-  //   env->minRtt = m_tcb->m_minRtt.GetMicroSeconds ();
-  //   env->calledFunc = m_calledFunc;
-  //   env->congState = m_tcb->m_congState;
-  //   env->event = m_event;
-  //   env->ecnState = m_tcb->m_ecnState;
-  std::cerr << "\taction --"
-            << " new_cWnd=" << m_new_cWnd
-            << " new_ssThresh=" << m_new_ssThresh
-            << std::endl;
 }
 
 uint32_t

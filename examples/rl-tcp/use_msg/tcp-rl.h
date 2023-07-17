@@ -72,7 +72,8 @@ protected:
 
   bool m_cbConnect{false};
 
-  Ptr<TcpSocketBase> m_tcpSocket{0};
+//  Ptr<TcpSocketBase> m_tcpSocket{0};
+  TcpSocketBase *m_tcpSocket{0};
 
   Ptr<TcpTimeStepEnv> env;
   

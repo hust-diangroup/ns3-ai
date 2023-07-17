@@ -38,6 +38,7 @@ __pycache__
 # Custom
 *.egg-info/
 .DS_Store
+result/
 
 # Protobuf files
 *.pb.cc

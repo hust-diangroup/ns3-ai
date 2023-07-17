@@ -25,38 +25,7 @@ import argparse
 import numpy as np
 import torch.nn as nn
 import matplotlib.pyplot as plt
-
-parser = argparse.ArgumentParser()
-parser.add_argument('--result', action='store_true',
-                    help='whether output figures')
-parser.add_argument('--output_dir', type=str,
-                    default='./result', help='output figures path')
-parser.add_argument('--use_rl', action='store_true',
-                    help='whether use rl algorithm')
-
-
-class TcpRlEnv(Structure):
-    _pack_ = 1
-    _fields_ = [
-        ('nodeId', c_uint32),
-        ('socketUid', c_uint32),
-        ('envType', c_uint8),
-        ('simTime_us', c_int64),
-        ('ssThresh', c_uint32),
-        ('cWnd', c_uint32),
-        ('segmentSize', c_uint32),
-        ('segmentsAcked', c_uint32),
-        ('bytesInFlight', c_uint32),
-    ]
-
-
-class TcpRlAct(Structure):
-    _pack_ = 1
-    _fields_ = [
-        ('new_ssThresh', c_uint32),
-        ('new_cWnd', c_uint32)
-    ]
-
+import ns3ai_rltcp_msg_py as ns3ai_msg
 
 class net(nn.Module):
     def __init__(self):
@@ -126,99 +95,112 @@ class DQN(object):
         self.optimizer.step()
 
 
-Init(1234, 4096)
-var = Ns3AIRL(1234, TcpRlEnv, TcpRlAct)
-res_list = ['ssThresh_l', 'cWnd_l', 'segmentsAcked_l',
-            'segmentSize_l', 'bytesInFlight_l']
-args = parser.parse_args()
+if __name__ == '__main__':
 
-if args.result:
-    for res in res_list:
-        globals()[res] = []
-    if args.output_dir:
-        if not os.path.exists(args.output_dir):
-            os.mkdir(args.output_dir)
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--result', action='store_true',
+                        help='whether output figures')
+    parser.add_argument('--output_dir', type=str,
+                        default='./result', help='output figures path')
+    parser.add_argument('--use_rl', action='store_true',
+                        help='whether use rl algorithm')
 
-if args.use_rl:
-    dqn = DQN()
-exp = Experiment(1234, 4096, 'rl-tcp', '../../', using_waf=False)
-exp.run(show_output=1)
-try:
-    while not var.isFinish():
-        with var as data:
-            if not data:
-                break
-    #         print(var.GetVersion())
-            ssThresh = data.env.ssThresh
-            cWnd = data.env.cWnd
-            segmentsAcked = data.env.segmentsAcked
-            segmentSize = data.env.segmentSize
-            bytesInFlight = data.env.bytesInFlight
-    #         print(ssThresh, cWnd, segmentsAcked, segmentSize, bytesInFlight)
+    ns3ai = ns3ai_msg.Ns3AiMsgInterface(True, False, True, 4096, "My Seg", "My Cpp to Python Msg", "My Python to Cpp Msg", "My Lockable")
+    print('Created message interface, waiting for C++ side to send initial environment...')
 
-            if args.result:
-                for res in res_list:
-                    globals()[res].append(globals()[res[:-2]])
-                    #print(globals()[res][-1])
+    res_list = ['ssThresh_l', 'cWnd_l', 'segmentsAcked_l',
+                'segmentSize_l', 'bytesInFlight_l']
+    args = parser.parse_args()
 
-            if not args.use_rl:
-                new_cWnd = 1
-                new_ssThresh = 1
-                # IncreaseWindow
-                if (cWnd < ssThresh):
-                    # slow start
-                    if (segmentsAcked >= 1):
-                        new_cWnd = cWnd + segmentSize
-                if (cWnd >= ssThresh):
-                    # congestion avoidance
-                    if (segmentsAcked > 0):
-                        adder = 1.0 * (segmentSize * segmentSize) / cWnd
-                        adder = int(max(1.0, adder))
-                        new_cWnd = cWnd + adder
-                # GetSsThresh
-                new_ssThresh = int(max(2 * segmentSize, bytesInFlight / 2))
-                data.act.new_cWnd = new_cWnd
-                data.act.new_ssThresh = new_ssThresh
-            else:
-                s = [ssThresh, cWnd, segmentsAcked, segmentSize, bytesInFlight]
-                a = dqn.choose_action(s)
-                if a & 1:
+    if args.result:
+        for res in res_list:
+            globals()[res] = []
+        if args.output_dir:
+            if not os.path.exists(args.output_dir):
+                os.mkdir(args.output_dir)
+
+    if args.use_rl:
+        dqn = DQN()
+
+    while True:
+        ns3ai.py_recv_begin()
+        if ns3ai.py_get_finished():
+            break
+        ssThresh = ns3ai.m_single_cpp2py_msg.ssThresh
+        cWnd = ns3ai.m_single_cpp2py_msg.cWnd
+        segmentsAcked = ns3ai.m_single_cpp2py_msg.segmentsAcked
+        segmentSize = ns3ai.m_single_cpp2py_msg.segmentSize
+        bytesInFlight = ns3ai.m_single_cpp2py_msg.bytesInFlight
+        # ns3ai.py_recv_end()
+        print(ssThresh, cWnd, segmentsAcked, segmentSize, bytesInFlight)
+
+        if args.result:
+            for res in res_list:
+                globals()[res].append(globals()[res[:-2]])
+                #print(globals()[res][-1])
+
+        ns3ai.py_send_begin()
+
+        if not args.use_rl:
+            new_cWnd = 1
+            new_ssThresh = 1
+            # IncreaseWindow
+            if (cWnd < ssThresh):
+                # slow start
+                if (segmentsAcked >= 1):
                     new_cWnd = cWnd + segmentSize
-                else:
-                    if(cWnd > 0):
-                        new_cWnd = cWnd + int(max(1, (segmentSize * segmentSize) / cWnd))
-                if a < 3:
-                    new_ssThresh = 2 * segmentSize
-                else:
-                    new_ssThresh = int(bytesInFlight / 2)
-                data.act.new_cWnd = new_cWnd
-                data.act.new_ssThresh = new_ssThresh
+            if (cWnd >= ssThresh):
+                # congestion avoidance
+                if (segmentsAcked > 0):
+                    adder = 1.0 * (segmentSize * segmentSize) / cWnd
+                    adder = int(max(1.0, adder))
+                    new_cWnd = cWnd + adder
+            # GetSsThresh
+            new_ssThresh = int(max(2 * segmentSize, bytesInFlight / 2))
+            ns3ai.m_single_py2cpp_msg.new_cWnd = new_cWnd
+            ns3ai.m_single_py2cpp_msg.new_ssThresh = new_ssThresh
+        else:
+            s = [ssThresh, cWnd, segmentsAcked, segmentSize, bytesInFlight]
+            a = dqn.choose_action(s)
+            if a & 1:
+                new_cWnd = cWnd + segmentSize
+            else:
+                if(cWnd > 0):
+                    new_cWnd = cWnd + int(max(1, (segmentSize * segmentSize) / cWnd))
+            if a < 3:
+                new_ssThresh = 2 * segmentSize
+            else:
+                new_ssThresh = int(bytesInFlight / 2)
+            ns3ai.m_single_py2cpp_msg.new_cWnd = new_cWnd
+            ns3ai.m_single_py2cpp_msg.new_ssThresh = new_ssThresh
 
-                ssThresh = data.env.ssThresh
-                cWnd = data.env.cWnd
-                segmentsAcked = data.env.segmentsAcked
-                segmentSize = data.env.segmentSize
-                bytesInFlight = data.env.bytesInFlight
+            ssThresh = ns3ai.m_single_cpp2py_msg.ssThresh
+            cWnd = ns3ai.m_single_cpp2py_msg.cWnd
+            segmentsAcked = ns3ai.m_single_cpp2py_msg.segmentsAcked
+            segmentSize = ns3ai.m_single_cpp2py_msg.segmentSize
+            bytesInFlight = ns3ai.m_single_cpp2py_msg.bytesInFlight
 
-                # modify the reward
-                r = segmentsAcked - bytesInFlight - cWnd
-                s_ = [ssThresh, cWnd, segmentsAcked,
-                      segmentSize, bytesInFlight]
+            # modify the reward
+            r = segmentsAcked - bytesInFlight - cWnd
+            s_ = [ssThresh, cWnd, segmentsAcked,
+                  segmentSize, bytesInFlight]
 
-                dqn.store_transition(s, a, r, s_)
+            dqn.store_transition(s, a, r, s_)
 
-                if dqn.memory_counter > dqn.memory_capacity:
-                    dqn.learn()
-except KeyboardInterrupt:
-    exp.kill()
-    del exp
+            if dqn.memory_counter > dqn.memory_capacity:
+                dqn.learn()
 
-if args.result:
-    for res in res_list:
-        y = globals()[res]
-        x = range(len(y))
-        plt.clf()
-        plt.plot(x, y, label=res[:-2], linewidth=1, color='r')
-        plt.xlabel('Step Number')
-        plt.title('Information of {}'.format(res[:-2]))
-        plt.savefig('{}.png'.format(os.path.join(args.output_dir, res[:-2])))
+        ns3ai.py_recv_end()
+        ns3ai.py_send_end()
+
+    if args.result:
+        for res in res_list:
+            y = globals()[res]
+            x = range(len(y))
+            plt.clf()
+            plt.plot(x, y, label=res[:-2], linewidth=1, color='r')
+            plt.xlabel('Step Number')
+            plt.title('Information of {}'.format(res[:-2]))
+            plt.savefig('{}.png'.format(os.path.join(args.output_dir, res[:-2])))
+
+    del ns3ai

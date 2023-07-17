@@ -90,7 +90,6 @@ class OpenGymInterface : public Object
     Callback<std::string> m_extraInfoCb;
     Callback<bool, Ptr<OpenGymDataContainer>> m_actionCb;
 
-    std::string m_segName;
     Ns3AiMsgInterface<Ns3AiGymMsg, Ns3AiGymMsg> m_msgInterface;
 };
 

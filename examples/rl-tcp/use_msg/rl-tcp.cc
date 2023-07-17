@@ -128,23 +128,6 @@ main (int argc, char *argv[])
   NS_LOG_UNCOND ("--seed: " << run);
   NS_LOG_UNCOND ("--Tcp version: " << transport_prot);
 
-  //   // OpenGym Env --- has to be created before any other thing
-  //   Ptr<OpenGymInterface> openGymInterface;
-  //   if (transport_prot.compare ("ns3::TcpRl") == 0)
-  //     {
-  //       openGymInterface = OpenGymInterface::Get (openGymPort);
-  //       Config::SetDefault ("ns3::TcpRl::Reward",
-  //                           DoubleValue (2.0)); // Reward when increasing congestion window
-  //       Config::SetDefault ("ns3::TcpRl::Penalty",
-  //                           DoubleValue (-30.0)); // Penalty when decreasing congestion window
-  //     }
-
-  // if (transport_prot.compare ("ns3::TcpRlTimeBased") == 0)
-  //   {
-  //     Config::SetDefault ("ns3::TcpRlTimeBased::StepTime",
-  //                         TimeValue (Seconds (0.01))); // Time step of TCP env
-  //   }
-
   // Calculate the ADU size
   Header *temp_header = new Ipv4Header ();
   uint32_t ip_header = temp_header->GetSerializedSize ();
@@ -169,23 +152,8 @@ main (int argc, char *argv[])
 
   Config::SetDefault ("ns3::TcpL4Protocol::RecoveryType",
                       TypeIdValue (TypeId::LookupByName (recovery)));
-//  // Select TCP variant
-//  if (transport_prot.compare ("ns3::TcpWestwoodPlus") == 0)
-//    {
-//      // TcpWestwoodPlus is not an actual TypeId name; we need TcpWestwood here
-//      Config::SetDefault ("ns3::TcpL4Protocol::SocketType",
-//                          TypeIdValue (TcpWestwood::GetTypeId ()));
-//      // the default protocol type in ns3::TcpWestwood is WESTWOOD
-//      Config::SetDefault ("ns3::TcpWestwood::ProtocolType", EnumValue (TcpWestwood::WESTWOODPLUS));
-//    }
-//  else
-//    {
-//      TypeId tcpTid;
-//      NS_ABORT_MSG_UNLESS (TypeId::LookupByNameFailSafe (transport_prot, &tcpTid),
-//                           "TypeId " << transport_prot << " not found");
-//      Config::SetDefault ("ns3::TcpL4Protocol::SocketType",
-//                          TypeIdValue (TypeId::LookupByName (transport_prot)));
-//    }
+
+  // Select TCP variant
   Config::SetDefault ("ns3::TcpL4Protocol::SocketType",
                      TypeIdValue (TypeId::LookupByName (transport_prot)));
 
@@ -308,12 +276,6 @@ main (int argc, char *argv[])
     {
       flowHelper.SerializeToXmlFile (prefix_file_name + ".flowmonitor", true, true);
     }
-
-  //   if (transport_prot.compare ("ns3::TcpRl") == 0 or
-  //       transport_prot.compare ("ns3::TcpRlTimeBased") == 0)
-  //     {
-  //       openGymInterface->NotifySimulationEnd ();
-  //     }
 
   PrintRxCount ();
   Simulator::Destroy ();

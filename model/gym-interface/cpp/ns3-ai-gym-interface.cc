@@ -56,7 +56,6 @@ OpenGymInterface::OpenGymInterface()
     : m_simEnd(false),
       m_stopEnvRequested(false),
       m_initSimMsgSent(false),
-      m_segName("My Gym Segment"),
       m_msgInterface(false, false, false)
 {
 }
