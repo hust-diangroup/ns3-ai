@@ -37,49 +37,37 @@ Python code handles environment in shared memory according to the type number.
 For example, when a transmission is over (data failed, type 0x05, or data OK, type 0x06), 
 statistics will be updated and an optimal MCS is selected for next transmission.
 
-## Build and Run
+## Run the example
 
-### Clone the examples
+1. [General setup](https://github.com/ShenMuyuan/ns3-ai/tree/improvements#general-setup)
 
-```shell
-cd contrib
-git clone https://github.com/ShenMuyuan/ns3-ai.git
-cd ns3-ai
-git checkout -b improvements origin/improvements
-cd ../../
-```
+2. Run constant rate control
 
-### Running Constant Rate Control
-
-In one terminal:
+- You must run Python side first, because Python script is the shared memory creator.
 
 ```shell
-./ns3 clean
-./ns3 configure --enable-examples
-./ns3 build ns3ai_ratecontrol_constant
 cd contrib/ns3-ai/examples/rate-control/constant
 python ai_constant_rate.py
 ```
 
-In another terminal:
+- When you see the message `Created message interface, waiting for C++ side to send initial environment...`, Open
+  another terminal and run C++ side.
 
 ```shell
 ./ns3 run ns3ai_ratecontrol_constant
 ```
 
-### Running Thompson Sampling Rate Control
+3. Run Thompson Sampling rate control
 
-In one terminal:
+- You must run Python side first, because Python script is the shared memory creator.
 
 ```shell
-./ns3 clean
-./ns3 configure --enable-examples
-./ns3 build ns3ai_ratecontrol_ts
 cd contrib/ns3-ai/examples/rate-control/thompson-sampling
 python ai_thompson_sampling.py
 ```
 
-In another terminal:
+- When you see the message `Created message interface, waiting for C++ side to send initial environment...`, Open
+  another terminal and run C++ side.
 
 ```shell
 ./ns3 run ns3ai_ratecontrol_ts -- --raa=AiThompsonSampling --nWifi=3 --standard=11ac --duration=5

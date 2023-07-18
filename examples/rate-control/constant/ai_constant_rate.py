@@ -29,6 +29,7 @@ class AiConstantRateContainer:
 
     def __init__(self) -> None:
         self.rl = cr.Ns3AiMsgInterface(True, False, True, 4096, "My Seg", "My Cpp to Python Msg", "My Python to Cpp Msg", "My Lockable")
+        print('Created message interface, waiting for C++ side to send initial environment...')
         # print('({})size: Env {} Act {}'.format(uid, sizeof(AiConstantRateEnv), sizeof(AiConstantRateAct)))
         pass
 

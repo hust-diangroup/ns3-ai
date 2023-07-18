@@ -7,66 +7,48 @@ random numbers which can be seen as environment in RL. Python side gets the vect
 structure, and sets another vector in shared memory that contains the sums, which can be seen as action in RL. C++ then
 gets the actions and prints them. The procedure is repeated many times, as defined by the macro ENV_NUM on C++ side.
 
-## Running the example (shared vector interface)
+## Running the example (msg interface)
 
-1. Clone the repository under `contrib`, checkout `improvements` branch
+1. [General setup](https://github.com/ShenMuyuan/ns3-ai/tree/improvements#general-setup)
 
-```bash
-cd contrib
-git clone https://github.com/ShenMuyuan/ns3-ai.git
-cd ns3-ai
-git checkout -b improvements origin/improvements
-cd ../../
-```
+2. Run the example.
 
-2. Use `./ns3` script to build the example. This builds both C++ and Python modules. An `.so` shared library will be
-   placed in the example directory, which can be imported by Python.
+- You must run Python side first, because Python script is the shared memory creator.
 
 ```bash
-./ns3 clean
-./ns3 configure --enable-examples
-./ns3 build ns3ai_apb
-```
-
-3. Run the example. You must run Python side first because Python script is the shared memory creator.
-
-```bash
-cd contrib/ns3-ai/examples/a_plus_b
+cd contrib/ns3-ai/examples/a_plus_b/use_msg
 python apb.py
 ```
 
-4. Open another terminal and run C++ program.
+- When you see the message `Created message interface, waiting for C++ side to send initial environment...`, Open
+  another terminal and run C++ side.
 
 ```bash
-./ns3 run ns3ai_apb
+./ns3 run ns3ai_apb_msg
 ```
 
-## Running the example (Gym-like interface)
+## Running the example (Gym interface)
 
-Steps 1-2. Same as previous interface
+1. [General setup](https://github.com/ShenMuyuan/ns3-ai/tree/improvements#general-setup)
 
-3. Setup Python module and run Python side
+2. Run the example.
+
+- You must run Python side first, because Python script is the shared memory creator.
 
 ```bash
-cd contrib/ns3-ai/examples/a_plus_b/gym_interface
-pip install -e .
-cd ../
-python apb_use_gym.py
+cd contrib/ns3-ai/examples/a_plus_b/use_gym
+python apb.py
 ```
 
-4. Same as previous interface
+- When you see the message `Created message interface, waiting for C++ side to send initial environment...`, Open
+  another terminal and run C++ side.
+
+```bash
+./ns3 run ns3ai_apb_gym
+```
 
 ## Output
 
-No matter which interface you use, you will see output like this on C++ side. The numbers are random, we only care about
-the sum.
-
-```
-CPP env to set: 2,5;5,6;2,5;
-Get act: 7;11;7;
-CPP env to set: 10,10;7,7;6,8;
-Get act: 20;14;14;
-CPP env to set: 10,10;4,8;2,7;
-Get act: 20;12;9;
-......
-```
+No matter which interface you use, you will see two numbers set by C++ side and their sum get from Python side. (Msg
+interface can take advantage of vectors. To demonstrate this, 3 pairs of numbers are set in C++ side and 3 sums are
+obtained from Python side.)

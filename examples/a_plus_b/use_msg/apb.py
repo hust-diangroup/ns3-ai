@@ -8,6 +8,7 @@ assert len(rl.m_py2cpp_msg) == 0
 rl.m_py2cpp_msg.resize(APB_SIZE)
 assert len(rl.m_cpp2py_msg) == 0
 rl.m_cpp2py_msg.resize(APB_SIZE)
+print('Created message interface, waiting for C++ side to send initial environment...')
 
 while True:
     rl.py_recv_begin()

@@ -30,7 +30,7 @@ class SharedMemoryBridge(object):
         self.gameOver = False
         self.gameOverReason = None
         self.extraInfo = None
-        print('Created message interface, waiting for C++ side to send initial message...')
+        print('Created message interface, waiting for C++ side to send initial environment...')
 
     def close(self):
         if not self.envStopped:

@@ -104,6 +104,7 @@ class AiThompsonSamplingContainer:
 
     def __init__(self, stream=1) -> None:
         self.rl = ts.Ns3AiMsgInterface(True, False, True, 4096, "My Seg", "My Cpp to Python Msg", "My Python to Cpp Msg", "My Lockable")
+        print('Created message interface, waiting for C++ side to send initial environment...')
         self.default_stream = stream
         pass
 

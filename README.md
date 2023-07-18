@@ -15,8 +15,10 @@ still in development. 2 interfaces are introduced before midterm evaluation:
 
 ### Prerequisites
 
-- Boost C++ Library
+- Boost C++ libraries
+- Protocol buffers
 - pybind11 (it's recommended to install under a Conda environment)
+- gymnasium (it's recommended to install under a Conda environment)
 
 ### Available examples using the new interfaces
 
@@ -54,7 +56,7 @@ When building examples, the `ns3-ai` library is built automatically.
 3. Setup Gym interface
 
 ```shell
-cd model/gym-interface/py
+cd cd contrib/ns3-ai/model/gym-interface/py
 pip install -e .
 ```
 

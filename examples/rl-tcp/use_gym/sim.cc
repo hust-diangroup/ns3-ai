@@ -91,7 +91,7 @@ int main (int argc, char *argv[])
     std::string prefix_file_name = "TcpVariantsComparison";
     uint64_t data_mbytes = 0;
     uint32_t mtu_bytes = 400;
-    double duration = 10.0;
+    double duration = 1000.0;
     uint32_t run = 0;
     bool flow_monitor = false;
     bool sack = true;
