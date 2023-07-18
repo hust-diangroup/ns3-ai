@@ -5,20 +5,63 @@
 Wiki page: [GSOC2023ns3-ai](https://www.nsnam.org/wiki/GSOC2023ns3-ai)
 
 The new interface utillizes Boost C++ Library to support STL containers such as `std::vector` in shared memory. It is
-still in development and currently it may not support all platforms (I only tested it on macOS).
+still in development. 2 interfaces are introduced before midterm evaluation:
+
+1. [Message Interface](https://github.com/ShenMuyuan/ns3-ai/tree/improvements/model/msg-interface): Based on
+   Boost.Interprocess shared memory, providing APIs to define message structures and perform
+   low level synchronization.
+2. [Gym Interface](https://github.com/ShenMuyuan/ns3-ai/tree/improvements/model/gym-interface): Base on message
+   interface, providing Gym APIs for Python side and environment APIs for C++ side.
 
 ### Prerequisites
 
-1. Boost C++ Library
-2. pybind11 (it's better to install under a Conda environment)
+- Boost C++ Library
+- pybind11 (it's recommended to install under a Conda environment)
 
 ### Available examples using the new interfaces
 
-- [A Plus B](https://github.com/ShenMuyuan/ns3-ai/tree/improvements/examples/a_plus_b) (shared vector interface &
-  Gym-like interface)
-- [Rate Control](https://github.com/ShenMuyuan/ns3-ai/tree/improvements/examples/rate-control) (shared vector interface)
-    - Constant Rate
-    - Thompson Sampling
+- [A Plus B](https://github.com/ShenMuyuan/ns3-ai/tree/improvements/examples/a_plus_b)
+    - Message Interface
+    - Gym Interface
+- [RL-TCP](https://github.com/ShenMuyuan/ns3-ai/tree/improvements/examples/rl-tcp)
+    - Message Interface
+    - Gym Interface
+- [Rate Control](https://github.com/ShenMuyuan/ns3-ai/tree/improvements/examples/rate-control) (Constant Rate & Thompson
+  Sampling)
+    - Message Interface only
+
+## General Setup
+
+1. Clone this repository and configure
+
+```shell
+cd contrib
+git clone https://github.com/ShenMuyuan/ns3-ai.git
+cd ns3-ai
+git checkout -b improvements origin/improvements
+cd ../../
+./ns3 configure --enable-examples
+```
+
+2. Build the examples
+
+When building examples, the `ns3-ai` library is built automatically.
+
+```shell
+./ns3 build ns3ai_apb_msg ns3ai_apb_gym ns3ai_rltcp_msg ns3ai_rltcp_gym ns3ai_ratecontrol_constant ns3ai_ratecontrol_ts
+```
+
+3. Setup Gym interface
+
+```shell
+cd model/gym-interface/py
+pip install -e .
+```
+
+4. Run the examples
+
+Please check the README.md in corresponding directories for instruction.
+
 
 # Original README:
 
