@@ -53,7 +53,7 @@
 
 using namespace ns3;
 
-NS_LOG_COMPONENT_DEFINE ("TcpRl");
+NS_LOG_COMPONENT_DEFINE ("rl-tcp-example");
 
 static std::vector<uint32_t> rxPkts;
 
@@ -77,9 +77,9 @@ PrintRxCount ()
 int
 main (int argc, char *argv[])
 {
-  // LogComponentEnable ("Pool", LOG_LEVEL_ALL);
+    double tcpEnvTimeStep = 0.1;
   uint32_t nLeaf = 1;
-  std::string transport_prot = "ns3::TcpRlTimeBased";
+  std::string transport_prot = "TcpRlTimeBased";
   double error_p = 0.0;
   std::string bottleneck_bandwidth = "2Mbps";
   std::string bottleneck_delay = "0.01ms";
@@ -96,14 +96,16 @@ main (int argc, char *argv[])
   std::string recovery = "ns3::TcpClassicRecovery";
 
   CommandLine cmd;
+  // seed related
   cmd.AddValue ("simSeed", "Seed for random generator. Default: 1", run);
-  // other parameters
+  cmd.AddValue ("run", "Run index (for setting repeatable seeds)", run);
+  // other
+  cmd.AddValue ("envTimeStep", "Time step interval for TcpRlTimeBased. Default: 0.1s", tcpEnvTimeStep);
   cmd.AddValue ("nLeaf", "Number of left and right side leaf nodes", nLeaf);
   cmd.AddValue ("transport_prot",
-                "Transport protocol to use: TcpNewReno, "
-                "TcpHybla, TcpHighSpeed, TcpHtcp, TcpVegas, TcpScalable, TcpVeno, "
-                "TcpBic, TcpYeah, TcpIllinois, TcpWestwood, TcpWestwoodPlus, TcpLedbat, "
-                "TcpLp, TcpRl, TcpRlTimeBased",
+                "Transport protocol to use: TcpNewReno, TcpHybla, TcpHighSpeed, TcpHtcp, "
+                "TcpVegas, TcpScalable, TcpVeno, TcpBic, TcpYeah, TcpIllinois, TcpWestwood, "
+                "TcpWestwoodPlus, TcpLedbat, TcpLp, TcpRlTimeBased, TcpRlEventBased",
                 transport_prot);
   cmd.AddValue ("error_p", "Packet error rate", error_p);
   cmd.AddValue ("bottleneck_bandwidth", "Bottleneck bandwidth", bottleneck_bandwidth);
@@ -114,13 +116,25 @@ main (int argc, char *argv[])
   cmd.AddValue ("data", "Number of Megabytes of data to transmit", data_mbytes);
   cmd.AddValue ("mtu", "Size of IP packets to send in bytes", mtu_bytes);
   cmd.AddValue ("duration", "Time to allow flows to run in seconds", duration);
-  cmd.AddValue ("run", "Run index (for setting repeatable seeds)", run);
   cmd.AddValue ("flow_monitor", "Enable flow monitor", flow_monitor);
   cmd.AddValue ("queue_disc_type", "Queue disc type for gateway (e.g. ns3::CoDelQueueDisc)",
                 queue_disc_type);
   cmd.AddValue ("sack", "Enable or disable SACK option", sack);
   cmd.AddValue ("recovery", "Recovery algorithm type to use (e.g., ns3::TcpPrrRecovery", recovery);
   cmd.Parse (argc, argv);
+
+  // There are two kinds of Tcp congestion control algorithm using RL:
+  // 1. TcpRlTimeBased
+  // 2. TcpRlEventBased
+  // The only difference is when interaction occurs (at fixed interval or at event).
+  if (transport_prot == "TcpRlTimeBased")
+  {
+      Config::SetDefault ("ns3::TcpTimeStepEnv::StepTime", TimeValue (Seconds(tcpEnvTimeStep)));
+  }
+
+  transport_prot = std::string ("ns3::") + transport_prot;
+  Config::SetDefault ("ns3::TcpL4Protocol::SocketType",
+                     TypeIdValue (TypeId::LookupByName (transport_prot)));
 
   SeedManager::SetSeed (1);
   SeedManager::SetRun (run);
@@ -152,10 +166,6 @@ main (int argc, char *argv[])
 
   Config::SetDefault ("ns3::TcpL4Protocol::RecoveryType",
                       TypeIdValue (TypeId::LookupByName (recovery)));
-
-  // Select TCP variant
-  Config::SetDefault ("ns3::TcpL4Protocol::SocketType",
-                     TypeIdValue (TypeId::LookupByName (transport_prot)));
 
   // Configure the error model
   // Here we use RateErrorModel with packet error rate

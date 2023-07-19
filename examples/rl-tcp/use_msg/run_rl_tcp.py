@@ -17,8 +17,6 @@
 # Author: Pengyu Liu <eic_lpy@hust.edu.cn>
 #         Hao Yin <haoyin@uw.edu>
 
-from py_interface import *
-from ctypes import *
 import os
 import torch
 import argparse

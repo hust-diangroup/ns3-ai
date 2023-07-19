@@ -20,7 +20,9 @@
  *         Hao Yin <haoyin@uw.edu>
  */
 
-#pragma once
+#ifndef TCP_RL_ENV_H_MSG
+#define TCP_RL_ENV_H_MSG
+
 #include "ns3/core-module.h"
 #include "ns3/network-module.h"
 #include "ns3/ns3-ai-module.h"
@@ -52,11 +54,8 @@ class TcpTimeStepEnv : public Object
 {
   public:
     TcpTimeStepEnv();
-    ~TcpTimeStepEnv();
+    ~TcpTimeStepEnv() override;
     static TypeId GetTypeId();
-    // trace packets, e.g. for calculating inter tx/rx time
-    //   virtual void TxPktTrace(Ptr<const Packet>, const TcpHeader&, Ptr<const TcpSocketBase>);
-    //   virtual void RxPktTrace(Ptr<const Packet>, const TcpHeader&, Ptr<const TcpSocketBase>);
 
   void SetNodeId (uint32_t id);
   void SetSocketUuid (uint32_t id);
@@ -85,9 +84,55 @@ class TcpTimeStepEnv : public Object
 
     uint32_t m_new_ssThresh;
     uint32_t m_new_cWnd;
-    void ScheduleNextStateRead();
+    void ScheduleNotify();
     bool m_started{false};
-    Time m_timeStep{MilliSeconds(10)};
+    Time m_timeStep;
+
+    // state
+    Ptr<const TcpSocketState> m_tcb;
+    std::vector<uint32_t> m_bytesInFlight;
+    std::vector<uint32_t> m_segmentsAcked;
+
+    uint64_t m_rttSampleNum{0};
+    Time m_rttSum{MicroSeconds(0.0)};
+};
+
+class TcpEventBasedEnv : public Object
+{
+  public:
+    TcpEventBasedEnv();
+    ~TcpEventBasedEnv() override;
+    static TypeId GetTypeId();
+
+    void SetNodeId (uint32_t id);
+    void SetSocketUuid (uint32_t id);
+    void TxPktTrace (Ptr<const Packet>, const TcpHeader &, Ptr<const TcpSocketBase>);
+    void RxPktTrace (Ptr<const Packet>, const TcpHeader &, Ptr<const TcpSocketBase>);
+
+    // TCP congestion control interface
+    uint32_t GetSsThresh(Ptr<const TcpSocketState> tcb, uint32_t bytesInFlight);
+    void IncreaseWindow(Ptr<TcpSocketState> tcb, uint32_t segmentsAcked);
+    // optional functions used to collect obs
+    void PktsAcked(Ptr<TcpSocketState> tcb, uint32_t segmentsAcked, const Time& rtt);
+    void CongestionStateSet(Ptr<TcpSocketState> tcb,
+                            const TcpSocketState::TcpCongState_t newState);
+    void CwndEvent(Ptr<TcpSocketState> tcb, const TcpSocketState::TcpCAEvent_t event);
+
+  private:
+    uint32_t m_nodeId;
+    uint32_t m_socketUuid;
+
+    Time m_lastPktTxTime{MicroSeconds(0.0)};
+    Time m_lastPktRxTime{MicroSeconds(0.0)};
+    uint64_t m_interTxTimeNum{0};
+    Time m_interTxTimeSum{MicroSeconds(0.0)};
+    uint64_t m_interRxTimeNum{0};
+    Time m_interRxTimeSum{MicroSeconds(0.0)};
+
+    uint32_t m_new_ssThresh;
+    uint32_t m_new_cWnd;
+    void Notify();
+
     // state
     Ptr<const TcpSocketState> m_tcb;
     std::vector<uint32_t> m_bytesInFlight;
@@ -98,3 +143,5 @@ class TcpTimeStepEnv : public Object
 };
 
 } // namespace ns3
+
+#endif /* TCP_RL_ENV_H_MSG */

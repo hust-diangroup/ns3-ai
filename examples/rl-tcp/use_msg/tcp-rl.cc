@@ -32,10 +32,12 @@
 
 namespace ns3 {
 
+NS_LOG_COMPONENT_DEFINE ("tcp-rl");
+
 NS_OBJECT_ENSURE_REGISTERED (TcpSocketDerived);
 
 TypeId
-TcpSocketDerived::GetTypeId (void)
+TcpSocketDerived::GetTypeId ()
 {
   static TypeId tid = TypeId ("ns3::TcpSocketDerived")
                           .SetParent<TcpSocketBase> ()
@@ -50,7 +52,7 @@ TcpSocketDerived::GetInstanceTypeId () const
   return TcpSocketDerived::GetTypeId ();
 }
 
-TcpSocketDerived::TcpSocketDerived (void)
+TcpSocketDerived::TcpSocketDerived ()
 {
 }
 
@@ -60,52 +62,42 @@ TcpSocketDerived::GetCongestionControlAlgorithm ()
   return m_congestionControl;
 }
 
-TcpSocketDerived::~TcpSocketDerived (void)
+TcpSocketDerived::~TcpSocketDerived ()
 {
 }
 /////////////////////////////////////////////////////////////////////////
-NS_LOG_COMPONENT_DEFINE ("ns3::TcpRlTimeBased");
+
 NS_OBJECT_ENSURE_REGISTERED (TcpRlTimeBased);
 
-TcpRlTimeBased::TcpRlTimeBased (void) : TcpCongestionOps ()
+TcpRlTimeBased::TcpRlTimeBased () : TcpCongestionOps ()
 {
   NS_LOG_FUNCTION (this);
 //  std::cerr << "in TcpRlTimeBased (void), this = " << this << std::endl;
-  m_tcpSocket = 0;
 }
 
 TcpRlTimeBased::TcpRlTimeBased (const TcpRlTimeBased &sock) : TcpCongestionOps (sock)
 {
   NS_LOG_FUNCTION (this);
 //  std::cerr << "in TcpRlTimeBased (const TcpRlTimeBased &sock), this = " << this << std::endl;
-  m_tcpSocket = 0;
 }
 
-TcpRlTimeBased::~TcpRlTimeBased (void)
+TcpRlTimeBased::~TcpRlTimeBased ()
 {
 //  std::cerr << "in ~TcpRlTimeBased (void), this = " << this << std::endl;
-  m_tcpSocket = 0;
 }
 
 TypeId
-TcpRlTimeBased::GetTypeId (void)
+TcpRlTimeBased::GetTypeId ()
 {
   static TypeId tid =
       TypeId ("ns3::TcpRlTimeBased")
           .SetParent<TcpSocketBase> ()
           .AddConstructor<TcpRlTimeBased> ()
           .SetGroupName ("Internet")
-          .AddAttribute ("StepTime", "Step interval used in TCP env. Default: 100ms",
-                         TimeValue (MilliSeconds (100)),
-                         MakeTimeAccessor (&TcpRlTimeBased::m_timeStep), MakeTimeChecker ());
+      ;
   return tid;
 }
-void
-TcpRlTimeBased::ReduceCwnd (Ptr<TcpSocketState> tcb) 
-{
-   NS_LOG_FUNCTION (this << tcb);
-   tcb->m_cWnd = std::max (tcb->m_cWnd.Get () / 2, tcb->m_segmentSize); 
-}
+
 uint64_t
 TcpRlTimeBased::GenerateUuid ()
 {
@@ -201,8 +193,7 @@ TcpRlTimeBased::GetSsThresh (Ptr<const TcpSocketState> state, uint32_t bytesInFl
       CreateEnv ();
     }
 
-  uint32_t newSsThresh = 0;
-  newSsThresh = env->GetSsThresh (state, bytesInFlight);
+  uint32_t newSsThresh = env->GetSsThresh (state, bytesInFlight);
 
   return newSsThresh;
 }
@@ -261,6 +252,187 @@ TcpRlTimeBased::Fork ()
 {
 //  std::cerr << "in TcpRlTimeBased::Fork (), this = " << this << std::endl;
   return CopyObject<TcpRlTimeBased> (this);
+}
+
+NS_OBJECT_ENSURE_REGISTERED (TcpRlEventBased);
+
+TypeId
+TcpRlEventBased::GetTypeId()
+{
+  static TypeId tid =
+      TypeId ("ns3::TcpRlEventBased")
+          .SetParent<TcpSocketBase> ()
+          .AddConstructor<TcpRlEventBased> ()
+          .SetGroupName ("Internet")
+      ;
+  return tid;
+}
+
+TcpRlEventBased::TcpRlEventBased() : TcpCongestionOps ()
+{
+}
+
+TcpRlEventBased::TcpRlEventBased (const TcpRlEventBased &sock) : TcpCongestionOps (sock)
+{
+}
+
+TcpRlEventBased::~TcpRlEventBased()
+{
+}
+
+std::string
+TcpRlEventBased::GetName () const
+{
+  return "TcpRlEventBased";
+}
+
+uint32_t
+TcpRlEventBased::GetSsThresh (Ptr<const TcpSocketState> state, uint32_t bytesInFlight)
+{
+  NS_LOG_FUNCTION (this << state << bytesInFlight);
+  if (!m_cbConnect)
+  {
+      m_cbConnect = true;
+      CreateEnv ();
+  }
+
+  uint32_t newSsThresh = env->GetSsThresh (state, bytesInFlight);
+
+  return newSsThresh;
+}
+
+void
+TcpRlEventBased::IncreaseWindow (Ptr<TcpSocketState> tcb, uint32_t segmentsAcked)
+{
+  NS_LOG_FUNCTION (this << tcb << segmentsAcked);
+  if (!m_cbConnect)
+  {
+      m_cbConnect = true;
+      CreateEnv ();
+  }
+  env->IncreaseWindow (tcb, segmentsAcked);
+}
+
+void
+TcpRlEventBased::PktsAcked (Ptr<TcpSocketState> tcb, uint32_t segmentsAcked, const Time &rtt)
+{
+  NS_LOG_FUNCTION (this);
+  if (!m_cbConnect)
+  {
+      m_cbConnect = true;
+      CreateEnv ();
+  }
+  env->PktsAcked (tcb, segmentsAcked, rtt);
+}
+
+void
+TcpRlEventBased::CongestionStateSet (Ptr<TcpSocketState> tcb,
+                                   const TcpSocketState::TcpCongState_t newState)
+{
+  NS_LOG_FUNCTION (this);
+  if (!m_cbConnect)
+  {
+      m_cbConnect = true;
+      CreateEnv ();
+  }
+  env->CongestionStateSet (tcb, newState);
+}
+
+void
+TcpRlEventBased::CwndEvent (Ptr<TcpSocketState> tcb, const TcpSocketState::TcpCAEvent_t event)
+{
+  NS_LOG_FUNCTION (this);
+  if (!m_cbConnect)
+  {
+      m_cbConnect = true;
+      CreateEnv ();
+  }
+  env->CwndEvent (tcb, event);
+}
+
+Ptr<TcpCongestionOps>
+TcpRlEventBased::Fork ()
+{
+  return CopyObject<TcpRlEventBased> (this);
+}
+
+uint64_t
+TcpRlEventBased::GenerateUuid ()
+{
+  static uint64_t uuid = 0;
+  uuid++;
+  return uuid;
+}
+
+void
+TcpRlEventBased::CreateEnv ()
+{
+  //  std::cerr << "in CreateEnv (), this = " << this << std::endl;
+  NS_LOG_FUNCTION (this);
+  env = CreateObject<TcpEventBasedEnv>();
+  std::cerr << "CreateEnv" << (env == nullptr) << std::endl;
+  env->SetSocketUuid (TcpRlEventBased::GenerateUuid ());
+
+  ConnectSocketCallbacks ();
+}
+
+void
+TcpRlEventBased::ConnectSocketCallbacks ()
+{
+  //  std::cerr << "in ConnectSocketCallbacks (), this = " << this << std::endl;
+  NS_LOG_FUNCTION (this);
+
+  bool foundSocket = false;
+  for (NodeList::Iterator i = NodeList::Begin (); i != NodeList::End (); ++i)
+  {
+      Ptr<Node> node = *i;
+      Ptr<TcpL4Protocol> tcp = node->GetObject<TcpL4Protocol> ();
+
+      ObjectVectorValue socketVec;
+      tcp->GetAttribute ("SocketList", socketVec);
+      NS_LOG_DEBUG ("Node: " << node->GetId () << " TCP socket num: " << socketVec.GetN ());
+
+      uint32_t sockNum = socketVec.GetN ();
+      for (uint32_t j = 0; j < sockNum; j++)
+      {
+          Ptr<Object> sockObj = socketVec.Get (j);
+          Ptr<TcpSocketBase> tcpSocket = DynamicCast<TcpSocketBase> (sockObj);
+          NS_LOG_DEBUG ("Node: " << node->GetId () << " TCP Socket: " << tcpSocket);
+          if (!tcpSocket)
+          {
+              continue;
+          }
+
+          Ptr<TcpSocketDerived> dtcpSocket = StaticCast<TcpSocketDerived> (tcpSocket);
+          Ptr<TcpCongestionOps> ca = dtcpSocket->GetCongestionControlAlgorithm ();
+          NS_LOG_DEBUG ("CA name: " << ca->GetName ());
+          Ptr<TcpRlEventBased> rlCa = DynamicCast<TcpRlEventBased> (ca);
+          if (rlCa == this)
+          {
+              NS_LOG_DEBUG ("Found TcpRl CA!");
+              foundSocket = true;
+              //              m_tcpSocket = tcpSocket;
+              m_tcpSocket = PeekPointer(tcpSocket);
+              break;
+          }
+      }
+
+      if (foundSocket)
+      {
+          break;
+      }
+  }
+
+  NS_ASSERT_MSG (m_tcpSocket, "TCP socket was not found.");
+
+  if (m_tcpSocket)
+  {
+      NS_LOG_DEBUG ("Found TCP Socket: " << m_tcpSocket);
+      m_tcpSocket->TraceConnectWithoutContext ("Tx", MakeCallback (&TcpEventBasedEnv::TxPktTrace, env));
+      m_tcpSocket->TraceConnectWithoutContext ("Rx", MakeCallback (&TcpEventBasedEnv::RxPktTrace, env));
+      NS_LOG_DEBUG ("Connect socket callbacks " << m_tcpSocket->GetNode ()->GetId ());
+      env->SetNodeId (m_tcpSocket->GetNode ()->GetId ());
+  }
 }
 
 } // namespace ns3

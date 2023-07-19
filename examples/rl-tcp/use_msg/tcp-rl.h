@@ -20,8 +20,8 @@
  *         Hao Yin <haoyin@uw.edu>
  */
 
-#ifndef TCP_RL_H
-#define TCP_RL_H
+#ifndef TCP_RL_H_MSG
+#define TCP_RL_H_MSG
 
 #include "ns3/tcp-congestion-ops.h"
 #include "ns3/tcp-socket-base.h"
@@ -36,35 +36,34 @@ class Time;
 class TcpSocketDerived : public TcpSocketBase
 {
 public:
-  static TypeId GetTypeId (void);
-  virtual TypeId GetInstanceTypeId () const;
+  static TypeId GetTypeId ();
+  TypeId GetInstanceTypeId () const override;
 
-  TcpSocketDerived (void);
-  virtual ~TcpSocketDerived (void);
+  TcpSocketDerived ();
+  ~TcpSocketDerived () override;
 
   Ptr<TcpCongestionOps> GetCongestionControlAlgorithm ();
 };
 
-
 class TcpRlTimeBased : public TcpCongestionOps
 {
 public:
-  static TypeId GetTypeId (void);
+  static TypeId GetTypeId ();
 
   TcpRlTimeBased ();
   TcpRlTimeBased (const TcpRlTimeBased &sock);
-  ~TcpRlTimeBased ();
+  ~TcpRlTimeBased () override;
 
-  virtual std::string GetName () const;
+  std::string GetName () const override;
 
-  virtual uint32_t GetSsThresh (Ptr<const TcpSocketState> tcb, uint32_t bytesInFlight);
-  virtual void IncreaseWindow (Ptr<TcpSocketState> tcb, uint32_t segmentsAcked);
-  virtual void PktsAcked (Ptr<TcpSocketState> tcb, uint32_t segmentsAcked, const Time &rtt);
-  virtual void CongestionStateSet (Ptr<TcpSocketState> tcb,
-                                   const TcpSocketState::TcpCongState_t newState);
-  virtual void CwndEvent (Ptr<TcpSocketState> tcb, const TcpSocketState::TcpCAEvent_t event);
-  virtual Ptr<TcpCongestionOps> Fork ();
-  virtual void ReduceCwnd (Ptr<TcpSocketState> tcb);
+  uint32_t GetSsThresh (Ptr<const TcpSocketState> tcb, uint32_t bytesInFlight) override;
+  void IncreaseWindow (Ptr<TcpSocketState> tcb, uint32_t segmentsAcked) override;
+  void PktsAcked (Ptr<TcpSocketState> tcb, uint32_t segmentsAcked, const Time &rtt) override;
+  void CongestionStateSet (Ptr<TcpSocketState> tcb,
+                                   const TcpSocketState::TcpCongState_t newState) override;
+  void CwndEvent (Ptr<TcpSocketState> tcb, const TcpSocketState::TcpCAEvent_t event) override;
+  Ptr<TcpCongestionOps> Fork () override;
+
 protected:
   static uint64_t GenerateUuid ();
   virtual void CreateEnv ();
@@ -72,14 +71,42 @@ protected:
 
   bool m_cbConnect{false};
 
-//  Ptr<TcpSocketBase> m_tcpSocket{0};
-  TcpSocketBase *m_tcpSocket{0};
+  TcpSocketBase *m_tcpSocket{nullptr};
 
   Ptr<TcpTimeStepEnv> env;
-  
-  Time m_timeStep{MilliSeconds (100)};
+};
+
+class TcpRlEventBased : public TcpCongestionOps
+{
+public:
+  static TypeId GetTypeId ();
+
+  TcpRlEventBased ();
+  TcpRlEventBased (const TcpRlEventBased &sock);
+  ~TcpRlEventBased () override;
+
+  std::string GetName () const override;
+
+  uint32_t GetSsThresh (Ptr<const TcpSocketState> tcb, uint32_t bytesInFlight) override;
+  void IncreaseWindow (Ptr<TcpSocketState> tcb, uint32_t segmentsAcked) override;
+  void PktsAcked (Ptr<TcpSocketState> tcb, uint32_t segmentsAcked, const Time &rtt) override;
+  void CongestionStateSet (Ptr<TcpSocketState> tcb,
+                          const TcpSocketState::TcpCongState_t newState) override;
+  void CwndEvent (Ptr<TcpSocketState> tcb, const TcpSocketState::TcpCAEvent_t event) override;
+  Ptr<TcpCongestionOps> Fork () override;
+
+protected:
+  static uint64_t GenerateUuid ();
+  virtual void CreateEnv ();
+  void ConnectSocketCallbacks ();
+
+  bool m_cbConnect{false};
+
+  TcpSocketBase *m_tcpSocket{nullptr};
+
+  Ptr<TcpEventBasedEnv> env;
 };
 
 } // namespace ns3
 
-#endif /* TCP_RL_H */
+#endif /* TCP_RL_H_MSG */

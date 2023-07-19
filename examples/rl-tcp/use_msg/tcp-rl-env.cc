@@ -27,7 +27,8 @@
 namespace ns3
 {
 
-NS_LOG_COMPONENT_DEFINE("ns3::TcpTimeStepEnv");
+NS_LOG_COMPONENT_DEFINE ("tcp-rl-env");
+
 NS_OBJECT_ENSURE_REGISTERED(TcpTimeStepEnv);
 
 Ns3AiMsgInterface<TcpRlEnv, TcpRlAct> m_msgInterface =
@@ -46,10 +47,15 @@ TcpTimeStepEnv::~TcpTimeStepEnv()
 TypeId
 TcpTimeStepEnv::GetTypeId()
 {
-    static TypeId tid = TypeId ("ns3::TcpTimeStepGymEnv")
+    static TypeId tid = TypeId ("ns3::TcpTimeStepEnv")
                             .SetParent<Object> ()
                             .SetGroupName ("Ns3Ai")
                             .AddConstructor<TcpTimeStepEnv> ()
+                            .AddAttribute ("StepTime",
+                                          "Step interval used in TCP env. Default: 100ms",
+                                          TimeValue (MilliSeconds (100)),
+                                          MakeTimeAccessor (&TcpTimeStepEnv::m_timeStep),
+                                          MakeTimeChecker ())
         ;
 
     return tid;
@@ -93,10 +99,10 @@ void TcpTimeStepEnv::RxPktTrace(Ptr<const Packet>, const TcpHeader &, Ptr<const 
   m_lastPktRxTime = Simulator::Now();
 }
 
-void TcpTimeStepEnv::ScheduleNextStateRead()
+void TcpTimeStepEnv::ScheduleNotify()
 {
 
-  Simulator::Schedule(m_timeStep, &TcpTimeStepEnv::ScheduleNextStateRead, this);
+  Simulator::Schedule(m_timeStep, &TcpTimeStepEnv::ScheduleNotify, this);
 
   m_msgInterface.cpp_send_begin();
   auto env = m_msgInterface.m_single_cpp2py_msg;
@@ -157,8 +163,7 @@ TcpTimeStepEnv::GetSsThresh(Ptr<const TcpSocketState> tcb, uint32_t bytesInFligh
   if (!m_started)
   {
     m_started = true;
-    // Notify();
-    ScheduleNextStateRead();
+    ScheduleNotify();
   }
 
   // action
@@ -177,8 +182,7 @@ void TcpTimeStepEnv::IncreaseWindow(Ptr<TcpSocketState> tcb, uint32_t segmentsAc
   if (!m_started)
   {
     m_started = true;
-    // Notify();
-    ScheduleNextStateRead();
+    ScheduleNotify();
   }
   // action
   tcb->m_cWnd = m_new_cWnd;
@@ -203,6 +207,171 @@ void TcpTimeStepEnv::CongestionStateSet(Ptr<TcpSocketState> tcb,
 }
 
 void TcpTimeStepEnv::CwndEvent(Ptr<TcpSocketState> tcb, const TcpSocketState::TcpCAEvent_t event)
+{
+  //   NS_LOG_FUNCTION (this);
+  //   std::string eventName = GetTcpCAEventName(event);
+  //   NS_LOG_INFO(Simulator::Now() << " Node: " << m_nodeId << " CwndEvent: " << event << " " << eventName);
+  m_tcb = tcb;
+}
+
+NS_OBJECT_ENSURE_REGISTERED(TcpEventBasedEnv);
+
+TcpEventBasedEnv::TcpEventBasedEnv()
+{
+}
+
+TcpEventBasedEnv::~TcpEventBasedEnv()
+{
+}
+
+TypeId
+TcpEventBasedEnv::GetTypeId()
+{
+  static TypeId tid = TypeId ("ns3::TcpEventBasedEnv")
+                          .SetParent<Object> ()
+                          .SetGroupName ("Ns3Ai")
+                          .AddConstructor<TcpEventBasedEnv> ()
+      ;
+
+  return tid;
+}
+
+void TcpEventBasedEnv::SetNodeId(uint32_t id)
+{
+  NS_LOG_FUNCTION(this);
+  m_nodeId = id;
+}
+
+void TcpEventBasedEnv::SetSocketUuid(uint32_t id)
+{
+  NS_LOG_FUNCTION(this);
+  m_socketUuid = id;
+}
+
+void TcpEventBasedEnv::TxPktTrace(Ptr<const Packet>, const TcpHeader &, Ptr<const TcpSocketBase>)
+{
+  //   NS_LOG_FUNCTION (this);
+  if (m_lastPktTxTime > MicroSeconds(0.0))
+  {
+    Time interTxTime = Simulator::Now() - m_lastPktTxTime;
+    m_interTxTimeSum += interTxTime;
+    m_interTxTimeNum++;
+  }
+
+  m_lastPktTxTime = Simulator::Now();
+}
+
+void TcpEventBasedEnv::RxPktTrace(Ptr<const Packet>, const TcpHeader &, Ptr<const TcpSocketBase>)
+{
+  //   NS_LOG_FUNCTION (this);
+  if (m_lastPktRxTime > MicroSeconds(0.0))
+  {
+    Time interRxTime = Simulator::Now() - m_lastPktRxTime;
+    m_interRxTimeSum += interRxTime;
+    m_interRxTimeNum++;
+  }
+
+  m_lastPktRxTime = Simulator::Now();
+}
+
+void TcpEventBasedEnv::Notify()
+{
+  m_msgInterface.cpp_send_begin();
+  auto env = m_msgInterface.m_single_cpp2py_msg;
+  env->socketUid = m_socketUuid;
+  env->envType = 1;
+  env->simTime_us = Simulator::Now().GetMicroSeconds();
+  env->nodeId = m_nodeId;
+  env->ssThresh = m_tcb->m_ssThresh;
+  env->cWnd = m_tcb->m_cWnd;
+  env->segmentSize = m_tcb->m_segmentSize;
+
+  uint64_t bytesInFlightSum = std::accumulate(m_bytesInFlight.begin(), m_bytesInFlight.end(), 0);
+  env->bytesInFlight = bytesInFlightSum;
+  m_bytesInFlight.clear();
+
+  uint64_t segmentsAckedSum = std::accumulate(m_segmentsAcked.begin(), m_segmentsAcked.end(), 0);
+  env->segmentsAcked = segmentsAckedSum;
+  m_segmentsAcked.clear();
+  std::cerr << "At " << (uint64_t)(Simulator::Now().GetMilliSeconds()) << "ms:\n";
+  std::cerr << "\tstate --"
+            << " ssThresh=" << env->ssThresh
+            << " cWnd=" << env->cWnd
+            << " segmentSize=" << env->segmentSize
+            << " segmentAcked=" << env->segmentsAcked
+            << " bytesInFlightSum=" << bytesInFlightSum
+            << std::endl;
+  m_msgInterface.cpp_send_end();
+
+  m_msgInterface.cpp_recv_begin();
+  auto act = m_msgInterface.m_single_py2cpp_msg;
+  m_new_cWnd = act->new_cWnd;
+  m_new_ssThresh = act->new_ssThresh;
+  m_msgInterface.cpp_recv_end();
+
+  std::cerr << "\taction --"
+            << " new_cWnd=" << m_new_cWnd
+            << " new_ssThresh=" << m_new_ssThresh
+            << std::endl;
+  m_rttSampleNum = 0;
+  m_rttSum = MicroSeconds(0.0);
+
+  m_interTxTimeNum = 0;
+  m_interTxTimeSum = MicroSeconds(0.0);
+
+  m_interRxTimeNum = 0;
+  m_interRxTimeSum = MicroSeconds(0.0);
+}
+
+uint32_t
+TcpEventBasedEnv::GetSsThresh(Ptr<const TcpSocketState> tcb, uint32_t bytesInFlight)
+{
+  NS_LOG_FUNCTION(this);
+  NS_LOG_INFO(Simulator::Now() << " Node: " << m_nodeId
+                               << " GetSsThresh, BytesInFlight: " << bytesInFlight);
+  m_tcb = tcb;
+  m_bytesInFlight.push_back(bytesInFlight);
+
+ Notify();
+
+  // action
+  return m_new_ssThresh;
+}
+
+void TcpEventBasedEnv::IncreaseWindow(Ptr<TcpSocketState> tcb, uint32_t segmentsAcked)
+{
+  NS_LOG_FUNCTION(this);
+  NS_LOG_INFO(Simulator::Now() << " Node: " << m_nodeId
+                               << " IncreaseWindow, SegmentsAcked: " << segmentsAcked);
+  m_tcb = tcb;
+  m_segmentsAcked.push_back(segmentsAcked);
+  m_bytesInFlight.push_back(tcb->m_bytesInFlight);
+
+     Notify();
+
+  // action
+  tcb->m_cWnd = m_new_cWnd;
+}
+
+void TcpEventBasedEnv::PktsAcked(Ptr<TcpSocketState> tcb, uint32_t segmentsAcked, const Time &rtt)
+{
+  //   NS_LOG_FUNCTION (this);
+  //   NS_LOG_INFO(Simulator::Now() << " Node: " << m_nodeId << " PktsAcked, SegmentsAcked: " << segmentsAcked << " Rtt: " << rtt);
+  m_tcb = tcb;
+  m_rttSum += rtt;
+  m_rttSampleNum++;
+}
+
+void TcpEventBasedEnv::CongestionStateSet(Ptr<TcpSocketState> tcb,
+                                   const TcpSocketState::TcpCongState_t newState)
+{
+  //   NS_LOG_FUNCTION (this);
+  //   std::string stateName = GetTcpCongStateName(newState);
+  //   NS_LOG_INFO(Simulator::Now() << " Node: " << m_nodeId << " CongestionStateSet: " << newState << " " << stateName);
+  m_tcb = tcb;
+}
+
+void TcpEventBasedEnv::CwndEvent(Ptr<TcpSocketState> tcb, const TcpSocketState::TcpCAEvent_t event)
 {
   //   NS_LOG_FUNCTION (this);
   //   std::string eventName = GetTcpCAEventName(event);
