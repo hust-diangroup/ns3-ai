@@ -152,32 +152,57 @@ if __name__ == '__main__':
     ns3ai = ns3ai_msg.Ns3AiMsgInterface(True, False, True, 4096, "My Seg", "My Cpp to Python Msg", "My Python to Cpp Msg", "My Lockable")
     print('Created message interface, waiting for C++ side to send initial environment...')
 
+    ns3ai.py_recv_begin()
+
+    ssThresh = ns3ai.m_single_cpp2py_msg.ssThresh
+    cWnd = ns3ai.m_single_cpp2py_msg.cWnd
+    segmentSize = ns3ai.m_single_cpp2py_msg.segmentSize
+    segmentsAcked = ns3ai.m_single_cpp2py_msg.segmentsAcked
+    bytesInFlight = ns3ai.m_single_cpp2py_msg.bytesInFlight
+    # new state
+    s_ = [ssThresh, cWnd, segmentsAcked, segmentSize, bytesInFlight]
+
+    ns3ai.py_recv_end()
+
+    if args.show_log:
+        print("Get obs:", ssThresh, cWnd, segmentSize, segmentsAcked, bytesInFlight)
+    if args.result:
+        for res in res_list:
+            globals()[res].append(globals()[res[:-2]])
+
     while True:
-        ns3ai.py_recv_begin()
-        if ns3ai.py_get_finished():
-            break
-        ssThresh = ns3ai.m_single_cpp2py_msg.ssThresh
-        cWnd = ns3ai.m_single_cpp2py_msg.cWnd
-        segmentsAcked = ns3ai.m_single_cpp2py_msg.segmentsAcked
-        segmentSize = ns3ai.m_single_cpp2py_msg.segmentSize
-        bytesInFlight = ns3ai.m_single_cpp2py_msg.bytesInFlight
-        ns3ai.py_recv_end()
-        if args.show_log:
-            print("Get obs:", ssThresh, cWnd, segmentSize, segmentsAcked, bytesInFlight)
 
-        if args.result:
-            for res in res_list:
-                globals()[res].append(globals()[res[:-2]])
-
-        ns3ai.py_send_begin()
-
-        if not args.use_rl:
+        if not args.use_rl:  # use TCP New Reno
             new_cWnd, new_ssThresh = new_reno_get_action(ssThresh, cWnd, segmentSize, segmentsAcked, bytesInFlight)
+
+            # send action to C++
+            ns3ai.py_send_begin()
             ns3ai.m_single_py2cpp_msg.new_cWnd = new_cWnd
             ns3ai.m_single_py2cpp_msg.new_ssThresh = new_ssThresh
-        else:
-            s = [ssThresh, cWnd, segmentsAcked, segmentSize, bytesInFlight]
-            a = dqn.choose_action(s)
+            ns3ai.py_send_end()
+
+            if args.show_log:
+                print("Set act:", new_cWnd, new_ssThresh)
+
+            # receive observation from C++
+            ns3ai.py_recv_begin()
+            if ns3ai.py_get_finished():
+                break
+            ssThresh = ns3ai.m_single_cpp2py_msg.ssThresh
+            cWnd = ns3ai.m_single_cpp2py_msg.cWnd
+            segmentsAcked = ns3ai.m_single_cpp2py_msg.segmentsAcked
+            segmentSize = ns3ai.m_single_cpp2py_msg.segmentSize
+            bytesInFlight = ns3ai.m_single_cpp2py_msg.bytesInFlight
+            ns3ai.py_recv_end()
+
+            if args.show_log:
+                print("Get obs:", ssThresh, cWnd, segmentSize, segmentsAcked, bytesInFlight)
+            if args.result:
+                for res in res_list:
+                    globals()[res].append(globals()[res[:-2]])
+
+        else:  # use RL
+            a = dqn.choose_action(s_)
             if a & 1:
                 new_cWnd = cWnd + segmentSize
             else:
@@ -188,21 +213,37 @@ if __name__ == '__main__':
             else:
                 new_ssThresh = int(bytesInFlight / 2)
 
+            # send action to C++
+            ns3ai.py_send_begin()
             ns3ai.m_single_py2cpp_msg.new_cWnd = new_cWnd
             ns3ai.m_single_py2cpp_msg.new_ssThresh = new_ssThresh
+            ns3ai.py_send_end()
 
-            # modify the reward
+            if args.show_log:
+                print("Set act:", new_cWnd, new_ssThresh)
+
+            # receive observation from C++
+            ns3ai.py_recv_begin()
+            if ns3ai.py_get_finished():
+                break
+            ssThresh = ns3ai.m_single_cpp2py_msg.ssThresh
+            cWnd = ns3ai.m_single_cpp2py_msg.cWnd
+            segmentsAcked = ns3ai.m_single_cpp2py_msg.segmentsAcked
+            segmentSize = ns3ai.m_single_cpp2py_msg.segmentSize
+            bytesInFlight = ns3ai.m_single_cpp2py_msg.bytesInFlight
+            ns3ai.py_recv_end()
+
+            s = s_
+            s_ = [ssThresh, cWnd, segmentsAcked, segmentSize, bytesInFlight]
             r = segmentsAcked - bytesInFlight - cWnd
-
-            dqn.store_transition(s, a, r, s)
-
+            dqn.store_transition(s, a, r, s_)
             if dqn.memory_counter > dqn.memory_capacity:
                 dqn.learn()
-
-        ns3ai.py_send_end()
-
-        if args.show_log:
-            print("Set act:", new_cWnd, new_ssThresh)
+            if args.show_log:
+                print("Get obs:", ssThresh, cWnd, segmentSize, segmentsAcked, bytesInFlight)
+            if args.result:
+                for res in res_list:
+                    globals()[res].append(globals()[res[:-2]])
 
     if args.result:
         for res in res_list:
