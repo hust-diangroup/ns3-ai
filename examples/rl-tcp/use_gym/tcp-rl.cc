@@ -33,11 +33,12 @@
 
 namespace ns3 {
 
+NS_LOG_COMPONENT_DEFINE ("tcp-rl-gym");
 
 NS_OBJECT_ENSURE_REGISTERED (TcpSocketDerived);
 
 TypeId
-TcpSocketDerived::GetTypeId (void)
+TcpSocketDerived::GetTypeId ()
 {
     static TypeId tid = TypeId ("ns3::TcpSocketDerived")
                             .SetParent<TcpSocketBase> ()
@@ -53,7 +54,7 @@ TcpSocketDerived::GetInstanceTypeId () const
     return TcpSocketDerived::GetTypeId ();
 }
 
-TcpSocketDerived::TcpSocketDerived (void)
+TcpSocketDerived::TcpSocketDerived ()
 {
 }
 
@@ -63,16 +64,14 @@ TcpSocketDerived::GetCongestionControlAlgorithm ()
     return m_congestionControl;
 }
 
-TcpSocketDerived::~TcpSocketDerived (void)
+TcpSocketDerived::~TcpSocketDerived ()
 {
 }
 
-
-NS_LOG_COMPONENT_DEFINE ("ns3::TcpRlBase");
 NS_OBJECT_ENSURE_REGISTERED (TcpRlBase);
 
 TypeId
-TcpRlBase::GetTypeId (void)
+TcpRlBase::GetTypeId ()
 {
     static TypeId tid = TypeId ("ns3::TcpRlBase")
                             .SetParent<TcpCongestionOps> ()
@@ -82,26 +81,26 @@ TcpRlBase::GetTypeId (void)
     return tid;
 }
 
-TcpRlBase::TcpRlBase (void)
+TcpRlBase::TcpRlBase ()
     : TcpCongestionOps ()
 {
     NS_LOG_FUNCTION (this);
-    m_tcpSocket = 0;
-    m_tcpGymEnv = 0;
+    m_tcpSocket = nullptr;
+    m_TcpEnvBase = nullptr;
 }
 
 TcpRlBase::TcpRlBase (const TcpRlBase& sock)
     : TcpCongestionOps (sock)
 {
     NS_LOG_FUNCTION (this);
-    m_tcpSocket = 0;
-    m_tcpGymEnv = 0;
+    m_tcpSocket = nullptr;
+    m_TcpEnvBase = nullptr;
 }
 
-TcpRlBase::~TcpRlBase (void)
+TcpRlBase::~TcpRlBase ()
 {
-    m_tcpSocket = 0;
-    m_tcpGymEnv = 0;
+    m_tcpSocket = nullptr;
+    m_TcpEnvBase = nullptr;
 }
 
 uint64_t
@@ -116,7 +115,7 @@ void
 TcpRlBase::CreateGymEnv()
 {
     NS_LOG_FUNCTION (this);
-    // should never be called, only child classes: TcpRl and TcpRlTimeBased
+    // should never be called, only child classes: TcpRlEventBased and TcpRlTimeBased
 }
 
 void
@@ -161,10 +160,10 @@ TcpRlBase::ConnectSocketCallbacks()
 
     if(m_tcpSocket) {
         NS_LOG_DEBUG("Found TCP Socket: " << m_tcpSocket);
-        m_tcpSocket->TraceConnectWithoutContext ("Tx", MakeCallback (&TcpGymEnv::TxPktTrace, m_tcpGymEnv));
-        m_tcpSocket->TraceConnectWithoutContext ("Rx", MakeCallback (&TcpGymEnv::RxPktTrace, m_tcpGymEnv));
+        m_tcpSocket->TraceConnectWithoutContext ("Tx", MakeCallback (&TcpEnvBase::TxPktTrace, m_TcpEnvBase));
+        m_tcpSocket->TraceConnectWithoutContext ("Rx", MakeCallback (&TcpEnvBase::RxPktTrace, m_TcpEnvBase));
         NS_LOG_DEBUG("Connect socket callbacks " << m_tcpSocket->GetNode()->GetId());
-        m_tcpGymEnv->SetNodeId(m_tcpSocket->GetNode()->GetId());
+        m_TcpEnvBase->SetNodeId(m_tcpSocket->GetNode()->GetId());
     }
 }
 
@@ -180,13 +179,13 @@ TcpRlBase::GetSsThresh (Ptr<const TcpSocketState> state,
 {
     NS_LOG_FUNCTION (this << state << bytesInFlight);
 
-    if (!m_tcpGymEnv) {
+    if (!m_TcpEnvBase) {
         CreateGymEnv();
     }
 
     uint32_t newSsThresh = 0;
-    if (m_tcpGymEnv) {
-        newSsThresh = m_tcpGymEnv->GetSsThresh(state, bytesInFlight);
+    if (m_TcpEnvBase) {
+        newSsThresh = m_TcpEnvBase->GetSsThresh(state, bytesInFlight);
     }
 
     return newSsThresh;
@@ -197,12 +196,12 @@ TcpRlBase::IncreaseWindow (Ptr<TcpSocketState> tcb, uint32_t segmentsAcked)
 {
     NS_LOG_FUNCTION (this << tcb << segmentsAcked);
 
-    if (!m_tcpGymEnv) {
+    if (!m_TcpEnvBase) {
         CreateGymEnv();
     }
 
-    if (m_tcpGymEnv) {
-        m_tcpGymEnv->IncreaseWindow(tcb, segmentsAcked);
+    if (m_TcpEnvBase) {
+        m_TcpEnvBase->IncreaseWindow(tcb, segmentsAcked);
     }
 }
 
@@ -211,12 +210,12 @@ TcpRlBase::PktsAcked (Ptr<TcpSocketState> tcb, uint32_t segmentsAcked, const Tim
 {
     NS_LOG_FUNCTION (this);
 
-    if (!m_tcpGymEnv) {
+    if (!m_TcpEnvBase) {
         CreateGymEnv();
     }
 
-    if (m_tcpGymEnv) {
-        m_tcpGymEnv->PktsAcked(tcb, segmentsAcked, rtt);
+    if (m_TcpEnvBase) {
+        m_TcpEnvBase->PktsAcked(tcb, segmentsAcked, rtt);
     }
 }
 
@@ -225,12 +224,12 @@ TcpRlBase::CongestionStateSet (Ptr<TcpSocketState> tcb, const TcpSocketState::Tc
 {
     NS_LOG_FUNCTION (this);
 
-    if (!m_tcpGymEnv) {
+    if (!m_TcpEnvBase) {
         CreateGymEnv();
     }
 
-    if (m_tcpGymEnv) {
-        m_tcpGymEnv->CongestionStateSet(tcb, newState);
+    if (m_TcpEnvBase) {
+        m_TcpEnvBase->CongestionStateSet(tcb, newState);
     }
 }
 
@@ -239,12 +238,12 @@ TcpRlBase::CwndEvent (Ptr<TcpSocketState> tcb, const TcpSocketState::TcpCAEvent_
 {
     NS_LOG_FUNCTION (this);
 
-    if (!m_tcpGymEnv) {
+    if (!m_TcpEnvBase) {
         CreateGymEnv();
     }
 
-    if (m_tcpGymEnv) {
-        m_tcpGymEnv->CwndEvent(tcb, event);
+    if (m_TcpEnvBase) {
+        m_TcpEnvBase->CwndEvent(tcb, event);
     }
 }
 
@@ -254,83 +253,20 @@ TcpRlBase::Fork ()
     return CopyObject<TcpRlBase> (this);
 }
 
-
-NS_OBJECT_ENSURE_REGISTERED (TcpRl);
-
-TypeId
-TcpRl::GetTypeId (void)
-{
-    static TypeId tid = TypeId ("ns3::TcpRl")
-                            .SetParent<TcpRlBase> ()
-                            .SetGroupName ("Internet")
-                            .AddConstructor<TcpRl> ()
-                            .AddAttribute ("Reward", "Reward when increasing congestion window.",
-                                          DoubleValue (1.0),
-                                          MakeDoubleAccessor (&TcpRl::m_reward),
-                                          MakeDoubleChecker<double> ())
-                            .AddAttribute ("Penalty", "Penalty after a loss event.",
-                                          DoubleValue (-10.0),
-                                          MakeDoubleAccessor (&TcpRl::m_penalty),
-                                          MakeDoubleChecker<double> ())
-        ;
-    return tid;
-}
-
-TcpRl::TcpRl (void)
-    : TcpRlBase ()
-{
-    NS_LOG_FUNCTION (this);
-}
-
-TcpRl::TcpRl (const TcpRl& sock)
-    : TcpRlBase (sock)
-{
-    NS_LOG_FUNCTION (this);
-}
-
-TcpRl::~TcpRl (void)
-{
-}
-
-std::string
-TcpRl::GetName () const
-{
-    return "TcpRl";
-}
-
-void
-TcpRl::CreateGymEnv()
-{
-    NS_LOG_FUNCTION (this);
-    Ptr<TcpEventGymEnv> env = CreateObject<TcpEventGymEnv>();
-    env->SetSocketUuid(TcpRlBase::GenerateUuid());
-    env->SetReward(m_reward);
-    env->SetPenalty(m_penalty);
-    m_tcpGymEnv = env;
-
-    ConnectSocketCallbacks();
-}
-
-
 NS_OBJECT_ENSURE_REGISTERED (TcpRlTimeBased);
 
 TypeId
-TcpRlTimeBased::GetTypeId (void)
+TcpRlTimeBased::GetTypeId ()
 {
     static TypeId tid = TypeId ("ns3::TcpRlTimeBased")
                             .SetParent<TcpRlBase> ()
                             .SetGroupName ("Internet")
                             .AddConstructor<TcpRlTimeBased> ()
-                            .AddAttribute ("StepTime",
-                                          "Step interval used in TCP env. Default: 100ms",
-                                          TimeValue (MilliSeconds (100)),
-                                          MakeTimeAccessor (&TcpRlTimeBased::m_timeStep),
-                                          MakeTimeChecker ())
         ;
     return tid;
 }
 
-TcpRlTimeBased::TcpRlTimeBased (void) : TcpRlBase ()
+TcpRlTimeBased::TcpRlTimeBased () : TcpRlBase ()
 {
     NS_LOG_FUNCTION (this);
 }
@@ -341,7 +277,7 @@ TcpRlTimeBased::TcpRlTimeBased (const TcpRlTimeBased& sock)
     NS_LOG_FUNCTION (this);
 }
 
-TcpRlTimeBased::~TcpRlTimeBased (void)
+TcpRlTimeBased::~TcpRlTimeBased ()
 {
 }
 
@@ -355,9 +291,65 @@ void
 TcpRlTimeBased::CreateGymEnv()
 {
     NS_LOG_FUNCTION (this);
-    Ptr<TcpTimeStepGymEnv> env = CreateObject<TcpTimeStepGymEnv> (m_timeStep);
+    Ptr<TcpTimeStepEnv> env = CreateObject<TcpTimeStepEnv> ();
     env->SetSocketUuid(TcpRlBase::GenerateUuid());
-    m_tcpGymEnv = env;
+    m_TcpEnvBase = env;
+
+    ConnectSocketCallbacks();
+}
+
+NS_OBJECT_ENSURE_REGISTERED (TcpRlEventBased);
+
+TypeId
+TcpRlEventBased::GetTypeId ()
+{
+    static TypeId tid = TypeId ("ns3::TcpRlEventBased")
+                            .SetParent<TcpRlBase> ()
+                            .SetGroupName ("Internet")
+                            .AddConstructor<TcpRlEventBased> ()
+                            .AddAttribute ("Reward", "Reward when increasing congestion window.",
+                                          DoubleValue (1.0),
+                                          MakeDoubleAccessor (&TcpRlEventBased::m_reward),
+                                          MakeDoubleChecker<double> ())
+                            .AddAttribute ("Penalty", "Penalty after a loss event.",
+                                          DoubleValue (-10.0),
+                                          MakeDoubleAccessor (&TcpRlEventBased::m_penalty),
+                                          MakeDoubleChecker<double> ())
+        ;
+    return tid;
+}
+
+TcpRlEventBased::TcpRlEventBased ()
+    : TcpRlBase ()
+{
+    NS_LOG_FUNCTION (this);
+}
+
+TcpRlEventBased::TcpRlEventBased (const TcpRlEventBased& sock)
+    : TcpRlBase (sock)
+{
+    NS_LOG_FUNCTION (this);
+}
+
+TcpRlEventBased::~TcpRlEventBased ()
+{
+}
+
+std::string
+TcpRlEventBased::GetName () const
+{
+    return "TcpRlEventBased";
+}
+
+void
+TcpRlEventBased::CreateGymEnv()
+{
+    NS_LOG_FUNCTION (this);
+    Ptr<TcpEventBasedEnv> env = CreateObject<TcpEventBasedEnv>();
+    env->SetSocketUuid(TcpRlBase::GenerateUuid());
+    env->SetReward(m_reward);
+    env->SetPenalty(m_penalty);
+    m_TcpEnvBase = env;
 
     ConnectSocketCallbacks();
 }

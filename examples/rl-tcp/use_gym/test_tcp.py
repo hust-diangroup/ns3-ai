@@ -1,8 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-
-# import argparse
-# from ns3ai_gym_env import ns3env
 import ns3ai_gym_env
 import gymnasium as gym
 from tcp_base import TcpTimeBased

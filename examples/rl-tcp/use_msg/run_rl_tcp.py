@@ -25,6 +25,7 @@ import torch.nn as nn
 import matplotlib.pyplot as plt
 import ns3ai_rltcp_msg_py as ns3ai_msg
 
+
 class net(nn.Module):
     def __init__(self):
         super(net, self).__init__()
@@ -93,32 +94,63 @@ class DQN(object):
         self.optimizer.step()
 
 
+def new_reno_get_action(ssThresh, cWnd, segmentSize, segmentsAcked, bytesInFlight):
+
+    new_cWnd = 1
+
+    if cWnd < ssThresh:
+        # slow start
+        if segmentsAcked >= 1:
+            new_cWnd = cWnd + segmentSize
+    if cWnd >= ssThresh:
+        # congestion avoidance
+        if segmentsAcked > 0:
+            adder = 1.0 * (segmentSize * segmentSize) / cWnd
+            adder = int(max(1.0, adder))
+            new_cWnd = cWnd + adder
+
+    new_ssThresh = int(max(2 * segmentSize, bytesInFlight / 2))
+
+    return new_cWnd, new_ssThresh
+
+
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
+    parser.add_argument('--seed', type=int,
+                        help='set seed for reproducibility')
+    parser.add_argument('--show_log', action='store_true',
+                        help='whether show observation and action')
     parser.add_argument('--result', action='store_true',
                         help='whether output figures')
-    parser.add_argument('--output_dir', type=str,
+    parser.add_argument('--result_dir', type=str,
                         default='./result', help='output figures path')
     parser.add_argument('--use_rl', action='store_true',
                         help='whether use rl algorithm')
 
-    ns3ai = ns3ai_msg.Ns3AiMsgInterface(True, False, True, 4096, "My Seg", "My Cpp to Python Msg", "My Python to Cpp Msg", "My Lockable")
-    print('Created message interface, waiting for C++ side to send initial environment...')
-
+    args = parser.parse_args()
     res_list = ['ssThresh_l', 'cWnd_l', 'segmentsAcked_l',
                 'segmentSize_l', 'bytesInFlight_l']
-    args = parser.parse_args()
+
+    my_seed = 42
+    if args.seed:
+        my_seed = args.seed
+    print("Using random seed {} for reproducibility.".format(my_seed))
+    np.random.seed(my_seed)
+    torch.manual_seed(my_seed)
 
     if args.result:
         for res in res_list:
             globals()[res] = []
-        if args.output_dir:
-            if not os.path.exists(args.output_dir):
-                os.mkdir(args.output_dir)
+        if args.result_dir:
+            if not os.path.exists(args.result_dir):
+                os.mkdir(args.result_dir)
 
     if args.use_rl:
         dqn = DQN()
+
+    ns3ai = ns3ai_msg.Ns3AiMsgInterface(True, False, True, 4096, "My Seg", "My Cpp to Python Msg", "My Python to Cpp Msg", "My Lockable")
+    print('Created message interface, waiting for C++ side to send initial environment...')
 
     while True:
         ns3ai.py_recv_begin()
@@ -129,32 +161,18 @@ if __name__ == '__main__':
         segmentsAcked = ns3ai.m_single_cpp2py_msg.segmentsAcked
         segmentSize = ns3ai.m_single_cpp2py_msg.segmentSize
         bytesInFlight = ns3ai.m_single_cpp2py_msg.bytesInFlight
-        # ns3ai.py_recv_end()
-        print(ssThresh, cWnd, segmentsAcked, segmentSize, bytesInFlight)
+        ns3ai.py_recv_end()
+        if args.show_log:
+            print("Get obs:", ssThresh, cWnd, segmentSize, segmentsAcked, bytesInFlight)
 
         if args.result:
             for res in res_list:
                 globals()[res].append(globals()[res[:-2]])
-                #print(globals()[res][-1])
 
         ns3ai.py_send_begin()
 
         if not args.use_rl:
-            new_cWnd = 1
-            new_ssThresh = 1
-            # IncreaseWindow
-            if (cWnd < ssThresh):
-                # slow start
-                if (segmentsAcked >= 1):
-                    new_cWnd = cWnd + segmentSize
-            if (cWnd >= ssThresh):
-                # congestion avoidance
-                if (segmentsAcked > 0):
-                    adder = 1.0 * (segmentSize * segmentSize) / cWnd
-                    adder = int(max(1.0, adder))
-                    new_cWnd = cWnd + adder
-            # GetSsThresh
-            new_ssThresh = int(max(2 * segmentSize, bytesInFlight / 2))
+            new_cWnd, new_ssThresh = new_reno_get_action(ssThresh, cWnd, segmentSize, segmentsAcked, bytesInFlight)
             ns3ai.m_single_py2cpp_msg.new_cWnd = new_cWnd
             ns3ai.m_single_py2cpp_msg.new_ssThresh = new_ssThresh
         else:
@@ -163,33 +181,28 @@ if __name__ == '__main__':
             if a & 1:
                 new_cWnd = cWnd + segmentSize
             else:
-                if(cWnd > 0):
+                if cWnd > 0:
                     new_cWnd = cWnd + int(max(1, (segmentSize * segmentSize) / cWnd))
             if a < 3:
                 new_ssThresh = 2 * segmentSize
             else:
                 new_ssThresh = int(bytesInFlight / 2)
+
             ns3ai.m_single_py2cpp_msg.new_cWnd = new_cWnd
             ns3ai.m_single_py2cpp_msg.new_ssThresh = new_ssThresh
 
-            ssThresh = ns3ai.m_single_cpp2py_msg.ssThresh
-            cWnd = ns3ai.m_single_cpp2py_msg.cWnd
-            segmentsAcked = ns3ai.m_single_cpp2py_msg.segmentsAcked
-            segmentSize = ns3ai.m_single_cpp2py_msg.segmentSize
-            bytesInFlight = ns3ai.m_single_cpp2py_msg.bytesInFlight
-
             # modify the reward
             r = segmentsAcked - bytesInFlight - cWnd
-            s_ = [ssThresh, cWnd, segmentsAcked,
-                  segmentSize, bytesInFlight]
 
-            dqn.store_transition(s, a, r, s_)
+            dqn.store_transition(s, a, r, s)
 
             if dqn.memory_counter > dqn.memory_capacity:
                 dqn.learn()
 
-        ns3ai.py_recv_end()
         ns3ai.py_send_end()
+
+        if args.show_log:
+            print("Set act:", new_cWnd, new_ssThresh)
 
     if args.result:
         for res in res_list:
@@ -199,6 +212,6 @@ if __name__ == '__main__':
             plt.plot(x, y, label=res[:-2], linewidth=1, color='r')
             plt.xlabel('Step Number')
             plt.title('Information of {}'.format(res[:-2]))
-            plt.savefig('{}.png'.format(os.path.join(args.output_dir, res[:-2])))
+            plt.savefig('{}.png'.format(os.path.join(args.result_dir, res[:-2])))
 
     del ns3ai

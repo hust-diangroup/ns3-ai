@@ -31,7 +31,6 @@
  */
 
 #include <iostream>
-#include <fstream>
 #include <string>
 
 #include "ns3/core-module.h"
@@ -49,7 +48,6 @@
 #include "ns3/traffic-control-module.h"
 
 #include "ns3/ns3-ai-module.h"
-#include "tcp-rl.h"
 
 using namespace ns3;
 

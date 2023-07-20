@@ -17,24 +17,20 @@
  *
  * Author: Piotr Gawlowicz <gawlowicz.p@gmail.com>
  * Based on script: ./examples/tcp/tcp-variants-comparison.cc
- *
+ * Modify: Pengyu Liu <eic_lpy@hust.edu.cn>
+ *         Hao Yin <haoyin@uw.edu>
  * Topology:
  *
- *   Right Leafs (Clients)                      Left Leafs (Sinks)
+ *   Left Leafs (Clients)                       Right Leafs (Sinks)
  *           |            \                    /        |
  *           |             \    bottleneck    /         |
  *           |              R0--------------R1          |
  *           |             /                  \         |
  *           |   access   /                    \ access |
- *           N -----------                      --------N
- *
- *
- * Modify: Muyuan Shen
  *
  */
 
 #include <iostream>
-#include <fstream>
 #include <string>
 
 #include "ns3/core-module.h"
@@ -51,38 +47,37 @@
 #include "ns3/ipv4-global-routing-helper.h"
 #include "ns3/traffic-control-module.h"
 
-#include <ns3/ns3-ai-module.h>
-#include "tcp-rl.h"
+#include "ns3/ns3-ai-module.h"
 
 using namespace ns3;
 
-NS_LOG_COMPONENT_DEFINE ("TcpVariantsComparison");
+NS_LOG_COMPONENT_DEFINE ("rl-tcp-example");
 
 static std::vector<uint32_t> rxPkts;
 
 static void
-CountRxPkts(uint32_t sinkId, Ptr<const Packet> packet, const Address & srcAddr)
+CountRxPkts (uint32_t sinkId, Ptr<const Packet> packet, const Address &srcAddr)
 {
     rxPkts[sinkId]++;
 }
 
 static void
-PrintRxCount()
+PrintRxCount ()
 {
-    uint32_t size = rxPkts.size();
-    NS_LOG_UNCOND("RxPkts:");
-    for (uint32_t i=0; i<size; i++){
-        NS_LOG_UNCOND("---SinkId: "<< i << " RxPkts: " << rxPkts.at(i));
+    uint32_t size = rxPkts.size ();
+    NS_LOG_UNCOND ("RxPkts:");
+    for (uint32_t i = 0; i < size; i++)
+    {
+        NS_LOG_UNCOND ("---SinkId: " << i << " RxPkts: " << rxPkts.at (i));
     }
 }
 
-
-int main (int argc, char *argv[])
+int
+main (int argc, char *argv[])
 {
-    double tcpEnvTimeStep = 0.5;
-
+    double tcpEnvTimeStep = 0.1;
     uint32_t nLeaf = 1;
-    std::string transport_prot = "TcpRl";
+    std::string transport_prot = "TcpRlTimeBased";
     double error_p = 0.0;
     std::string bottleneck_bandwidth = "2Mbps";
     std::string bottleneck_delay = "0.01ms";
@@ -99,15 +94,17 @@ int main (int argc, char *argv[])
     std::string recovery = "ns3::TcpClassicRecovery";
 
     CommandLine cmd;
-    // required parameters for OpenGym interface
+    // seed related
     cmd.AddValue ("simSeed", "Seed for random generator. Default: 1", run);
-    cmd.AddValue ("envTimeStep", "Time step interval for time-based TCP env [s]. Default: 0.1s", tcpEnvTimeStep);
-    // other parameters
-    cmd.AddValue ("nLeaf",     "Number of left and right side leaf nodes", nLeaf);
-    cmd.AddValue ("transport_prot", "Transport protocol to use: TcpNewReno, "
-                                   "TcpHybla, TcpHighSpeed, TcpHtcp, TcpVegas, TcpScalable, TcpVeno, "
-                                   "TcpBic, TcpYeah, TcpIllinois, TcpWestwoodPlus, TcpLedbat, "
-                                   "TcpLp, TcpRl, TcpRlTimeBased", transport_prot);
+    cmd.AddValue ("run", "Run index (for setting repeatable seeds)", run);
+    // other
+    cmd.AddValue ("envTimeStep", "Time step interval for TcpRlTimeBased. Default: 0.1s", tcpEnvTimeStep);
+    cmd.AddValue ("nLeaf", "Number of left and right side leaf nodes", nLeaf);
+    cmd.AddValue ("transport_prot",
+                 "Transport protocol to use: TcpNewReno, TcpHybla, TcpHighSpeed, TcpHtcp, "
+                 "TcpVegas, TcpScalable, TcpVeno, TcpBic, TcpYeah, TcpIllinois, TcpWestwood, "
+                 "TcpWestwoodPlus, TcpLedbat, TcpLp, TcpRlTimeBased, TcpRlEventBased",
+                 transport_prot);
     cmd.AddValue ("error_p", "Packet error rate", error_p);
     cmd.AddValue ("bottleneck_bandwidth", "Bottleneck bandwidth", bottleneck_bandwidth);
     cmd.AddValue ("bottleneck_delay", "Bottleneck delay", bottleneck_delay);
@@ -117,39 +114,41 @@ int main (int argc, char *argv[])
     cmd.AddValue ("data", "Number of Megabytes of data to transmit", data_mbytes);
     cmd.AddValue ("mtu", "Size of IP packets to send in bytes", mtu_bytes);
     cmd.AddValue ("duration", "Time to allow flows to run in seconds", duration);
-    cmd.AddValue ("run", "Run index (for setting repeatable seeds)", run);
     cmd.AddValue ("flow_monitor", "Enable flow monitor", flow_monitor);
-    cmd.AddValue ("queue_disc_type", "Queue disc type for gateway (e.g. ns3::CoDelQueueDisc)", queue_disc_type);
+    cmd.AddValue ("queue_disc_type", "Queue disc type for gateway (e.g. ns3::CoDelQueueDisc)",
+                 queue_disc_type);
     cmd.AddValue ("sack", "Enable or disable SACK option", sack);
     cmd.AddValue ("recovery", "Recovery algorithm type to use (e.g., ns3::TcpPrrRecovery", recovery);
     cmd.Parse (argc, argv);
 
+    // There are two kinds of Tcp congestion control algorithm using RL:
+    // 1. TcpRlTimeBased
+    // 2. TcpRlEventBased
+    // The only difference is when interaction occurs (at fixed interval or at event).
+    if (transport_prot == "TcpRlTimeBased")
+    {
+        Config::SetDefault ("ns3::TcpTimeStepEnv::StepTime", TimeValue (Seconds(tcpEnvTimeStep)));
+    }
+
     transport_prot = std::string ("ns3::") + transport_prot;
+    Config::SetDefault ("ns3::TcpL4Protocol::SocketType",
+                       TypeIdValue (TypeId::LookupByName (transport_prot)));
+
+    // OpenGym Env --- has to be created before any other thing
+    Ptr<OpenGymInterface> openGymInterface;
+    if (transport_prot == "ns3::TcpRlTimeBased" or transport_prot == "ns3::TcpRlEventBased")
+    {
+        openGymInterface = OpenGymInterface::Get();
+    }
 
     SeedManager::SetSeed (1);
     SeedManager::SetRun (run);
 
-    NS_LOG_UNCOND("--seed: " << run);
-    NS_LOG_UNCOND("--Tcp version: " << transport_prot);
-
-
-    // OpenGym Env --- has to be created before any other thing
-    Ptr<OpenGymInterface> openGymInterface;
-    if (transport_prot == "ns3::TcpRl")
-    {
-        openGymInterface = OpenGymInterface::Get();
-        Config::SetDefault ("ns3::TcpRl::Reward", DoubleValue (2.0)); // Reward when increasing congestion window
-        Config::SetDefault ("ns3::TcpRl::Penalty", DoubleValue (-30.0)); // Penalty when decreasing congestion window
-    }
-
-    if (transport_prot == "ns3::TcpRlTimeBased")
-    {
-        openGymInterface = OpenGymInterface::Get();
-        Config::SetDefault ("ns3::TcpRlTimeBased::StepTime", TimeValue (Seconds(tcpEnvTimeStep))); // Time step of TCP env
-    }
+    NS_LOG_UNCOND ("--seed: " << run);
+    NS_LOG_UNCOND ("--Tcp version: " << transport_prot);
 
     // Calculate the ADU size
-    Header* temp_header = new Ipv4Header ();
+    Header *temp_header = new Ipv4Header ();
     uint32_t ip_header = temp_header->GetSerializedSize ();
     NS_LOG_LOGIC ("IP Header size is: " << ip_header);
     delete temp_header;
@@ -172,10 +171,6 @@ int main (int argc, char *argv[])
 
     Config::SetDefault ("ns3::TcpL4Protocol::RecoveryType",
                        TypeIdValue (TypeId::LookupByName (recovery)));
-    // Select TCP variant
-    TypeId tcpTid;
-    NS_ABORT_MSG_UNLESS (TypeId::LookupByNameFailSafe (transport_prot, &tcpTid), "TypeId " << transport_prot << " not found");
-    Config::SetDefault ("ns3::TcpL4Protocol::SocketType", TypeIdValue (TypeId::LookupByName (transport_prot)));
 
     // Configure the error model
     // Here we use RateErrorModel with packet error rate
@@ -188,17 +183,15 @@ int main (int argc, char *argv[])
 
     // Create the point-to-point link helpers
     PointToPointHelper bottleNeckLink;
-    bottleNeckLink.SetDeviceAttribute  ("DataRate", StringValue (bottleneck_bandwidth));
+    bottleNeckLink.SetDeviceAttribute ("DataRate", StringValue (bottleneck_bandwidth));
     bottleNeckLink.SetChannelAttribute ("Delay", StringValue (bottleneck_delay));
     //bottleNeckLink.SetDeviceAttribute  ("ReceiveErrorModel", PointerValue (&error_model));
 
     PointToPointHelper pointToPointLeaf;
-    pointToPointLeaf.SetDeviceAttribute  ("DataRate", StringValue (access_bandwidth));
+    pointToPointLeaf.SetDeviceAttribute ("DataRate", StringValue (access_bandwidth));
     pointToPointLeaf.SetChannelAttribute ("Delay", StringValue (access_delay));
 
-    PointToPointDumbbellHelper d (nLeaf, pointToPointLeaf,
-                                 nLeaf, pointToPointLeaf,
-                                 bottleNeckLink);
+    PointToPointDumbbellHelper d (nLeaf, pointToPointLeaf, nLeaf, pointToPointLeaf, bottleNeckLink);
 
     // Install IP stack
     InternetStackHelper stack;
@@ -216,7 +209,7 @@ int main (int argc, char *argv[])
     Time access_d (access_delay);
     Time bottle_d (bottleneck_delay);
 
-    uint32_t size = static_cast<uint32_t>((std::min (access_b, bottle_b).GetBitRate () / 8) *
+    uint32_t size = static_cast<uint32_t> ((std::min (access_b, bottle_b).GetBitRate () / 8) *
                                           ((access_d + bottle_d + access_d) * 2).GetSeconds ());
 
     Config::SetDefault ("ns3::PfifoFastQueueDisc::MaxSize",
@@ -226,24 +219,24 @@ int main (int argc, char *argv[])
 
     if (queue_disc_type == "ns3::PfifoFastQueueDisc")
     {
-        tchPfifo.Install (d.GetLeft()->GetDevice(1));
-        tchPfifo.Install (d.GetRight()->GetDevice(1));
+        tchPfifo.Install (d.GetLeft ()->GetDevice (1));
+        tchPfifo.Install (d.GetRight ()->GetDevice (1));
     }
     else if (queue_disc_type == "ns3::CoDelQueueDisc")
     {
-        tchCoDel.Install (d.GetLeft()->GetDevice(1));
-        tchCoDel.Install (d.GetRight()->GetDevice(1));
+        tchCoDel.Install (d.GetLeft ()->GetDevice (1));
+        tchCoDel.Install (d.GetRight ()->GetDevice (1));
     }
     else
     {
-        NS_FATAL_ERROR ("Queue not recognized. Allowed values are ns3::CoDelQueueDisc or ns3::PfifoFastQueueDisc");
+        NS_FATAL_ERROR ("Queue not recognized. Allowed values are ns3::CoDelQueueDisc or "
+                       "ns3::PfifoFastQueueDisc");
     }
 
     // Assign IP Addresses
     d.AssignIpv4Addresses (Ipv4AddressHelper ("10.1.1.0", "255.255.255.0"),
                           Ipv4AddressHelper ("10.2.1.0", "255.255.255.0"),
                           Ipv4AddressHelper ("10.3.1.0", "255.255.255.0"));
-
 
     NS_LOG_INFO ("Initialize Global Routing.");
     Ipv4GlobalRoutingHelper::PopulateRoutingTables ();
@@ -259,7 +252,7 @@ int main (int argc, char *argv[])
         sinkApps.Add (sinkHelper.Install (d.GetRight (i)));
     }
     sinkApps.Start (Seconds (0.0));
-    sinkApps.Stop  (Seconds (stop_time));
+    sinkApps.Stop (Seconds (stop_time));
 
     for (uint32_t i = 0; i < d.LeftCount (); ++i)
     {
@@ -286,8 +279,8 @@ int main (int argc, char *argv[])
     // Count RX packets
     for (uint32_t i = 0; i < d.RightCount (); ++i)
     {
-        rxPkts.push_back(0);
-        Ptr<PacketSink> pktSink = DynamicCast<PacketSink>(sinkApps.Get(i));
+        rxPkts.push_back (0);
+        Ptr<PacketSink> pktSink = DynamicCast<PacketSink> (sinkApps.Get (i));
         pktSink->TraceConnectWithoutContext ("Rx", MakeBoundCallback (&CountRxPkts, i));
     }
 
@@ -299,12 +292,14 @@ int main (int argc, char *argv[])
         flowHelper.SerializeToXmlFile (prefix_file_name + ".flowmonitor", true, true);
     }
 
-    if (transport_prot == "ns3::TcpRl" or transport_prot == "ns3::TcpRlTimeBased")
+    if (transport_prot == "ns3::TcpRlTimeBased" or transport_prot == "ns3::TcpRlEventBased")
     {
         openGymInterface->NotifySimulationEnd();
     }
 
-    PrintRxCount();
+    PrintRxCount ();
     Simulator::Destroy ();
     return 0;
 }
+
+

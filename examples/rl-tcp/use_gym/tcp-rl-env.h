@@ -34,13 +34,13 @@ class TcpSocketBase;
 class Time;
 
 
-class TcpGymEnv : public OpenGymEnv
+class TcpEnvBase : public OpenGymEnv
 {
   public:
-    TcpGymEnv ();
-    virtual ~TcpGymEnv ();
-    static TypeId GetTypeId (void);
-    virtual void DoDispose ();
+    TcpEnvBase ();
+    ~TcpEnvBase () override;
+    static TypeId GetTypeId ();
+    void DoDispose () override;
 
     void SetNodeId(uint32_t id);
     void SetSocketUuid(uint32_t id);
@@ -49,14 +49,14 @@ class TcpGymEnv : public OpenGymEnv
     std::string GetTcpCAEventName(const TcpSocketState::TcpCAEvent_t event);
 
     // OpenGym interface
-    virtual Ptr<OpenGymSpace> GetActionSpace();
-    virtual bool GetGameOver();
-    virtual float GetReward();
-    virtual std::string GetExtraInfo();
-    virtual bool ExecuteActions(Ptr<OpenGymDataContainer> action);
+    Ptr<OpenGymSpace> GetActionSpace() override;
+    bool GetGameOver() override;
+    float GetReward() override;
+    std::string GetExtraInfo() override;
+    bool ExecuteActions(Ptr<OpenGymDataContainer> action) override;
 
-    virtual Ptr<OpenGymSpace> GetObservationSpace() = 0;
-    virtual Ptr<OpenGymDataContainer> GetObservation() = 0;
+    Ptr<OpenGymSpace> GetObservationSpace() override = 0;
+    Ptr<OpenGymDataContainer> GetObservation() override = 0;
 
     // trace packets, e.g. for calculating inter tx/rx time
     virtual void TxPktTrace(Ptr<const Packet>, const TcpHeader&, Ptr<const TcpSocketBase>) = 0;
@@ -86,9 +86,6 @@ class TcpGymEnv : public OpenGymEnv
     // state
     // obs has to be implemented in child class
 
-    // game over
-    bool m_isGameOver;
-
     // reward
     float m_envReward;
 
@@ -100,74 +97,29 @@ class TcpGymEnv : public OpenGymEnv
     uint32_t m_new_cWnd;
 };
 
-
-class TcpEventGymEnv : public TcpGymEnv
+class TcpTimeStepEnv : public TcpEnvBase
 {
   public:
-    TcpEventGymEnv ();
-    virtual ~TcpEventGymEnv ();
-    static TypeId GetTypeId (void);
-    virtual void DoDispose ();
-
-    void SetReward(float value);
-    void SetPenalty(float value);
+    TcpTimeStepEnv ();
+    ~TcpTimeStepEnv () override;
+    static TypeId GetTypeId ();
+    void DoDispose () override;
 
     // OpenGym interface
-    virtual Ptr<OpenGymSpace> GetObservationSpace();
-    Ptr<OpenGymDataContainer> GetObservation();
+    Ptr<OpenGymSpace> GetObservationSpace() override;
+    Ptr<OpenGymDataContainer> GetObservation() override;
 
     // trace packets, e.g. for calculating inter tx/rx time
-    virtual void TxPktTrace(Ptr<const Packet>, const TcpHeader&, Ptr<const TcpSocketBase>);
-    virtual void RxPktTrace(Ptr<const Packet>, const TcpHeader&, Ptr<const TcpSocketBase>);
+    void TxPktTrace(Ptr<const Packet>, const TcpHeader&, Ptr<const TcpSocketBase>) override;
+    void RxPktTrace(Ptr<const Packet>, const TcpHeader&, Ptr<const TcpSocketBase>) override;
 
     // TCP congestion control interface
-    virtual uint32_t GetSsThresh (Ptr<const TcpSocketState> tcb, uint32_t bytesInFlight);
-    virtual void IncreaseWindow (Ptr<TcpSocketState> tcb, uint32_t segmentsAcked);
+    uint32_t GetSsThresh (Ptr<const TcpSocketState> tcb, uint32_t bytesInFlight) override;
+    void IncreaseWindow (Ptr<TcpSocketState> tcb, uint32_t segmentsAcked) override;
     // optional functions used to collect obs
-    virtual void PktsAcked (Ptr<TcpSocketState> tcb, uint32_t segmentsAcked, const Time& rtt);
-    virtual void CongestionStateSet (Ptr<TcpSocketState> tcb, const TcpSocketState::TcpCongState_t newState);
-    virtual void CwndEvent (Ptr<TcpSocketState> tcb, const TcpSocketState::TcpCAEvent_t event);
-
-  private:
-    // state
-    CalledFunc_t m_calledFunc;
-    Ptr<const TcpSocketState> m_tcb;
-    uint32_t m_bytesInFlight;
-    uint32_t m_segmentsAcked;
-    Time m_rtt;
-    TcpSocketState::TcpCongState_t m_newState;
-    TcpSocketState::TcpCAEvent_t m_event;
-
-    // reward
-    float m_reward;
-    float m_penalty;
-};
-
-
-class TcpTimeStepGymEnv : public TcpGymEnv
-{
-  public:
-    TcpTimeStepGymEnv ();
-    TcpTimeStepGymEnv (Time timeStep);
-    virtual ~TcpTimeStepGymEnv ();
-    static TypeId GetTypeId (void);
-    virtual void DoDispose ();
-
-    // OpenGym interface
-    virtual Ptr<OpenGymSpace> GetObservationSpace();
-    Ptr<OpenGymDataContainer> GetObservation();
-
-    // trace packets, e.g. for calculating inter tx/rx time
-    virtual void TxPktTrace(Ptr<const Packet>, const TcpHeader&, Ptr<const TcpSocketBase>);
-    virtual void RxPktTrace(Ptr<const Packet>, const TcpHeader&, Ptr<const TcpSocketBase>);
-
-    // TCP congestion control interface
-    virtual uint32_t GetSsThresh (Ptr<const TcpSocketState> tcb, uint32_t bytesInFlight);
-    virtual void IncreaseWindow (Ptr<TcpSocketState> tcb, uint32_t segmentsAcked);
-    // optional functions used to collect obs
-    virtual void PktsAcked (Ptr<TcpSocketState> tcb, uint32_t segmentsAcked, const Time& rtt);
-    virtual void CongestionStateSet (Ptr<TcpSocketState> tcb, const TcpSocketState::TcpCongState_t newState);
-    virtual void CwndEvent (Ptr<TcpSocketState> tcb, const TcpSocketState::TcpCAEvent_t event);
+    void PktsAcked (Ptr<TcpSocketState> tcb, uint32_t segmentsAcked, const Time& rtt) override;
+    void CongestionStateSet (Ptr<TcpSocketState> tcb, const TcpSocketState::TcpCongState_t newState) override;
+    void CwndEvent (Ptr<TcpSocketState> tcb, const TcpSocketState::TcpCAEvent_t event) override;
 
   private:
     void ScheduleNextStateRead();
@@ -188,10 +140,48 @@ class TcpTimeStepGymEnv : public TcpGymEnv
     uint64_t m_interRxTimeNum {0};
     Time m_interRxTimeSum {MicroSeconds (0.0)};
 
-    // reward
 };
 
+class TcpEventBasedEnv : public TcpEnvBase
+{
+  public:
+    TcpEventBasedEnv ();
+    ~TcpEventBasedEnv () override;
+    static TypeId GetTypeId ();
+    void DoDispose () override;
 
+    void SetReward(float value);
+    void SetPenalty(float value);
+
+    // OpenGym interface
+    Ptr<OpenGymSpace> GetObservationSpace() override;
+    Ptr<OpenGymDataContainer> GetObservation() override;
+
+    // trace packets, e.g. for calculating inter tx/rx time
+    void TxPktTrace(Ptr<const Packet>, const TcpHeader&, Ptr<const TcpSocketBase>) override;
+    void RxPktTrace(Ptr<const Packet>, const TcpHeader&, Ptr<const TcpSocketBase>) override;
+
+    // TCP congestion control interface
+    uint32_t GetSsThresh (Ptr<const TcpSocketState> tcb, uint32_t bytesInFlight) override;
+    void IncreaseWindow (Ptr<TcpSocketState> tcb, uint32_t segmentsAcked) override;
+    // optional functions used to collect obs
+    void PktsAcked (Ptr<TcpSocketState> tcb, uint32_t segmentsAcked, const Time& rtt) override;
+    void CongestionStateSet (Ptr<TcpSocketState> tcb, const TcpSocketState::TcpCongState_t newState) override;
+    void CwndEvent (Ptr<TcpSocketState> tcb, const TcpSocketState::TcpCAEvent_t event) override;
+
+  private:
+    // state
+    CalledFunc_t m_calledFunc;
+    Ptr<const TcpSocketState> m_tcb;
+    uint32_t m_bytesInFlight;
+    uint32_t m_segmentsAcked;
+    Time m_rtt;
+    TcpSocketState::TcpCAEvent_t m_event;
+
+    // reward
+    float m_reward;
+    float m_penalty;
+};
 
 } // namespace ns3
 

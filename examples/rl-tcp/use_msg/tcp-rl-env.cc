@@ -27,7 +27,7 @@
 namespace ns3
 {
 
-NS_LOG_COMPONENT_DEFINE ("tcp-rl-env");
+NS_LOG_COMPONENT_DEFINE ("tcp-rl-env-msg");
 
 NS_OBJECT_ENSURE_REGISTERED(TcpTimeStepEnv);
 

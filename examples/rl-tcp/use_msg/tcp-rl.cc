@@ -32,7 +32,7 @@
 
 namespace ns3 {
 
-NS_LOG_COMPONENT_DEFINE ("tcp-rl");
+NS_LOG_COMPONENT_DEFINE ("tcp-rl-msg");
 
 NS_OBJECT_ENSURE_REGISTERED (TcpSocketDerived);
 
