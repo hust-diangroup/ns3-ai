@@ -1,7 +1,12 @@
+import os
+import torch
+import argparse
+import numpy as np
+import matplotlib.pyplot as plt
+from agents import TcpNewRenoAgent, TcpRlAgent
 import ns3ai_gym_env
 import gymnasium as gym
-from tcp_base import TcpTimeBased
-from tcp_newreno import TcpNewReno
+
 
 __author__ = "Piotr Gawlowicz"
 __copyright__ = "Copyright (c) 2018, Technische Universität Berlin"
@@ -48,15 +53,16 @@ currIt = 0
 def get_agent(obs):
     socketUuid = obs[0]
     tcpEnvType = obs[1]
-    agent = get_agent.tcpAgents.get(socketUuid, None)
+    agent = get_agent.tcpAgents.get(socketUuid)
     if agent is None:
-        if tcpEnvType == 0:
-            # event-based = 0
-            agent = TcpNewReno()
-        else:
-            # time-based = 1
-            agent = TcpTimeBased()
-        agent.set_spaces(get_agent.ob_space, get_agent.ac_space)
+        # if tcpEnvType == 0:
+        #     # event-based = 0
+        #     agent = TcpNewRenoAgent()
+        # else:
+        #     # time-based = 1
+        #     agent = TcpRlAgent()
+        # # agent.set_spaces(get_agent.ob_space, get_agent.ac_space)
+        agent = TcpRlAgent()
         get_agent.tcpAgents[socketUuid] = agent
 
     return agent
@@ -64,8 +70,11 @@ def get_agent(obs):
 
 # initialize variable
 get_agent.tcpAgents = {}
-get_agent.ob_space = ob_space
-get_agent.ac_space = ac_space
+# get_agent.ob_space = ob_space
+# get_agent.ac_space = ac_space
+
+np.random.seed(10)
+torch.manual_seed(10)
 
 try:
     while True:

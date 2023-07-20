@@ -406,7 +406,7 @@ TcpTimeStepEnv::GetSsThresh (Ptr<const TcpSocketState> tcb, uint32_t bytesInFlig
 
     if (!m_started) {
         m_started = true;
-        Notify();
+//        Notify();
         ScheduleNextStateRead();
     }
 
@@ -425,7 +425,7 @@ TcpTimeStepEnv::IncreaseWindow (Ptr<TcpSocketState> tcb, uint32_t segmentsAcked)
 
     if (!m_started) {
         m_started = true;
-        Notify();
+//        Notify();
         ScheduleNextStateRead();
     }
     // action

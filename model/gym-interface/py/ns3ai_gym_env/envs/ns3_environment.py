@@ -1,7 +1,7 @@
 import numpy as np
 import gymnasium as gym
 from gymnasium import spaces
-from gymnasium.utils import seeding
+# from gymnasium.utils import seeding
 import messages_pb2 as pb
 import ns3ai_gym_msg_py as ns3msg
 
@@ -328,11 +328,11 @@ class Ns3Env(gym.Env):
         # get first observations
         self.SharedMemoryBridge.rx_env_state()
         self.envDirty = False
-        self.seed()
+        # self.seed()
 
-    def seed(self, seed=None):
-        self.np_random, seed = seeding.np_random(seed)
-        return [seed]
+    # def seed(self, seed=None):
+    #     self.np_random, seed = seeding.np_random(seed)
+    #     return [seed]
 
     def get_state(self):
         obs = self.SharedMemoryBridge.get_obs()

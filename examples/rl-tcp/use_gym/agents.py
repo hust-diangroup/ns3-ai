@@ -78,12 +78,17 @@ class TcpNewRenoAgent:
         self.new_ssThresh = 0
         pass
 
-    def get_action(self, obs):
-        ssThresh = obs[0]
-        cWnd = obs[1]
-        segmentSize = obs[2]
-        segmentsAcked = obs[3]
-        bytesInFlight = obs[4]
+    def get_action(self, obs, reward, done, info):
+        # current ssThreshold
+        ssThresh = obs[4]
+        # current contention window size
+        cWnd = obs[5]
+        # segment size
+        segmentSize = obs[6]
+        # number of acked segments
+        segmentsAcked = obs[9]
+        # estimated bytes in flight
+        bytesInFlight = obs[7]
 
         self.new_cWnd = 1
         if cWnd < ssThresh:
@@ -98,7 +103,7 @@ class TcpNewRenoAgent:
                 self.new_cWnd = cWnd + adder
 
         self.new_ssThresh = int(max(2 * segmentSize, bytesInFlight / 2))
-        return [self.new_cWnd, self.new_ssThresh]
+        return [self.new_ssThresh, self.new_cWnd]
 
 
 class TcpRlAgent:
@@ -112,17 +117,22 @@ class TcpRlAgent:
         self.r = None
         self.s_ = None  # next state
 
-    def get_action(self, obs):
-        # ssThresh = obs[0]
-        cWnd = obs[1]
-        segmentsAcked = obs[2]
-        segmentSize = obs[3]
-        bytesInFlight = obs[4]
+    def get_action(self, obs, reward, done, info):
+        # current ssThreshold
+        ssThresh = obs[4]
+        # current contention window size
+        cWnd = obs[5]
+        # segment size
+        segmentSize = obs[6]
+        # number of acked segments
+        segmentsAcked = obs[9]
+        # estimated bytes in flight
+        bytesInFlight = obs[7]
 
         # update DQN
         self.s = self.s_
-        self.s_ = obs
-        if self.s:  # not first time
+        self.s_ = [ssThresh, cWnd, segmentsAcked, segmentSize, bytesInFlight]
+        if self.s is not None:  # not first time
             self.r = segmentsAcked - bytesInFlight - cWnd
             self.dqn.store_transition(self.s, self.a, self.r, self.s_)
             if self.dqn.memory_counter > self.dqn.memory_capacity:
@@ -140,4 +150,4 @@ class TcpRlAgent:
         else:
             self.new_ssThresh = int(bytesInFlight / 2)
 
-        return [self.new_cWnd, self.new_ssThresh]
+        return [self.new_ssThresh, self.new_cWnd]
