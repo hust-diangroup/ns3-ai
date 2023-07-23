@@ -132,6 +132,7 @@ res_list = ['ssThresh_l', 'cWnd_l', 'segmentsAcked_l',
             'segmentSize_l', 'bytesInFlight_l']
 args = parser.parse_args()
 
+
 if args.result:
     for res in res_list:
         globals()[res] = []
@@ -139,22 +140,27 @@ if args.result:
         if not os.path.exists(args.output_dir):
             os.mkdir(args.output_dir)
 
-if args.use_rl:
-    dqn = DQN()
+# if args.use_rl:
+#     dqn = DQN()
+dqn = None
 exp = Experiment(1234, 4096, 'rl-tcp', '../../', using_waf=False)
 exp.run(show_output=1)
+
+np.random.seed(10)
+torch.manual_seed(10)
+
 try:
     while not var.isFinish():
         with var as data:
             if not data:
                 break
-    #         print(var.GetVersion())
+            #         print(var.GetVersion())
             ssThresh = data.env.ssThresh
             cWnd = data.env.cWnd
             segmentsAcked = data.env.segmentsAcked
             segmentSize = data.env.segmentSize
             bytesInFlight = data.env.bytesInFlight
-    #         print(ssThresh, cWnd, segmentsAcked, segmentSize, bytesInFlight)
+            #         print(ssThresh, cWnd, segmentsAcked, segmentSize, bytesInFlight)
 
             if args.result:
                 for res in res_list:
@@ -180,6 +186,8 @@ try:
                 data.act.new_cWnd = new_cWnd
                 data.act.new_ssThresh = new_ssThresh
             else:
+                if not dqn:
+                    dqn = DQN()
                 s = [ssThresh, cWnd, segmentsAcked, segmentSize, bytesInFlight]
                 a = dqn.choose_action(s)
                 if a & 1:
