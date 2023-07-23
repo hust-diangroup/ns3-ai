@@ -16,9 +16,22 @@ still in development. 2 interfaces are introduced before midterm evaluation:
 ### Prerequisites
 
 - Boost C++ libraries
+  - Ubuntu: `sudo apt install libboost-all-dev`
+  - macOS: `brew install boost`
 - Protocol buffers
-- pybind11 (it's recommended to install under a Conda environment)
-- gymnasium (it's recommended to install under a Conda environment)
+  - Ubuntu: It's recommended to build and install from source
+    - `git clone git clone https://github.com/protocolbuffers/protobuf.git`
+    - `cd protobuf && git submodule update --init --recursive`
+    - `cmake -S . -B build -Dprotobuf_BUILD_SHARED_LIBS=ON && cmake --build build && cmake --install build`
+  - macOS: `brew install protobuf protobuf-c`
+- pybind11
+  - Ubuntu:
+    - `git clone https://github.com/pybind/pybind11.git`
+    - `cd pybind11`
+    - `cmake -S . -B build && cmake --build build && cmake --install build`
+  - macOS: `brew install pybind11`
+- gymnasium
+  - `pip install gymnasium` (in Conda environment)
 
 ### Available examples using the new interfaces
 
