@@ -78,12 +78,12 @@ torch.manual_seed(10)
 
 try:
     while True:
-        print("Start iteration: ", currIt)
+        # print("Start iteration: ", currIt)
         obs, info = env.reset()
         reward = 0
         done = False
-        print("Step: ", stepIdx)
-        print("---obs: ", obs)
+        # print("Step: ", stepIdx)
+        # print("---obs: ", obs)
 
         # get existing agent of create new TCP agent if needed
         tcpAgent = get_agent(obs)
@@ -91,11 +91,11 @@ try:
         while True:
             stepIdx += 1
             action = tcpAgent.get_action(obs, reward, done, info)
-            print("---action: ", action)
+            # print("---action: ", action)
 
-            print("Step: ", stepIdx)
+            # print("Step: ", stepIdx)
             obs, reward, done, _, info = env.step(action)
-            print("---obs, reward, done, info: ", obs, reward, done, info)
+            # print("---obs, reward, done, info: ", obs, reward, done, info)
 
             # get existing agent of create new TCP agent if needed
             tcpAgent = get_agent(obs)
