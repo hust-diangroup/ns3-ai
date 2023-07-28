@@ -30,8 +30,8 @@ PYBIND11_MODULE(ns3ai_ratecontrol_ts_py, m) {
         .def("__len__", [](const std::array<ns3::ThompsonSamplingRateStats, 64> &arr) {
             return arr.size();
         })
-        .def("__getitem__", [](const std::array<ns3::ThompsonSamplingRateStats, 64> &arr, int i){
-            if (i < 0 || i >= arr.size()) {
+        .def("__getitem__", [](const std::array<ns3::ThompsonSamplingRateStats, 64> &arr, uint32_t i){
+            if (i >= arr.size()) {
                 std::cerr << "Invalid index " << i << " for std::array, whose size is " << arr.size() << std::endl;
                 exit(1);
             }

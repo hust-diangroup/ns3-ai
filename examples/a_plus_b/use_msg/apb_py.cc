@@ -27,8 +27,8 @@ PYBIND11_MODULE(ns3ai_apb_py, m) {
                   (ns3::Ns3AiMsgInterface<EnvStruct, ActStruct>::Cpp2PyMsgVector::size_type)>
              (&ns3::Ns3AiMsgInterface<EnvStruct, ActStruct>::Cpp2PyMsgVector::resize))
         .def("__len__", &ns3::Ns3AiMsgInterface<EnvStruct, ActStruct>::Cpp2PyMsgVector::size)
-        .def("__getitem__", [](ns3::Ns3AiMsgInterface<EnvStruct, ActStruct>::Cpp2PyMsgVector&vec, int i) -> EnvStruct & {
-            if (i < 0 || i >= vec.size()) {
+        .def("__getitem__", [](ns3::Ns3AiMsgInterface<EnvStruct, ActStruct>::Cpp2PyMsgVector&vec, uint32_t i) -> EnvStruct & {
+            if (i >= vec.size()) {
                 std::cerr << "Invalid index " << i << " for vector, whose size is " << vec.size() << std::endl;
                 exit(1);
             }
@@ -42,8 +42,8 @@ PYBIND11_MODULE(ns3ai_apb_py, m) {
                   (ns3::Ns3AiMsgInterface<EnvStruct, ActStruct>::Py2CppMsgVector::size_type)>
              (&ns3::Ns3AiMsgInterface<EnvStruct, ActStruct>::Py2CppMsgVector::resize))
         .def("__len__", &ns3::Ns3AiMsgInterface<EnvStruct, ActStruct>::Py2CppMsgVector::size)
-        .def("__getitem__", [](ns3::Ns3AiMsgInterface<EnvStruct, ActStruct>::Py2CppMsgVector&vec, int i) -> ActStruct & {
-            if (i < 0 || i >= vec.size()) {
+        .def("__getitem__", [](ns3::Ns3AiMsgInterface<EnvStruct, ActStruct>::Py2CppMsgVector&vec, uint32_t i) -> ActStruct & {
+            if (i >= vec.size()) {
                 std::cerr << "Invalid index " << i << " for vector, whose size is " << vec.size() << std::endl;
                 exit(1);
             }
