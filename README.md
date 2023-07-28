@@ -15,23 +15,36 @@ still in development. 2 interfaces are introduced before midterm evaluation:
 
 ### Prerequisites
 
+- Some basic Python packages
+  - `pip install numpy torch gymnasium`
 - Boost C++ libraries
   - Ubuntu: `sudo apt install libboost-all-dev`
   - macOS: `brew install boost`
 - Protocol buffers
-  - Ubuntu: It's recommended to build and install from source
-    - `git clone git clone https://github.com/protocolbuffers/protobuf.git`
-    - `cd protobuf && git submodule update --init --recursive`
-    - `cmake -S . -B build -Dprotobuf_BUILD_SHARED_LIBS=ON && cmake --build build && cmake --install build`
-  - macOS: `brew install protobuf protobuf-c`
+  - Ubuntu
+    - C++ side
+      ```shell
+      git clone git clone https://github.com/protocolbuffers/protobuf.git
+      cd protobuf
+      git submodule update --init --recursive
+      cmake -S . -B build -Dprotobuf_BUILD_SHARED_LIBS=ON
+      cmake --build build
+      sudo cmake --install build
+      ```
+    - Python side: `pip install protobuf`
+  - macOS
+    - C++ side: `brew install protobuf protobuf-c`
+    - Python side: `pip install protobuf`
 - pybind11
-  - Ubuntu:
-    - `git clone https://github.com/pybind/pybind11.git`
-    - `cd pybind11`
-    - `cmake -S . -B build && cmake --build build && cmake --install build`
+  - Ubuntu
+    ```shell
+    git clone https://github.com/pybind/pybind11.git
+    cd pybind11
+    cmake -S . -B build
+    cmake --build build
+    sudo cmake --install build
+    ```
   - macOS: `brew install pybind11`
-- gymnasium
-  - `pip install gymnasium` (in Conda environment)
 
 ### Available examples using the new interfaces
 
