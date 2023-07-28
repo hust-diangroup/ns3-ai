@@ -39,6 +39,21 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+inline uint64_t get_cpu_cycle_x86()
+{
+#ifdef __x86_64__
+    unsigned long lo, hi;
+    __asm__ __volatile__("rdtsc"
+                         : "=a"(lo), "=d"(hi));
+    return ((uint64_t)hi << 32) + lo;
+#else
+    return 0;
+#endif
+}
+
+std::vector<uint64_t> cpp2py_durations;
+std::vector<uint64_t> py2cpp_durations;
+
 namespace ns3
 {
 
@@ -170,6 +185,9 @@ OpenGymInterface::NotifyCurrentState()
     // extra info
     envStateMsg.set_info(extraInfo);
 
+    // For benchmarking: here get CPU cycle
+    uint64_t cpp_send_env_cpu_cycle = get_cpu_cycle_x86();
+
     // send env state msg to python
     m_msgInterface.cpp_send_begin();
     m_msgInterface.m_single_cpp2py_msg->size = envStateMsg.ByteSizeLong();
@@ -182,6 +200,25 @@ OpenGymInterface::NotifyCurrentState()
     m_msgInterface.cpp_recv_begin();
     envActMsg.ParseFromArray(m_msgInterface.m_single_py2cpp_msg->buffer, m_msgInterface.m_single_py2cpp_msg->size);
     m_msgInterface.cpp_recv_end();
+
+    // For benchmarking: here get CPU cycle
+    uint64_t cpp_recv_act_cpu_cycle = get_cpu_cycle_x86();
+
+    if (!isGameOver)
+    {
+        // store transmission times
+        uint64_t py_recv_env_cpu_cycle = envActMsg.pyrecvenvcpucycle();
+        uint64_t py_send_act_cpu_cycle = envActMsg.pysendactcpucycle();
+//        assert(py_recv_env_cpu_cycle);
+//        assert(py_send_act_cpu_cycle);
+//        assert(cpp_send_env_cpu_cycle < py_recv_env_cpu_cycle &&
+//               py_recv_env_cpu_cycle < py_send_act_cpu_cycle &&
+//               py_send_act_cpu_cycle < cpp_recv_act_cpu_cycle);
+        cpp2py_durations.push_back(py_recv_env_cpu_cycle - cpp_send_env_cpu_cycle);
+        py2cpp_durations.push_back(cpp_recv_act_cpu_cycle - py_send_act_cpu_cycle);
+        std::cout << "cpp2py: " << py_recv_env_cpu_cycle - cpp_send_env_cpu_cycle
+                  << ", py2cpp: " << cpp_recv_act_cpu_cycle - py_send_act_cpu_cycle << "\n";
+    }
 
     if (m_simEnd)
     {

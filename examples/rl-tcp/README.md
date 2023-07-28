@@ -87,10 +87,10 @@ Arguments:
   another terminal and run C++ side.
 
 ```shell
-./ns3 run ns3ai_rltcp_msg
+./ns3 run ns3ai_rltcp_msg -- --duration=100
 ```
 
-By default, the simulation time is 1000s and time step is 10ms.
+By default, the simulation time is 1000s and time step is 100ms.
 
 ## Run RL-TCP example (Gym interface)
 
@@ -109,7 +109,7 @@ python test_tcp.py
   another terminal and run C++ side.
 
 ```shell
-./ns3 run ns3ai_rltcp_gym
+./ns3 run ns3ai_rltcp_gym -- --duration=100
 ```
 
 # Output

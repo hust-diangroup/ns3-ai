@@ -4,7 +4,7 @@ from gymnasium import spaces
 # from gymnasium.utils import seeding
 import messages_pb2 as pb
 import ns3ai_gym_msg_py as ns3msg
-
+import py_cycle
 
 class SharedMemoryBridge(object):
     def __init__(self):
@@ -30,6 +30,8 @@ class SharedMemoryBridge(object):
         self.gameOver = False
         self.gameOverReason = None
         self.extraInfo = None
+        self.recv_env_cycle = 0
+        self.send_act_cycle = 0
         print('Created message interface, waiting for C++ side to send initial environment...')
 
     def close(self):
@@ -132,6 +134,9 @@ class SharedMemoryBridge(object):
         envStateMsg.ParseFromString(request)
         self.msg_interface.py_recv_end()
 
+        # For benchmarking: here get CPU cycle
+        self.recv_env_cycle = py_cycle.getCycle()
+
         self.obsData = self._create_data(envStateMsg.obsData)
         self.reward = envStateMsg.reward
         self.gameOver = envStateMsg.isGameOver
@@ -175,6 +180,11 @@ class SharedMemoryBridge(object):
         reply.stopSimReq = False
         if self.forceEnvStop:
             reply.stopSimReq = True
+
+        # For benchmarking: here get CPU cycle
+        self.send_act_cycle = py_cycle.getCycle()
+        reply.pyRecvEnvCpuCycle = self.recv_env_cycle
+        reply.pySendActCpuCycle = self.send_act_cycle
 
         replyMsg = reply.SerializeToString()
         assert len(replyMsg) <= ns3msg.msg_buffer_size

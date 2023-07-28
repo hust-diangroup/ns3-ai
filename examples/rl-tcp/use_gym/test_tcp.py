@@ -85,7 +85,7 @@ try:
         # print("Step: ", stepIdx)
         # print("---obs: ", obs)
 
-        # get existing agent of create new TCP agent if needed
+        # get existing agent or create new TCP agent if needed
         tcpAgent = get_agent(obs)
 
         while True:
