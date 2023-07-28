@@ -130,12 +130,11 @@ class SharedMemoryBridge(object):
         # request = self.socket.recv()
         envStateMsg = pb.EnvStateMsg()
         self.msg_interface.py_recv_begin()
+        # For benchmarking: here get CPU cycle
+        self.recv_env_cycle = py_cycle.getCycle()
         request = self.msg_interface.m_single_cpp2py_msg.get_buffer()
         envStateMsg.ParseFromString(request)
         self.msg_interface.py_recv_end()
-
-        # For benchmarking: here get CPU cycle
-        self.recv_env_cycle = py_cycle.getCycle()
 
         self.obsData = self._create_data(envStateMsg.obsData)
         self.reward = envStateMsg.reward
@@ -160,6 +159,10 @@ class SharedMemoryBridge(object):
         reply = pb.EnvActMsg()
         reply.stopSimReq = True
 
+        # last cycle information
+        reply.pyRecvEnvCpuCycle = self.recv_env_cycle
+        reply.pySendActCpuCycle = self.send_act_cycle
+
         replyMsg = reply.SerializeToString()
         assert len(replyMsg) <= ns3msg.msg_buffer_size
         self.msg_interface.py_send_begin()
@@ -181,8 +184,7 @@ class SharedMemoryBridge(object):
         if self.forceEnvStop:
             reply.stopSimReq = True
 
-        # For benchmarking: here get CPU cycle
-        self.send_act_cycle = py_cycle.getCycle()
+        # the values will be passed to C++ next time
         reply.pyRecvEnvCpuCycle = self.recv_env_cycle
         reply.pySendActCpuCycle = self.send_act_cycle
 
@@ -191,6 +193,8 @@ class SharedMemoryBridge(object):
         self.msg_interface.py_send_begin()
         self.msg_interface.m_single_py2cpp_msg.size = len(replyMsg)
         self.msg_interface.m_single_py2cpp_msg.get_buffer_full()[:len(replyMsg)] = replyMsg
+        # For benchmarking: here get CPU cycle
+        self.send_act_cycle = py_cycle.getCycle()
         self.msg_interface.py_send_end()
         self.newStateRx = False
         return True
