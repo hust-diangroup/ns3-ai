@@ -227,8 +227,8 @@ OpenGymInterface::NotifyCurrentState()
                py_prev_send_act_cpu_cycle < m_prev_cpp_recv_act_cpu_cycle);
         cpp2py_durations.push_back(py_prev_recv_env_cpu_cycle - m_prev_cpp_send_env_cpu_cycle);
         py2cpp_durations.push_back(m_prev_cpp_recv_act_cpu_cycle - py_prev_send_act_cpu_cycle);
-        std::cout << "cpp2py: " << py_prev_recv_env_cpu_cycle - m_prev_cpp_send_env_cpu_cycle
-                  << ", py2cpp: " << m_prev_cpp_recv_act_cpu_cycle - py_prev_send_act_cpu_cycle << "\n";
+//        std::cout << "cpp2py: " << py_prev_recv_env_cpu_cycle - m_prev_cpp_send_env_cpu_cycle
+//                  << ", py2cpp: " << m_prev_cpp_recv_act_cpu_cycle - py_prev_send_act_cpu_cycle << "\n";
         m_prev_cpp_send_env_cpu_cycle = cpp_send_env_cpu_cycle;
         m_prev_cpp_recv_act_cpu_cycle = cpp_recv_act_cpu_cycle;
     }
