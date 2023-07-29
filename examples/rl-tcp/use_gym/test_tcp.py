@@ -26,6 +26,17 @@ __email__ = "gawlowicz@tkn.tu-berlin.de"
 # startSim = bool(args.start)
 # iterationNum = int(args.iterations)
 
+parser = argparse.ArgumentParser()
+parser.add_argument('--seed', type=int,
+                    help='set seed for reproducibility')
+args = parser.parse_args()
+my_seed = 42
+if args.seed:
+    my_seed = args.seed
+print("Using random seed {} for reproducibility.".format(my_seed))
+np.random.seed(my_seed)
+torch.manual_seed(my_seed)
+
 iterationNum = 1
 
 # port = 5555
