@@ -30,8 +30,9 @@ class SharedMemoryBridge(object):
         self.gameOver = False
         self.gameOverReason = None
         self.extraInfo = None
+        self.prev_recv_env_cycle = 0
         self.recv_env_cycle = 0
-        self.send_act_cycle = 0
+        self.prev_send_act_cycle = 0
         print('Created message interface, waiting for C++ side to send initial environment...')
 
     def close(self):
@@ -131,6 +132,7 @@ class SharedMemoryBridge(object):
         envStateMsg = pb.EnvStateMsg()
         self.msg_interface.py_recv_begin()
         # For benchmarking: here get CPU cycle
+        self.prev_recv_env_cycle = self.recv_env_cycle
         self.recv_env_cycle = py_cycle.getCycle()
         request = self.msg_interface.m_single_cpp2py_msg.get_buffer()
         envStateMsg.ParseFromString(request)
@@ -185,8 +187,8 @@ class SharedMemoryBridge(object):
             reply.stopSimReq = True
 
         # the values will be passed to C++ next time
-        reply.pyRecvEnvCpuCycle = self.recv_env_cycle
-        reply.pySendActCpuCycle = self.send_act_cycle
+        reply.pyRecvEnvCpuCycle = self.prev_recv_env_cycle
+        reply.pySendActCpuCycle = self.prev_send_act_cycle
 
         replyMsg = reply.SerializeToString()
         assert len(replyMsg) <= ns3msg.msg_buffer_size
@@ -194,7 +196,7 @@ class SharedMemoryBridge(object):
         self.msg_interface.m_single_py2cpp_msg.size = len(replyMsg)
         self.msg_interface.m_single_py2cpp_msg.get_buffer_full()[:len(replyMsg)] = replyMsg
         # For benchmarking: here get CPU cycle
-        self.send_act_cycle = py_cycle.getCycle()
+        self.prev_send_act_cycle = py_cycle.getCycle()
         self.msg_interface.py_send_end()
         self.newStateRx = False
         return True

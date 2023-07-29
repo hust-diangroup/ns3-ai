@@ -216,6 +216,10 @@ OpenGymInterface::NotifyCurrentState()
     else
     {
         // calculate and store the duration and update
+//        std::cout << "m_prev_cpp_send_env_cpu_cycle = " << m_prev_cpp_send_env_cpu_cycle << "\n";
+//        std::cout << "py_prev_recv_env_cpu_cycle = " << py_prev_recv_env_cpu_cycle << "\n";
+//        std::cout << "py_prev_send_act_cpu_cycle = " << py_prev_send_act_cpu_cycle << "\n";
+//        std::cout << "m_prev_cpp_recv_act_cpu_cycle = " << m_prev_cpp_recv_act_cpu_cycle << "\n";
         assert(py_prev_recv_env_cpu_cycle);
         assert(py_prev_send_act_cpu_cycle);
         assert(m_prev_cpp_send_env_cpu_cycle < py_prev_recv_env_cpu_cycle &&
