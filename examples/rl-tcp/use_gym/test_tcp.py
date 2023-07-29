@@ -31,7 +31,7 @@ parser.add_argument('--seed', type=int,
                     help='set seed for reproducibility')
 args = parser.parse_args()
 my_seed = 42
-if args.seed:
+if args.seed is not None:
     my_seed = args.seed
 print("Using random seed {} for reproducibility.".format(my_seed))
 
