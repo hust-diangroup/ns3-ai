@@ -163,7 +163,7 @@ class SharedMemoryBridge(object):
 
         # last cycle information
         reply.pyRecvEnvCpuCycle = self.recv_env_cycle
-        reply.pySendActCpuCycle = self.send_act_cycle
+        reply.pySendActCpuCycle = self.prev_send_act_cycle
 
         replyMsg = reply.SerializeToString()
         assert len(replyMsg) <= ns3msg.msg_buffer_size
