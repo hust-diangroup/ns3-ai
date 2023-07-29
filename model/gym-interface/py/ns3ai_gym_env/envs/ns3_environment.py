@@ -162,7 +162,7 @@ class SharedMemoryBridge(object):
         reply.stopSimReq = True
 
         # last cycle information
-        reply.pyRecvEnvCpuCycle = self.recv_env_cycle
+        reply.pyRecvEnvCpuCycle = self.prev_recv_env_cycle
         reply.pySendActCpuCycle = self.prev_send_act_cycle
 
         replyMsg = reply.SerializeToString()
