@@ -31,32 +31,15 @@ import re
 import os
 import gc
 import keras.backend as K
+import ns3ai_ltecqi_py as ns3ai
 
 # delta for prediction
 delta = int(sys.argv[1])
 
 MAX_RBG_NUM = 32
 
-
-class CqiFeature(Structure):
-    _pack_ = 1
-    _fields_ = [('wbCqi', c_uint8), ('rbgNum', c_uint8), ('nLayers', c_uint8),
-                ('sbCqi', (c_uint8 * MAX_RBG_NUM) * 2)]
-
-
-class CqiPredicted(Structure):
-    _pack_ = 1
-    _fields_ = [('new_wbCqi', c_uint8),
-                ('new_sbCqi', (c_uint8 * MAX_RBG_NUM) * 2)]
-
-
-class CqiTarget(Structure):
-    _pack_ = 1
-    _fields_ = [('target', c_uint8)]
-
-
-Init(1234, 4096)
-dl = Ns3AIDL(1357, CqiFeature, CqiPredicted, CqiTarget)
+ns3ai_msg = ns3ai.Ns3AiMsgInterface(True, False, True, 4096, "My Seg", "My Cpp to Python Msg", "My Python to Cpp Msg", "My Lockable")
+print('Created message interface, waiting for C++ side to send initial environment...')
 
 
 def new_print(filename="log", print_screen=False):
@@ -118,87 +101,99 @@ train_data = []
 is_train = True
 CQI = 0
 delay_queue = []
-exp = Experiment(1234, 4096, 'lte_cqi', '../../', using_waf=False)
-exp.run(show_output=1)
+# exp = Experiment(1234, 4096, 'lte_cqi', '../../', using_waf=False)
+# exp.run(show_output=1)
 try:
     while True:
-        with dl as data:
-            if dl.isFinish():
-                break
-            gc.collect()
-            # Get CQI
-            CQI = data.feat.wbCqi
-            if CQI > 15:
-                break
-            old_print("get: %d" % CQI)
-            # CQI = next(get_CQI)
-            delay_queue.append(CQI)
-            if len(delay_queue) < delta:
-                CQI = delay_queue[-1]
-            else:
-                CQI = delay_queue[-delta]
-            if not_train:
-                data.pred.new_wbCqi = CQI
-                continue
-            cqi_queue.append(CQI)
-            if len(cqi_queue) >= input_len + delta:
-                target.append(CQI)
-            if len(cqi_queue) >= input_len:
-                one_data = cqi_queue[-input_len:]
-                train_data.append(one_data)
+        ns3ai_msg.py_recv_begin()
+        if ns3ai_msg.py_get_finished():
+            break
+        gc.collect()
+        # Get CQI
+        CQI = ns3ai_msg.m_single_cpp2py_msg.wbCqi
+        ns3ai_msg.py_recv_end()
 
-            else:
-                data.pred.new_wbCqi = CQI
-                old_print("set: %d" % CQI)
-                continue
-            data_to_pred = np.array(one_data).reshape(-1, input_len, 1) / 10
-            _predict_cqi = lstm_model_mse.predict(data_to_pred)
-            old_print(_predict_cqi)
-            del data_to_pred
-            prediction.append(int(_predict_cqi[0, 0] + 0.49995))
-            last.append(one_data[-1])
-            corrected_predict.append(int(_predict_cqi[0, 0] + 0.49995))
-            del one_data
-            if len(train_data) >= pred_len + delta:
-                err_t = weighted_MSE(
-                    np.array(last[(-pred_len - delta):-delta]),
-                    np.array(target[-pred_len:]))
-                err_p = weighted_MSE(
-                    np.array(prediction[(-pred_len - delta):-delta]),
-                    np.array(target[-pred_len:]))
-                if err_p <= err_t * alpha:
-                    if err_t < 1e-6:
-                        corrected_predict[-1] = last[-1]
-                    print(" ")
-                    print("OK %d %f %f" % ((len(cqi_queue)), err_t, err_p))
-                    right.append(1)
-                    pass
-                else:
+        if CQI > 15:
+            break
+        old_print("get: %d" % CQI)
+        # CQI = next(get_CQI)
+        delay_queue.append(CQI)
+        if len(delay_queue) < delta:
+            CQI = delay_queue[-1]
+        else:
+            CQI = delay_queue[-delta]
+        if not_train:
+            ns3ai_msg.py_send_begin()
+            ns3ai_msg.m_single_py2cpp_msg.new_wbCqi = CQI
+            ns3ai_msg.py_send_end()
+            continue
+        cqi_queue.append(CQI)
+        if len(cqi_queue) >= input_len + delta:
+            target.append(CQI)
+        if len(cqi_queue) >= input_len:
+            one_data = cqi_queue[-input_len:]
+            train_data.append(one_data)
+        else:
+            ns3ai_msg.py_send_begin()
+            ns3ai_msg.m_single_py2cpp_msg.new_wbCqi = CQI
+            ns3ai_msg.py_send_end()
+            old_print("set: %d" % CQI)
+            continue
+
+        data_to_pred = np.array(one_data).reshape(-1, input_len, 1) / 10
+        _predict_cqi = lstm_model_mse.predict(data_to_pred)
+        old_print(_predict_cqi)
+        del data_to_pred
+        prediction.append(int(_predict_cqi[0, 0] + 0.49995))
+        last.append(one_data[-1])
+        corrected_predict.append(int(_predict_cqi[0, 0] + 0.49995))
+        del one_data
+        if len(train_data) >= pred_len + delta:
+            err_t = weighted_MSE(
+                np.array(last[(-pred_len - delta):-delta]),
+                np.array(target[-pred_len:]))
+            err_p = weighted_MSE(
+                np.array(prediction[(-pred_len - delta):-delta]),
+                np.array(target[-pred_len:]))
+            if err_p <= err_t * alpha:
+                if err_t < 1e-6:
                     corrected_predict[-1] = last[-1]
-                    if err_t <= 1e-6:
-                        data.pred.new_wbCqi = CQI
-                        print("set: %d" % CQI)
-                        continue
-                    else:
-                        print("train %d" % (len(cqi_queue)))
-                        right.append(0)
-
-                        lstm_model_mse.fit(x=np.array(
-                            train_data[-delta - batch_size:-delta]).reshape(
-                                batch_size, input_len, 1) / 10,
-                            y=np.array(target[-batch_size:]),
-                            batch_size=batch_size,
-                            epochs=1,
-                            verbose=0)
+                print(" ")
+                print("OK %d %f %f" % ((len(cqi_queue)), err_t, err_p))
+                right.append(1)
+                pass
             else:
                 corrected_predict[-1] = last[-1]
-            # sm.Set(corrected_predict[-1])
-            data.pred.new_wbCqi = corrected_predict[-1]
-            print("set: %d" % corrected_predict[-1])
+                if err_t <= 1e-6:
+                    ns3ai_msg.py_send_begin()
+                    ns3ai_msg.m_single_py2cpp_msg.new_wbCqi = CQI
+                    ns3ai_msg.py_send_end()
+                    print("set: %d" % CQI)
+                    continue
+                else:
+                    print("train %d" % (len(cqi_queue)))
+                    right.append(0)
+
+                    lstm_model_mse.fit(x=np.array(
+                        train_data[-delta - batch_size:-delta]).reshape(
+                            batch_size, input_len, 1) / 10,
+                        y=np.array(target[-batch_size:]),
+                        batch_size=batch_size,
+                        epochs=1,
+                        verbose=0)
+        else:
+            corrected_predict[-1] = last[-1]
+        # sm.Set(corrected_predict[-1])
+        ns3ai_msg.py_send_begin()
+        ns3ai_msg.m_single_py2cpp_msg.new_wbCqi = CQI
+        ns3ai_msg.py_send_end()
+        print("set: %d" % corrected_predict[-1])
 except KeyboardInterrupt:
     print('Ctrl C')
 finally:
-    del exp
+    del ns3ai_msg
+
+
 print('Finish')
 with open("log_" + str(delta), "a+") as f:
     f.write("\n")

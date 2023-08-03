@@ -20,8 +20,9 @@
  */
 
 #pragma once
-#include "ns3/ns3-ai-dl.h"
+#include "ns3/ns3-ai-module.h"
 #include "ns3/ff-mac-common.h"
+#include "ns3/core-module.h"
 
 namespace ns3 {
 #define MAX_RBG_NUM 32
@@ -36,9 +37,9 @@ namespace ns3 {
 struct CqiFeature
 {
   uint8_t wbCqi;                  ///< wide band cqi
-  uint8_t rbgNum;                 ///< resource block group number
-  uint8_t nLayers;                ///< number of layers
-  uint8_t sbCqi[MAX_RBG_NUM][2];  ///< sub band cqi
+//  uint8_t rbgNum;                 ///< resource block group number
+//  uint8_t nLayers;                ///< number of layers
+//  uint8_t sbCqi[MAX_RBG_NUM][2];  ///< sub band cqi
 };
 
 /**
@@ -50,17 +51,7 @@ struct CqiFeature
 struct CqiPredicted
 {
   uint8_t new_wbCqi;
-  uint8_t new_sbCqi[MAX_RBG_NUM][2];
-};
-
-/**
- * \brief The target of cqi.
- * 
- * The target of DL training (in this example, target of cqi)
- */
-struct CQITarget
-{
-  uint8_t target;
+//  uint8_t new_sbCqi[MAX_RBG_NUM][2];
 };
 
 /**
@@ -71,17 +62,15 @@ struct CQITarget
  * and put them into the shared memory, using python to calculate,
  * and got prediction through member function 'Get[xxx]()'.
  */
-class CQIDL : public Ns3AIDL<CqiFeature, CqiPredicted, CQITarget>
+class CQIDL : public Object
 {
 public:
-  CQIDL (void) = delete;
-  CQIDL (uint16_t id);
+  CQIDL ();
+  ~CQIDL() override;
+  static TypeId GetTypeId();
+
   void SetWbCQI (uint8_t cqi);
-  uint8_t GetWbCQI (void);
-  void SetSbCQI (SbMeasResult_s cqi, uint32_t nLayers);
-  void GetSbCQI (SbMeasResult_s &cqi);
-  void SetTarget (uint8_t tar);
-  uint8_t GetTarget (void);
+  uint8_t GetWbCQI ();
 };
 
 } // namespace ns3

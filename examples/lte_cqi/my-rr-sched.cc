@@ -58,7 +58,7 @@ MyRrMacScheduler::MyRrMacScheduler ()
     m_nextRntiDl (0),
     m_nextRntiUl (0)
 {
-  m_cqiDl = Create<CQIDL> (1357);
+  m_cqiDl = Create<CQIDL> ();
   m_amc = CreateObject <LteAmc> ();
   m_cschedSapProvider = new MemberCschedSapProvider<MyRrMacScheduler> (this);
   m_schedSapProvider = new MemberSchedSapProvider<MyRrMacScheduler> (this);
@@ -67,7 +67,7 @@ MyRrMacScheduler::MyRrMacScheduler ()
 MyRrMacScheduler::~MyRrMacScheduler ()
 {
   NS_LOG_FUNCTION (this);
-  m_cqiDl->SetFinish();
+//  m_cqiDl->SetFinish();
 }
 
 void
@@ -1159,7 +1159,7 @@ MyRrMacScheduler::DoSchedUlTriggerReq (const struct FfMacSchedSapProvider::Sched
   // Generate RBs map
   FfMacSchedSapUser::SchedUlConfigIndParameters ret;
   std::vector <bool> rbMap;
-  uint16_t rbAllocatedNum = 0;
+//  uint16_t rbAllocatedNum = 0;
   std::set <uint16_t> rntiAllocated;
   std::vector <uint16_t> rbgAllocationMap;
   // update with RACH allocation map
@@ -1228,7 +1228,7 @@ MyRrMacScheduler::DoSchedUlTriggerReq (const struct FfMacSchedSapProvider::Sched
                       rbMap.at (j) = true;
                       rbgAllocationMap.at (j) = dci.m_rnti;
                       NS_LOG_INFO ("\tRB " << j);
-                      rbAllocatedNum++;
+//                      rbAllocatedNum++;
                     }
                   NS_LOG_INFO (this << " Send retx in the same RBGs " << (uint16_t)dci.m_rbStart << " to " << dci.m_rbStart + dci.m_rbLen << " RV " << (*itStat).second.at (harqId) + 1);
                 }

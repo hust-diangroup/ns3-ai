@@ -55,7 +55,7 @@ main (int argc, char *argv[])
   cmd.AddValue ("simTime", "Total duration of the simulation [s])", simTime);
   cmd.AddValue ("datarate", "datarate", datarate);
   cmd.AddValue ("packetSize", "packetSize", packetSize);
-  cmd.AddValue ("speed", "speed", speed);
+  cmd.AddValue ("speed", "x-axis speed of moving UE", speed);
   cmd.Parse (argc, argv);
 
   ConfigStore inputConfig;
