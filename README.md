@@ -47,7 +47,7 @@ This installation works on Ubuntu 22.04 and macOS 13.0 or higher.
     cmake --build build
     sudo cmake --install build
     ```
-    - macOS: `brew install protobuf protobuf-c`
+    - macOS: `brew install protobuf`
 - pybind11
     - Ubuntu:
     ```shell

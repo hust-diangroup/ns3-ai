@@ -41,6 +41,7 @@ __pycache__
 result/
 dist/
 *.egg
+log_*
 
 # Protobuf files
 *.pb.cc
