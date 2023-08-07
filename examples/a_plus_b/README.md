@@ -2,10 +2,9 @@
 
 ## Introduction
 
-In `ns3ai_apb` example, C++ side sets a vector in shared memory that containes 3 structures. Each structure contains 2
-random numbers which can be seen as environment in RL. Python side gets the vector and compute the sum for each
-structure, and sets another vector in shared memory that contains the sums, which can be seen as action in RL. C++ then
-gets the actions and prints them. The procedure is repeated many times, as defined by the macro ENV_NUM on C++ side.
+In `ns3ai_apb` example, C++ side sets 2 random numbers like an environment in RL. Python side gets the vector and
+compute the sum for each pair, and sets the sums, like an action in RL. C++ then gets the actions and prints them. The
+procedure is repeated many times, as defined by the macro ENV_NUM on C++ side.
 
 ## Running the example (msg interface)
 

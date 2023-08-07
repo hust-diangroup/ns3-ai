@@ -81,7 +81,7 @@ cd ../../
 When building examples, the `ns3-ai` library is built automatically.
 
 ```shell
-./ns3 build ns3ai_apb_msg ns3ai_apb_gym ns3ai_rltcp_msg ns3ai_rltcp_gym ns3ai_ratecontrol_constant ns3ai_ratecontrol_ts
+./ns3 build ns3ai_apb_msg ns3ai_apb_gym ns3ai_rltcp_msg ns3ai_rltcp_gym ns3ai_ratecontrol_constant ns3ai_ratecontrol_ts ns3ai_ltecqi
 ```
 
 3. Setup Gym interface

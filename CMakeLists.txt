@@ -3,13 +3,6 @@ if(HAVE_STDINT_H)
     add_definitions(-DHAVE_STDINT_H)
 endif()
 
-# get prefix path for protobuf and pybind11
-find_package(PkgConfig REQUIRED)
-pkg_check_modules(PC_PROTOBUF REQUIRED protobuf)
-list(APPEND CMAKE_PREFIX_PATH ${PC_PROTOBUF_PREFIX})
-pkg_check_modules(PC_PYBIND11 REQUIRED pybind11)
-list(APPEND CMAKE_PREFIX_PATH ${PC_PYBIND11_PREFIX})
-
 find_package(Boost REQUIRED COMPONENTS program_options)
 include_directories(${Boost_INCLUDE_DIRS})
 find_package(Python REQUIRED COMPONENTS Interpreter Development)
