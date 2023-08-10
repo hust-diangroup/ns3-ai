@@ -49,16 +49,16 @@ This example is inspired by [ns3-gym example](https://github.com/tkn-tub/ns3-gym
 [benchmarking](https://github.com/ShenMuyuan/urban-pancake/tree/50ad463ee06377342ff83c9954a13cc66792b4d1/ns3ai_benchmark)
 and to compare with their module.
 
+### [Rate-Control](examples/rate-control)
+
+This is an example that shows how to develop a new rate control algorithm for the ns-3 Wi-Fi module using ns3-ai.
+Available examples are Constant Rate and Thompson Sampling.
+
 ### [LTE_CQI](examples/lte_cqi/)
 
 This original work is done based on [5G NR](https://5g-lena.cttc.es/) branch in ns-3. We made some changes to make it
 also run in LTE codebase in ns-3 mainline. We didn't reproduce all the experiments on LTE, and the results in our paper
 are based on NR work.
-
-### [Rate-Control](examples/rate-control)
-
-This is an example that shows how to develop a new rate control algorithm for the ns-3 Wi-Fi module using ns3-ai.
-Available examples are Constant Rate and Thompson Sampling.
 
 ## About the new interface proposed in GSoC 2023
 

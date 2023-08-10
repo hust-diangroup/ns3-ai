@@ -4,9 +4,7 @@ This original work is done based on [5G NR](https://5g-lena.cttc.es/) branch in 
 also run in LTE codebase in ns-3 mainline. We didn't reproduce all the experiments on LTE, and the results used in this
 document are based on NR work.
 
-Unlike the RL_TCP example, in this example, we want to show how to change the source code to use our ns3-ai model.
-
-## Objective
+## Motivation
 
 - The fast time-varying channel strictly limits the throughput performance of the 5G system.
 - In high mobility scenes, the performance of the AMC system is significantly deteriorated, resulting from rapidly
@@ -31,7 +29,7 @@ station to test the downlink scheduling performance.
 - Use Round Robin as a scheduler to see directly the impact of CQI (Every user has an equal number of times scheduled )
 - Mainly concern throughput
 
-### Simulation process：
+### Simulation process
 
 - The user reports the CQI to the BS.
 - BS send the CQI to the online training module.
@@ -44,92 +42,36 @@ station to test the downlink scheduling performance.
 - Long Short-Term Memory (LSTM) is ideal for dealing with issues that are highly correlated with time series.
 - The changing of CQI in the BS side can be evaluated and predicted by the past series of CQI.
 
-## Interaction between DL and ns-3
+## Running the example
 
-- Set up the environment
-
-```
-C++:
-env = Create<TcpTimeStepShmEnv> (1234);//1234 shared-memory key
-
-Python：
-py_interface.Init(1234, 4096)#pool size = 4096
-var = py_interface.ShmBigVar(1234, TcpRl)
-```
-
-- In ns-3, put CQI into shared memory for use by the DL algorithm.
-
-ns-3 side：
-
-```cpp
-uint8_t newCqi = params.m_cqiList.at (i).m_wbCqi.at (0);
-NS_ASSERT_MSG (m_cqiDl != NULL, "DL env error");
-if (rnti == 1)
-{
- uint8_t oldCqi = newCqi;
- m_cqiDl->SetWbCQI (newCqi);
- newCqi = m_cqiDl->GetWbCQI ();
- std::cout<<"At: "<<Simulator::Now().GetSeconds()<<"s CQI: "<<(int)oldCqi<<"->"<<(int)newCqi<<std::endl;
-}
-```
-
-- Python trains based on the read data to use LSTM to predict the CQI.
-
-python side：
-
-```python
-with dl as data:
-    if data == None:
-        break
-    # print('data.env.wbCqi', data.env.wbCqi)
-    # Deep Learning code there
-    data.act.new_wbCqi = data.env.wbCqi
-    data.act.new_sbCqi = data.env.sbCqi
-```
-
-## Build and Run
-
-Check and Install required packets for the tensorflow:
+1. [Setup ns3-ai](../../install.md)
+2. Install requirements:
 
 ```shell
-pip3 install -r requirements.txt
+pip install tensorflow Keras
 ```
 
-### Run Separately (no longer recommended)
+3. Run Python side
 
-Run ns-3 example with two shell window:
+Python side should run first, because Python script is the shared memory creator.
 
 ```shell
-cp -r contrib/ns3-ai/examples/lte_cqi scratch/
-./ns3 run lte_cqi
+cd contrib/ns3-ai/examples/lte_cqi
+python run_online_lstm.py 1
 ```
 
-Open another shell window and Run Python code:
+The parameter `1` is the delta for prediction.
+
+4. When you see the message `Created message interface, waiting for C++ side to send initial environment...`, Open
+   another terminal and run C++ side.
 
 ```shell
-cd scratch/lte_cqi/
-
-python3 run_online.py
+./ns3 run ns3ai_ltecqi
 ```
-
-**NOTICE: ns3 code and Python code need to run simultaneously**
-
-### Run with all-in-one script
-
-If you want to test the LSTM, you can run another python script but you may need to
-install [TensorFlow](https://www.tensorflow.org/) environment first.
-
-```shell
-cp -r contrib/ns3-ai/examples/lte_cqi scratch/
-cd scratch/lte_cqi/
-
-python3 run_online_lstm.py 1
-```    
 
 ## Results
 
-These results are based on the NR code, not the LTE code. Currently, the "run_online.py" script does nothing but
-exchanges data, so you don't need to set up DL environments.
+Results presented in our [paper](https://dl.acm.org/doi/pdf/10.1145/3389400.3389404) are based on the NR code, not the LTE code.
 
 Using the data generated from ns-3, we test the usage rate of different DL algorithms. Two different prediction methods
 are applied as the prediction module, the FNN used by another group and LSTM. Form the figure, as the speed improved,

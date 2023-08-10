@@ -18,17 +18,13 @@
 #         Xiaojun Guo <guoxj@hust.edu.cn>
 #         Hao Yin <haoyin@uw.edu>
 
-from py_interface import *
-from ctypes import *
+
 from collections import deque
 import numpy as np
 import tensorflow as tf
 import keras
 from keras.layers import *
-import copy
 import sys
-import re
-import os
 import gc
 import keras.backend as K
 import ns3ai_ltecqi_py as ns3ai
