@@ -39,7 +39,7 @@ statistics will be updated and an optimal MCS is selected for next transmission.
 
 ## Run the example
 
-1. [General setup](../../README.md#general-setup)
+1. [Setup ns3-ai](../../install.md)
 
 2. Run constant rate control
 

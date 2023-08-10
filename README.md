@@ -54,7 +54,7 @@ and to compare with their module.
 This is an example that shows how to develop a new rate control algorithm for the ns-3 Wi-Fi module using ns3-ai.
 Available examples are Constant Rate and Thompson Sampling.
 
-### [LTE_CQI](examples/lte_cqi/)
+### [LTE-CQI](examples/lte_cqi/)
 
 This original work is done based on [5G NR](https://5g-lena.cttc.es/) branch in ns-3. We made some changes to make it
 also run in LTE codebase in ns-3 mainline. We didn't reproduce all the experiments on LTE, and the results in our paper
