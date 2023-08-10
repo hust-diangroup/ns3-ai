@@ -120,7 +120,7 @@ message EnvStateMsg {
 message EnvActMsg {
 	DataContainer actData = 1;
 	bool stopSimReq = 2;
-	uint64 pyRecvEnvCpuCycle = 3;		// for benchmarking
-	uint64 pySendActCpuCycle = 4;		// for benchmarking
+//	uint64 pyRecvEnvCpuCycle = 3;		// for benchmarking
+//	uint64 pySendActCpuCycle = 4;		// for benchmarking
 }
 //------------------------//

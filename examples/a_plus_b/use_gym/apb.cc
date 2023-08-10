@@ -12,87 +12,111 @@ namespace ns3
 class ApbEnv : public OpenGymEnv
 {
   public:
-    ApbEnv()
-    {
-        SetOpenGymInterface(OpenGymInterface::Get());
-    }
+    ApbEnv();
+    ~ApbEnv() override;
+    static TypeId GetTypeId();
+    void DoDispose() override;
 
-    ~ApbEnv() override
-    {
-    }
-
-    static TypeId GetTypeId()
-    {
-        static TypeId tid = TypeId("ns3::ApbEnv").SetParent<OpenGymEnv>().SetGroupName("OpenGym");
-        return tid;
-    }
-
-    void DoDispose() override
-    {
-    }
-
-    uint32_t GetAPlusB()
-    {
-        Notify();
-        return m_sum;
-    }
+    uint32_t GetAPlusB();
 
     // OpenGym interfaces:
-    Ptr<OpenGymSpace> GetActionSpace() override
-    {
-        std::vector<uint32_t> shape = {1};
-        std::string dtype = TypeNameGet<uint32_t>();
-        Ptr<OpenGymBoxSpace> box = CreateObject<OpenGymBoxSpace>(0, 20, shape, dtype);
-        return box;
-    }
-
-    Ptr<OpenGymSpace> GetObservationSpace() override
-    {
-        std::vector<uint32_t> shape = {2};
-        std::string dtype = TypeNameGet<uint32_t>();
-        Ptr<OpenGymBoxSpace> box = CreateObject<OpenGymBoxSpace>(0, 10, shape, dtype);
-        return box;
-    }
-
-    bool GetGameOver() override
-    {
-        return false;
-    }
-
-    Ptr<OpenGymDataContainer> GetObservation() override
-    {
-        std::vector<uint32_t> shape = {2};
-        Ptr<OpenGymBoxContainer<uint32_t>> box = CreateObject<OpenGymBoxContainer<uint32_t>>(shape);
-
-        box->AddValue(m_a);
-        box->AddValue(m_b);
-
-        return box;
-    }
-
-    float GetReward() override
-    {
-        return 0.0;
-    }
-
-    std::string GetExtraInfo() override
-    {
-        return "";
-    }
-
-    bool ExecuteActions(Ptr<OpenGymDataContainer> action) override
-    {
-        Ptr<OpenGymBoxContainer<uint32_t>> box = DynamicCast<OpenGymBoxContainer<uint32_t>>(action);
-        m_sum = box->GetValue(0) + box->GetValue(1);
-        return true;
-    }
+    Ptr<OpenGymSpace> GetActionSpace() override;
+    Ptr<OpenGymSpace> GetObservationSpace() override;
+    bool GetGameOver() override;
+    Ptr<OpenGymDataContainer> GetObservation() override;
+    float GetReward() override;
+    std::string GetExtraInfo() override;
+    bool ExecuteActions(Ptr<OpenGymDataContainer> action) override;
 
     uint32_t m_a;
     uint32_t m_b;
-
   private:
     uint32_t m_sum;
 };
+
+ApbEnv::ApbEnv()
+{
+    SetOpenGymInterface(OpenGymInterface::Get());
+}
+
+ApbEnv::~ApbEnv()
+{
+}
+
+TypeId
+ApbEnv::GetTypeId()
+{
+    static TypeId tid = TypeId("ns3::ApbEnv").SetParent<OpenGymEnv>().SetGroupName("OpenGym");
+    return tid;
+}
+
+void
+ApbEnv::DoDispose()
+{
+}
+
+uint32_t
+ApbEnv::GetAPlusB()
+{
+    Notify();
+    return m_sum;
+}
+
+Ptr<OpenGymSpace>
+ApbEnv::GetActionSpace()
+{
+    std::vector<uint32_t> shape = {1};
+    std::string dtype = TypeNameGet<uint32_t>();
+    Ptr<OpenGymBoxSpace> box = CreateObject<OpenGymBoxSpace>(0, 20, shape, dtype);
+    return box;
+}
+
+Ptr<OpenGymSpace>
+ApbEnv::GetObservationSpace()
+{
+    std::vector<uint32_t> shape = {2};
+    std::string dtype = TypeNameGet<uint32_t>();
+    Ptr<OpenGymBoxSpace> box = CreateObject<OpenGymBoxSpace>(0, 10, shape, dtype);
+    return box;
+}
+
+bool
+ApbEnv::GetGameOver()
+{
+    return false;
+}
+
+Ptr<OpenGymDataContainer>
+ApbEnv::GetObservation()
+{
+    std::vector<uint32_t> shape = {2};
+    Ptr<OpenGymBoxContainer<uint32_t>> box = CreateObject<OpenGymBoxContainer<uint32_t>>(shape);
+
+    box->AddValue(m_a);
+    box->AddValue(m_b);
+
+    return box;
+}
+
+float
+ApbEnv::GetReward()
+{
+    return 0.0;
+}
+
+std::string
+ApbEnv::GetExtraInfo()
+{
+    return "";
+}
+
+bool
+ApbEnv::ExecuteActions(Ptr<OpenGymDataContainer> action)
+{
+    Ptr<OpenGymBoxContainer<uint32_t>> box = DynamicCast<OpenGymBoxContainer<uint32_t>>(action);
+    m_sum = box->GetValue(0);
+    return true;
+}
 
 }
 

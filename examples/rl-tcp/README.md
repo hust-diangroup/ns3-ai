@@ -61,7 +61,7 @@
 
 ## Run RL-TCP example (msg interface)
 
-1. [General setup](https://github.com/ShenMuyuan/ns3-ai/tree/improvements#general-setup)
+1. [General setup](../../README.md#general-setup)
 
 2. Run the example
 
@@ -94,7 +94,7 @@ By default, the simulation time is 1000s and time step is 100ms.
 
 ## Run RL-TCP example (Gym interface)
 
-1. [General setup](https://github.com/ShenMuyuan/ns3-ai/tree/improvements#general-setup)
+1. [General setup](../../README.md#general-setup)
 
 2. Run the example
 

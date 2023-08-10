@@ -20,130 +20,45 @@ more flexible.
 ### Features
 
 - High-performance data interaction module in both C++ and Python side.
-- A low-level interface ([msg-interface](model/msg-interface)) for customizing the shared data, and a high-level
-  interface ([gym-interface](model/gym-interface)) for using Gymnasium APIs.
+- A low-level interface ([msg interface](model/msg-interface)) for customizing the shared data, and a high-level
+  interface ([gym interface](model/gym-interface)) for using Gymnasium APIs.
 - Easy to integrate with AI frameworks on Python side.
 
 ## Installation
 
-This installation works on Ubuntu 22.04 and macOS 13.0 or higher.
+Check out [install.md](./install.md) for how to install ns3-ai.
 
-### Prerequisites
+## Quick start guide
 
-- Boost C++ libraries
-    - Ubuntu: `sudo apt install libboost-all-dev`
-    - macOS: `brew install boost`
-- Protocol buffers
-    - Ubuntu:
-    ```shell
-    # Recommended
-    sudo apt install libprotobuf-dev protobuf-compiler
-    
-    # Try building from source if the above installation causes cmake error
-    git clone https://github.com/protocolbuffers/protobuf.git
-    cd protobuf
-    git submodule update --init --recursive
-    cmake -S . -B build -Dprotobuf_BUILD_SHARED_LIBS=ON
-    cmake --build build
-    sudo cmake --install build
-    ```
-    - macOS: `brew install protobuf`
-- pybind11
-    - Ubuntu:
-    ```shell
-    # Recommended
-    sudo apt install pybind11-dev
-    
-    # Try building from source if the above installation causes cmake error
-    git clone https://github.com/pybind/pybind11.git
-    cd pybind11
-    cmake -S . -B build
-    cmake --build build
-    sudo cmake --install build
-    ```
-    - macOS: `brew install pybind11`
-
-### General Setup
-
-1. Clone this repository and configure
-
-```shell
-cd contrib
-git clone https://github.com/ShenMuyuan/ns3-ai.git
-cd ns3-ai
-git checkout -b improvements origin/improvements
-cd ../../
-./ns3 configure --enable-examples
-```
-
-2. Build the examples
-
-When building examples, the `ns3-ai` library is built automatically.
-
-```shell
-./ns3 build ns3ai_apb_msg ns3ai_apb_gym ns3ai_rltcp_msg ns3ai_rltcp_gym ns3ai_ratecontrol_constant ns3ai_ratecontrol_ts ns3ai_ltecqi
-```
-
-3. Setup Gym interface
-
-```shell
-cd cd contrib/ns3-ai/model/gym-interface/py
-pip install -e .
-```
-
-4. Run the examples (optional)
-
-Please check the README.md in corresponding directories for instruction.
-
-## Basic usage
-
-Two interfaces are provided and they have .
-
-### Using the message interface
-
-- C++ side
-  TODO
-
-- Python side
-  TODO
-
-### Using the gym interface
-
-- C++ side
-  TODO
-
-- Python side
-  TODO
+To start using ns3-ai, check out the [A-Plus-B](examples/a_plus_b) example. This example shows how
+C++ passes two numbers to Python and their sum is passed back to C++, with the demonstration of two interfaces: msg and
+Gym.
 
 ## Examples
 
 Please check the README.md in corresponding directories for build & run instruction.
 
-### Quick Start on how to use ns3-ai - [a_plus_b](examples/a_plus_b)
+### [A-Plus-B](examples/a_plus_b)
 
-This example show how you can use ns3-ai by a very simple case that you transfer the data from ns-3 to python side and
-calculate a + b in the python to put back the results.
+This example show how you can use ns3-ai by a very simple case that you transfer `a` and `b` from ns-3 (C++) to Python
+and calculate `a + b` in Python to put back the results.
 
 ### [RL-TCP](examples/rl-tcp/)
 
 This example is inspired by [ns3-gym example](https://github.com/tkn-tub/ns3-gym#rl-tcp). We build this example for the
-benchmarking and to compare with their module.
+[benchmarking](https://github.com/ShenMuyuan/urban-pancake/tree/50ad463ee06377342ff83c9954a13cc66792b4d1/ns3ai_benchmark)
+and to compare with their module.
 
 ### [LTE_CQI](examples/lte_cqi/)
 
 This original work is done based on [5G NR](https://5g-lena.cttc.es/) branch in ns-3. We made some changes to make it
-also run in LTE codebase in ns-3 mainline. We didn't reproduce all the experiments on LTE, and the results used in this
-document are based on NR work.
+also run in LTE codebase in ns-3 mainline. We didn't reproduce all the experiments on LTE, and the results in our paper
+are based on NR work.
 
 ### [Rate-Control](examples/rate-control)
 
-This is an example that shows how to develop a new rate control algorithm for the Wi-Fi model in ns-3 using the ns3-ai
-model.
-
-- Supported rate control methods
-
-1. Constant Rate Control
-2. Thompson Sampling Rate Control
+This is an example that shows how to develop a new rate control algorithm for the ns-3 Wi-Fi module using ns3-ai.
+Available examples are Constant Rate and Thompson Sampling.
 
 ## About the new interface proposed in GSoC 2023
 
@@ -163,8 +78,7 @@ It is still in development. Two interfaces are introduced before midterm evaluat
 This section describes the original design and is not up to date with the newer interface proposed in GSOC 2023.
 
 Join us in this [online recording](https://vimeo.com/566296651) to get better knowledge about ns3-ai! The slides
-introduce the ns3-ai model could also be
-found [here](https://www.nsnam.org/wp-content/uploads/2021/tutorials/ns3-ai-tutorial-June-2021.pdf)!
+introduce the ns3-ai model could also be found [here](https://www.nsnam.org/wp-content/uploads/2021/tutorials/ns3-ai-tutorial-June-2021.pdf)!
 
 ## Cite our work
 

@@ -39,20 +39,20 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-inline uint64_t get_cpu_cycle_x86()
-{
-#ifdef __x86_64__
-    unsigned long lo, hi;
-    __asm__ __volatile__("rdtsc"
-                         : "=a"(lo), "=d"(hi));
-    return ((uint64_t)hi << 32) + lo;
-#else
-    return 0;
-#endif
-}
+//inline uint64_t get_cpu_cycle_x86()
+//{
+//#ifdef __x86_64__
+//    unsigned long lo, hi;
+//    __asm__ __volatile__("rdtsc"
+//                         : "=a"(lo), "=d"(hi));
+//    return ((uint64_t)hi << 32) + lo;
+//#else
+//    return 0;
+//#endif
+//}
 
-std::vector<uint64_t> cpp2py_durations;
-std::vector<uint64_t> py2cpp_durations;
+//std::vector<uint64_t> cpp2py_durations;
+//std::vector<uint64_t> py2cpp_durations;
 
 namespace ns3
 {
@@ -71,9 +71,9 @@ OpenGymInterface::OpenGymInterface()
     : m_simEnd(false),
       m_stopEnvRequested(false),
       m_initSimMsgSent(false),
-      m_msgInterface(false, false, false),
-      m_prev_cpp_send_env_cpu_cycle(0),
-      m_prev_cpp_recv_act_cpu_cycle(0)
+      m_msgInterface(false, false, false)
+//      m_prev_cpp_send_env_cpu_cycle(0),
+//      m_prev_cpp_recv_act_cpu_cycle(0)
 {
 }
 
@@ -192,46 +192,46 @@ OpenGymInterface::NotifyCurrentState()
     m_msgInterface.m_single_cpp2py_msg->size = envStateMsg.ByteSizeLong();
     assert(m_msgInterface.m_single_cpp2py_msg->size <= MSG_BUFFER_SIZE);
     envStateMsg.SerializeToArray(m_msgInterface.m_single_cpp2py_msg->buffer, m_msgInterface.m_single_cpp2py_msg->size);
-    // For benchmarking: here get CPU cycle
-    uint64_t cpp_send_env_cpu_cycle = get_cpu_cycle_x86();
+//    // For benchmarking: here get CPU cycle
+//    uint64_t cpp_send_env_cpu_cycle = get_cpu_cycle_x86();
     m_msgInterface.cpp_send_end();
 
     // receive act msg form python
     ns3_ai_gym::EnvActMsg envActMsg;
     m_msgInterface.cpp_recv_begin();
-    // For benchmarking: here get CPU cycle
-    uint64_t cpp_recv_act_cpu_cycle = get_cpu_cycle_x86();
+//    // For benchmarking: here get CPU cycle
+//    uint64_t cpp_recv_act_cpu_cycle = get_cpu_cycle_x86();
     envActMsg.ParseFromArray(m_msgInterface.m_single_py2cpp_msg->buffer, m_msgInterface.m_single_py2cpp_msg->size);
     m_msgInterface.cpp_recv_end();
 
-    // store transmission times
-    uint64_t py_prev_recv_env_cpu_cycle = envActMsg.pyrecvenvcpucycle();
-    uint64_t py_prev_send_act_cpu_cycle = envActMsg.pysendactcpucycle();
-    if (m_prev_cpp_send_env_cpu_cycle == 0 && m_prev_cpp_recv_act_cpu_cycle == 0)
-    {
-        // first time, only update
-        m_prev_cpp_send_env_cpu_cycle = cpp_send_env_cpu_cycle;
-        m_prev_cpp_recv_act_cpu_cycle = cpp_recv_act_cpu_cycle;
-    }
-    else
-    {
-        // calculate and store the duration and update
-//        std::cout << "m_prev_cpp_send_env_cpu_cycle = " << m_prev_cpp_send_env_cpu_cycle << "\n";
-//        std::cout << "py_prev_recv_env_cpu_cycle = " << py_prev_recv_env_cpu_cycle << "\n";
-//        std::cout << "py_prev_send_act_cpu_cycle = " << py_prev_send_act_cpu_cycle << "\n";
-//        std::cout << "m_prev_cpp_recv_act_cpu_cycle = " << m_prev_cpp_recv_act_cpu_cycle << "\n";
-        assert(py_prev_recv_env_cpu_cycle);
-        assert(py_prev_send_act_cpu_cycle);
-        assert(m_prev_cpp_send_env_cpu_cycle < py_prev_recv_env_cpu_cycle &&
-               py_prev_recv_env_cpu_cycle < py_prev_send_act_cpu_cycle &&
-               py_prev_send_act_cpu_cycle < m_prev_cpp_recv_act_cpu_cycle);
-        cpp2py_durations.push_back(py_prev_recv_env_cpu_cycle - m_prev_cpp_send_env_cpu_cycle);
-        py2cpp_durations.push_back(m_prev_cpp_recv_act_cpu_cycle - py_prev_send_act_cpu_cycle);
-//        std::cout << "cpp2py: " << py_prev_recv_env_cpu_cycle - m_prev_cpp_send_env_cpu_cycle
-//                  << ", py2cpp: " << m_prev_cpp_recv_act_cpu_cycle - py_prev_send_act_cpu_cycle << "\n";
-        m_prev_cpp_send_env_cpu_cycle = cpp_send_env_cpu_cycle;
-        m_prev_cpp_recv_act_cpu_cycle = cpp_recv_act_cpu_cycle;
-    }
+//    // store transmission times
+//    uint64_t py_prev_recv_env_cpu_cycle = envActMsg.pyrecvenvcpucycle();
+//    uint64_t py_prev_send_act_cpu_cycle = envActMsg.pysendactcpucycle();
+//    if (m_prev_cpp_send_env_cpu_cycle == 0 && m_prev_cpp_recv_act_cpu_cycle == 0)
+//    {
+//        // first time, only update
+//        m_prev_cpp_send_env_cpu_cycle = cpp_send_env_cpu_cycle;
+//        m_prev_cpp_recv_act_cpu_cycle = cpp_recv_act_cpu_cycle;
+//    }
+//    else
+//    {
+//        // calculate and store the duration and update
+////        std::cout << "m_prev_cpp_send_env_cpu_cycle = " << m_prev_cpp_send_env_cpu_cycle << "\n";
+////        std::cout << "py_prev_recv_env_cpu_cycle = " << py_prev_recv_env_cpu_cycle << "\n";
+////        std::cout << "py_prev_send_act_cpu_cycle = " << py_prev_send_act_cpu_cycle << "\n";
+////        std::cout << "m_prev_cpp_recv_act_cpu_cycle = " << m_prev_cpp_recv_act_cpu_cycle << "\n";
+//        assert(py_prev_recv_env_cpu_cycle);
+//        assert(py_prev_send_act_cpu_cycle);
+//        assert(m_prev_cpp_send_env_cpu_cycle < py_prev_recv_env_cpu_cycle &&
+//               py_prev_recv_env_cpu_cycle < py_prev_send_act_cpu_cycle &&
+//               py_prev_send_act_cpu_cycle < m_prev_cpp_recv_act_cpu_cycle);
+//        cpp2py_durations.push_back(py_prev_recv_env_cpu_cycle - m_prev_cpp_send_env_cpu_cycle);
+//        py2cpp_durations.push_back(m_prev_cpp_recv_act_cpu_cycle - py_prev_send_act_cpu_cycle);
+////        std::cout << "cpp2py: " << py_prev_recv_env_cpu_cycle - m_prev_cpp_send_env_cpu_cycle
+////                  << ", py2cpp: " << m_prev_cpp_recv_act_cpu_cycle - py_prev_send_act_cpu_cycle << "\n";
+//        m_prev_cpp_send_env_cpu_cycle = cpp_send_env_cpu_cycle;
+//        m_prev_cpp_recv_act_cpu_cycle = cpp_recv_act_cpu_cycle;
+//    }
 
     if (m_simEnd)
     {
