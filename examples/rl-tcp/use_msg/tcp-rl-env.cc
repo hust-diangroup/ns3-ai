@@ -121,14 +121,14 @@ void TcpTimeStepEnv::ScheduleNotify()
   uint64_t segmentsAckedSum = std::accumulate(m_segmentsAcked.begin(), m_segmentsAcked.end(), 0);
   env->segmentsAcked = segmentsAckedSum;
   m_segmentsAcked.clear();
-  std::cerr << "At " << (uint64_t)(Simulator::Now().GetMilliSeconds()) << "ms:\n";
-  std::cerr << "\tstate --"
-            << " ssThresh=" << env->ssThresh
-            << " cWnd=" << env->cWnd
-            << " segmentSize=" << env->segmentSize
-            << " segmentAcked=" << env->segmentsAcked
-            << " bytesInFlightSum=" << bytesInFlightSum
-            << std::endl;
+//  std::cerr << "At " << (uint64_t)(Simulator::Now().GetMilliSeconds()) << "ms:\n";
+//  std::cerr << "\tstate --"
+//            << " ssThresh=" << env->ssThresh
+//            << " cWnd=" << env->cWnd
+//            << " segmentSize=" << env->segmentSize
+//            << " segmentAcked=" << env->segmentsAcked
+//            << " bytesInFlightSum=" << bytesInFlightSum
+//            << std::endl;
   m_msgInterface.cpp_send_end();
 
   m_msgInterface.cpp_recv_begin();
@@ -137,10 +137,10 @@ void TcpTimeStepEnv::ScheduleNotify()
   m_new_ssThresh = act->new_ssThresh;
   m_msgInterface.cpp_recv_end();
 
-  std::cerr << "\taction --"
-            << " new_cWnd=" << m_new_cWnd
-            << " new_ssThresh=" << m_new_ssThresh
-            << std::endl;
+//  std::cerr << "\taction --"
+//            << " new_cWnd=" << m_new_cWnd
+//            << " new_ssThresh=" << m_new_ssThresh
+//            << std::endl;
   m_rttSampleNum = 0;
   m_rttSum = MicroSeconds(0.0);
 

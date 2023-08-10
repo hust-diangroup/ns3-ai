@@ -24,7 +24,8 @@ import argparse
 import numpy as np
 import matplotlib.pyplot as plt
 from agents import TcpNewRenoAgent, TcpRlAgent
-import ns3ai_rltcp_msg_py as ns3ai_msg
+import ns3ai_gym_env
+import gymnasium as gym
 
 
 def get_agent(socketUuid, useRl):
@@ -60,7 +61,7 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
     my_seed = 42
-    if args.seed:
+    if args.seed is not None:
         my_seed = args.seed
     print("Python side random seed {}".format(my_seed))
     np.random.seed(my_seed)
@@ -75,54 +76,62 @@ if __name__ == '__main__':
             if not os.path.exists(args.result_dir):
                 os.mkdir(args.result_dir)
 
-    ns3ai = ns3ai_msg.Ns3AiMsgInterface(True, False, True, 4096, "My Seg", "My Cpp to Python Msg", "My Python to Cpp Msg", "My Lockable")
-    print('Created message interface, waiting for C++ side to send initial environment...')
+    env = gym.make("ns3ai_gym_env/Ns3-v0")
+    ob_space = env.observation_space
+    ac_space = env.action_space
+    print("Observation space: ", ob_space, ob_space.dtype)
+    print("Action space: ", ac_space, ac_space.dtype)
 
     stepIdx = 0
 
     try:
-        while True:
-            # receive observation from C++
-            ns3ai.py_recv_begin()
-            if ns3ai.py_get_finished():
-                print("Simulation ended")
-                break
-            ssThresh = ns3ai.m_single_cpp2py_msg.ssThresh
-            cWnd = ns3ai.m_single_cpp2py_msg.cWnd
-            segmentsAcked = ns3ai.m_single_cpp2py_msg.segmentsAcked
-            segmentSize = ns3ai.m_single_cpp2py_msg.segmentSize
-            bytesInFlight = ns3ai.m_single_cpp2py_msg.bytesInFlight
-            socketId = ns3ai.m_single_cpp2py_msg.socketUid
-            ns3ai.py_recv_end()
+        obs, info = env.reset()
+        reward = 0
+        done = False
 
-            obs = [ssThresh, cWnd, segmentsAcked, segmentSize, bytesInFlight]
+        # get existing agent or create new TCP agent if needed
+        tcpAgent = get_agent(obs[0], args.use_rl)
+
+        while True:
+            # current ssThreshold
+            ssThresh = obs[4]
+            # current contention window size
+            cWnd = obs[5]
+            # segment size
+            segmentSize = obs[6]
+            # number of acked segments
+            segmentsAcked = obs[9]
+            # estimated bytes in flight
+            bytesInFlight = obs[7]
+
+            cur_obs = [ssThresh, cWnd, segmentsAcked, segmentSize, bytesInFlight]
             if args.show_log:
-                print("Recv obs:", obs)
+                print("Recv obs:", cur_obs)
 
             if args.result:
                 for res in res_list:
                     globals()[res].append(globals()[res[:-2]])
 
-            tcpAgent = get_agent(socketId, args.use_rl)
-            act = tcpAgent.get_action(obs)
-            new_cWnd = act[0]
-            new_ssThresh = act[1]
-
-            # send action to C++
-            ns3ai.py_send_begin()
-            ns3ai.m_single_py2cpp_msg.new_cWnd = new_cWnd
-            ns3ai.m_single_py2cpp_msg.new_ssThresh = new_ssThresh
-            ns3ai.py_send_end()
+            action = tcpAgent.get_action(obs, reward, done, info)
 
             if args.show_log:
                 print("Step:", stepIdx)
                 stepIdx += 1
-                print("Send act:", act)
+                print("Send act:", action)
+
+            obs, reward, done, _, info = env.step(action)
+
+            if done:
+                print("Simulation ended")
+                break
+
+            # get existing agent of create new TCP agent if needed
+            tcpAgent = get_agent(obs[0], args.use_rl)
 
     except KeyboardInterrupt:
         print("Ctrl-C -> Exit")
     finally:
-        del ns3ai
+        env.close()
 
     if args.result:
         for res in res_list:

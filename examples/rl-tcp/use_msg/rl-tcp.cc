@@ -96,7 +96,6 @@ main (int argc, char *argv[])
   CommandLine cmd;
   // seed related
   cmd.AddValue ("simSeed", "Seed for random generator. Default: 1", run);
-  cmd.AddValue ("run", "Run index (for setting repeatable seeds)", run);
   // other
   cmd.AddValue ("envTimeStep", "Time step interval for TcpRlTimeBased. Default: 0.1s", tcpEnvTimeStep);
   cmd.AddValue ("nLeaf", "Number of left and right side leaf nodes", nLeaf);
@@ -137,8 +136,8 @@ main (int argc, char *argv[])
   SeedManager::SetSeed (1);
   SeedManager::SetRun (run);
 
-  NS_LOG_UNCOND ("--seed: " << run);
-  NS_LOG_UNCOND ("--Tcp version: " << transport_prot);
+  NS_LOG_UNCOND ("C++ side random seed: " << run);
+  NS_LOG_UNCOND ("Tcp version: " << transport_prot);
 
   // Calculate the ADU size
   Header *temp_header = new Ipv4Header ();

@@ -112,7 +112,7 @@ TcpRlTimeBased::CreateEnv ()
 //  std::cerr << "in CreateEnv (), this = " << this << std::endl;
   NS_LOG_FUNCTION (this);
   env = CreateObject<TcpTimeStepEnv>();
-  std::cerr << "CreateEnv" << (env == nullptr) << std::endl;
+//  std::cerr << "CreateEnv" << (env == nullptr) << std::endl;
   env->SetSocketUuid (TcpRlTimeBased::GenerateUuid ());
 
   ConnectSocketCallbacks ();
