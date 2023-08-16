@@ -1,5 +1,5 @@
 
-# Python module for TS
+# Python module for Constant Rate
 pybind11_add_module(ns3ai_ratecontrol_constant_py ai_constant_rate_py.cc)
 set_target_properties(ns3ai_ratecontrol_constant_py PROPERTIES
         LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
