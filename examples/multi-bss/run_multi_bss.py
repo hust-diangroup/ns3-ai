@@ -231,7 +231,7 @@ vrtpt_cons = 14.7
 eta = 1
 # try:
 while True:
-    # Get current state from Python
+    # Get current state from C++
     rl.py_recv_begin()
     if rl.py_get_finished():
         print("Finished")
@@ -252,19 +252,15 @@ while True:
         throughput += rl.m_cpp2py_msg[i].throughput
     rl.py_recv_end()
 
-    print("interaction count = {}, state: vr delay = {}, vr tpt = {}, total tpt = {}".format(
+    print("step = {}, VR avg delay = {} ms, VR UL tpt = {} Mbps, total UL tpt = {} Mbps".format(
         times, vrDelay, vrThroughput, throughput
     ))
 
+    # RL algorithm here, select action
     cur_state = torch.tensor(state.reshape(1, -1)[0], dtype=torch.float32, device=device).unsqueeze(0)
-
-    # RL algorithm here and put the data back to the action
-    rl.py_send_begin()
     if times == 0:
         prev_state = cur_state
-        action = 0
-        rl.m_py2cpp_msg[0].newCcaSensitivity = -82 + action
-        times += 1
+        action = torch.tensor([[0]], device=device, dtype=torch.long)
     else:
         reward = alpha * throughput + beta * (vr_constrant - vrDelay) + eta * (vrThroughput - vrtpt_cons)
         rewards.append(reward)
@@ -272,16 +268,19 @@ while True:
         memory.push(prev_state, action, cur_state, reward)
         prev_state = cur_state
         action = select_action(cur_state)
-        rl.m_py2cpp_msg[0].newCcaSensitivity = -82 + action
-        times += 1
         optimize_model()
         target_net_state_dict = target_net.state_dict()
         policy_net_state_dict = policy_net.state_dict()
         for key in policy_net_state_dict:
             target_net_state_dict[key] = policy_net_state_dict[key]*TAU + target_net_state_dict[key]*(1-TAU)
         target_net.load_state_dict(target_net_state_dict)
-    print("new CCA: {}".format(rl.m_py2cpp_msg[0].newCcaSensitivity))
+
+    # put the action back to C++
+    rl.py_send_begin()
+    rl.m_py2cpp_msg[0].newCcaSensitivity = -82 + action
     rl.py_send_end()
+    print("new CCA: {}".format(rl.m_py2cpp_msg[0].newCcaSensitivity))
+    times += 1
 
 # except Exception as e:
 #     print('Something wrong')

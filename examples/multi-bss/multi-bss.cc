@@ -533,7 +533,7 @@ NotifyMsduDequeuedFromEdcaQueue(Ptr<const WifiMpdu> item)
     info.m_HoLTime = std::max(listIt->m_edcaEnqueueTime, iter->second);
     info.m_dequeued = true;
 
-    // HERE CALCULATE ALLL DELAYS AND OUTPUT THEM
+    // HERE CALCULATE ALL DELAYS
     double newHolSample = (info.m_edcaDequeueTime - info.m_HoLTime).ToDouble(Time::MS);
     double queingDelay = (info.m_HoLTime - info.m_edcaEnqueueTime).ToDouble(Time::MS);
     double accessDelay = (info.m_phyTxTime - info.m_HoLTime).ToDouble(Time::MS);
@@ -835,9 +835,9 @@ PrintPythonPlotCSV(std::string filename)
             // size_t pos = configString.find(',');
             // configString = configString.substr(pos + 1);
             // size_t pos2 = configString.find(',');
-            std::cout << "CCaSensitivity: " << m_ccaSensitivity << std::endl;
+//            std::cout << "CCaSensitivity: " << m_ccaSensitivity << std::endl;
             // double m_ccaSensitivity = std::stoi(configString.substr(0, pos2));
-            std::cout << "apTxPower: " << m_txPower << std::endl;
+//            std::cout << "apTxPower: " << m_txPower << std::endl;
             // double m_txPower = std::stoi(configString.substr(pos2 + 1));
             // Formula to draw radius of circle
             double max_loss = -(m_ccaSensitivity - m_txPower); // TODO: fix to specific tx power
@@ -944,8 +944,17 @@ MeasureIntervalThroughputHolDelay()
         env_struct.txNode = txNodeId;
         env_struct.mcs = nodeMcs[txNodeId];
         env_struct.holDelay = std::get<0>(nodeDelays[txNodeId]);
-        env_struct.throughput = (intervalBytesReceived.find(txNodeId)->second * 8) /
-                                static_cast<double>(Seconds(1).GetMicroSeconds());
+        if (txNodeId >= N_BSS)  // STAs
+        {
+            env_struct.throughput = (intervalBytesReceived.find(txNodeId)->second * 8) /
+                                    static_cast<double>(Seconds(1).GetMicroSeconds());
+        }
+        else
+        {
+            // Only count for UL traffic
+            env_struct.throughput = 0;
+        }
+        std::cout << "CPP send: txnode " << txNodeId << " tpt " << env_struct.throughput << std::endl;
         for (auto rxNodePower : nodeRxPower[txNodeId])
         {
             NS_ASSERT(rxNodePower.first % N_BSS == 0);  // only record rx node in first BSS
@@ -984,7 +993,10 @@ MeasureIntervalThroughputHolDelay()
         preambleCaptureModel->SetAttribute("MinimumRssi", DoubleValue(nextCca));
         wifi_phy->SetCcaSensitivityThreshold(nextCca);
         wifi_phy->SetPreambleDetectionModel(preambleCaptureModel);
-        std::cout << "-- Node " << nodeId << " current CCA " << currentCca << " next CCA " << nextCca
+        std::cout << "-- " << ssid
+                  << " Node " << nodeId
+                  << " current CCA " << currentCca
+                  << " next CCA " << nextCca
                   << std::endl;
     }
 
@@ -1093,6 +1105,13 @@ TracePacketReception(std::string context,
         IncrementCounter(packetsReceived, hdr.GetAddr2());
         IncrementCounter(bytesReceived, hdr.GetAddr2(), packet->GetSize());
         intervalBytesReceived[MacAddressToNodeId(hdr.GetAddr2())] += packet->GetSize();
+        if (packet->GetSize() > 1600)
+        {
+            std::cout << "intervalBytesReceived src " << MacAddressToNodeId(hdr.GetAddr2())
+                      << " dest " << MacAddressToNodeId(hdr.GetAddr1())
+                      << " size " << packet->GetSize()
+                      << std::endl;
+        }
         // IncrementCounter(intervalBytesReceived, hdr.GetAddr2(), packet->GetSize());
         auto itTimeFirstReceived = timeFirstReceived.find(hdr.GetAddr2());
         if (itTimeFirstReceived == timeFirstReceived.end())
@@ -1844,11 +1863,12 @@ main(int argc, char* argv[])
     // LogComponentEnable("PhyEntity", LOG_LEVEL_ALL);
     int channelWidth = channelWidths;
     int gi = guardIntervalNs;
+    std::string configFileName = "contrib/ns3-ai/examples/multi-bss/config.txt";
     apNodes.Create(apNodeCount);
     staNodes.Create(apNodeCount * networkSize);
     if (appType == "setup")
     {
-        CreateTrafficConfigurationTemplate("config.txt");
+        CreateTrafficConfigurationTemplate(configFileName);
         std::cout << "Created config files for traffic based on current topology. Specify each "
                      "traffic type and run --app=setup-done. Traffic "
                      "types(none,constant,bursty,bursty-trace-TRACELOCATION)"
@@ -1857,8 +1877,7 @@ main(int argc, char* argv[])
     }
     else if (appType == "setup-done")
     {
-        //        configuration = readConfigFile("../../config.txt"); // for debugging in Clion
-        configuration = readConfigFile("config.txt");
+        configuration = readConfigFile(configFileName);
     }
 
     // std::cout << "Traffic type for STA1: " << configuration[2] << std::endl;
@@ -2132,7 +2151,7 @@ main(int argc, char* argv[])
             //     std::cout << "STA Values " << it << std::endl;
             // }
 
-            std::cout << "STA node " << i << " id " << staNodes.Get(i)->GetId() << " : "
+            std::cout << "STA node id " << staNodes.Get(i)->GetId() << " : "
                       << configValues[0] << ", "
                       << configValues[1] << ", "
                       << configValues[2] << ", "
