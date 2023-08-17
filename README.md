@@ -30,18 +30,20 @@ Check out [install.md](./install.md) for how to install ns3-ai.
 
 ## Quick start guide
 
-To start using ns3-ai, check out the [A-Plus-B](examples/a_plus_b) example. This example shows how
-C++ passes two numbers to Python and their sum is passed back to C++, with the demonstration of two interfaces: msg and
-Gym.
+To start using ns3-ai, check out the [A-Plus-B](examples/a-plus-b) example. This example shows how
+C++ passes two numbers to Python and their sum is passed back to C++, with the demonstration of three interfaces: 
+Gym interface, message interface (struct-based) and message interface (vector-based).
 
 ## Examples
 
 Please check the README.md in corresponding directories for build & run instruction.
 
-### [A-Plus-B](examples/a_plus_b)
+### [A-Plus-B](examples/a-plus-b)
 
 This example show how you can use ns3-ai by a very simple case that you transfer `a` and `b` from ns-3 (C++) to Python
 and calculate `a + b` in Python to put back the results.
+
+### [Multi-BSS](examples/multi-bss)
 
 ### [RL-TCP](examples/rl-tcp/)
 
@@ -54,7 +56,7 @@ and to compare with their module.
 This is an example that shows how to develop a new rate control algorithm for the ns-3 Wi-Fi module using ns3-ai.
 Available examples are Constant Rate and Thompson Sampling.
 
-### [LTE-CQI](examples/lte_cqi/)
+### [LTE-CQI](examples/lte-cqi/)
 
 This original work is done based on [5G NR](https://5g-lena.cttc.es/) branch in ns-3. We made some changes to make it
 also run in LTE codebase in ns-3 mainline. We didn't reproduce all the experiments on LTE, and the results in our paper

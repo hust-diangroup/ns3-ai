@@ -69,7 +69,7 @@ All targets named `ns3ai_*` can be built separately.
 
 ```shell
 # build all examples in all versions
-./ns3 build ns3ai_apb_gym ns3ai_apb_msg_stru ns3ai_apb_msg_vec ns3ai_rltcp_msg ns3ai_rltcp_gym ns3ai_ratecontrol_constant ns3ai_ratecontrol_ts ns3ai_multibss ns3ai_ltecqi
+./ns3 build ns3ai_apb_gym ns3ai_apb_msg_stru ns3ai_apb_msg_vec ns3ai_multibss ns3ai_rltcp_gym ns3ai_rltcp_msg ns3ai_ratecontrol_constant ns3ai_ratecontrol_ts ns3ai_ltecqi
 
 # build A-Plus-B example
 # with Gym interface
