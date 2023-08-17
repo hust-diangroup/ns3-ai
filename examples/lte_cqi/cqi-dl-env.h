@@ -20,7 +20,7 @@
  */
 
 #pragma once
-#include "ns3/ns3-ai-module.h"
+#include "ns3/ai-module.h"
 #include "ns3/ff-mac-common.h"
 #include "ns3/core-module.h"
 

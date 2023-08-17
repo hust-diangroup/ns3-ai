@@ -47,7 +47,7 @@
 #include "ns3/ipv4-global-routing-helper.h"
 #include "ns3/traffic-control-module.h"
 
-#include "ns3/ns3-ai-module.h"
+#include "ns3/ai-module.h"
 
 //extern std::vector<uint64_t> cpp2py_durations;
 //extern std::vector<uint64_t> py2cpp_durations;

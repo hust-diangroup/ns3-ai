@@ -24,7 +24,7 @@
 #define NS3_NS3_AI_GYM_INTERFACE_H
 
 #include <ns3/callback.h>
-#include <ns3/ns3-ai-module.h>
+#include <ns3/ai-module.h>
 #include <ns3/object.h>
 #include <ns3/ptr.h>
 #include <ns3/type-id.h>

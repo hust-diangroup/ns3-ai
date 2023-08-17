@@ -45,7 +45,7 @@
 #include "ns3/mobility-module.h"
 #include "ns3/multi-model-spectrum-channel.h"
 #include "ns3/node-list.h"
-#include "ns3/ns3-ai-module.h"
+#include "ns3/ai-module.h"
 #include "ns3/on-off-helper.h"
 #include "ns3/packet-sink-helper.h"
 #include "ns3/packet-sink.h"
@@ -1105,13 +1105,6 @@ TracePacketReception(std::string context,
         IncrementCounter(packetsReceived, hdr.GetAddr2());
         IncrementCounter(bytesReceived, hdr.GetAddr2(), packet->GetSize());
         intervalBytesReceived[MacAddressToNodeId(hdr.GetAddr2())] += packet->GetSize();
-        if (packet->GetSize() > 1600)
-        {
-            std::cout << "intervalBytesReceived src " << MacAddressToNodeId(hdr.GetAddr2())
-                      << " dest " << MacAddressToNodeId(hdr.GetAddr1())
-                      << " size " << packet->GetSize()
-                      << std::endl;
-        }
         // IncrementCounter(intervalBytesReceived, hdr.GetAddr2(), packet->GetSize());
         auto itTimeFirstReceived = timeFirstReceived.find(hdr.GetAddr2());
         if (itTimeFirstReceived == timeFirstReceived.end())

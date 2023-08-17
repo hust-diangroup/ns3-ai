@@ -23,7 +23,7 @@
 #ifndef AI_THOMPSON_SAMPLING_WIFI_MANAGER_H
 #define AI_THOMPSON_SAMPLING_WIFI_MANAGER_H
 
-#include <ns3/ns3-ai-module.h>
+#include <ns3/ai-module.h>
 #include <ns3/random-variable-stream.h>
 #include <ns3/traced-value.h>
 #include <ns3/wifi-remote-station-manager.h>

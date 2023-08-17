@@ -57,7 +57,7 @@
 #include "ns3/flow-monitor-helper.h"
 #include "ns3/ipv4-flow-classifier.h"
 
-#include "ns3/ns3-ai-module.h"
+#include "ns3/ai-module.h"
 #include "tcp-rl.h"
 
 using namespace ns3;

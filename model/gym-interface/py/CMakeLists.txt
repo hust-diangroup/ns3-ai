@@ -3,4 +3,4 @@ set_target_properties(ns3ai_gym_msg_py PROPERTIES
         LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 
 # Build Python interface along with C++ lib
-add_dependencies(${libns3-ai} ns3ai_gym_msg_py)
+add_dependencies(${libai} ns3ai_gym_msg_py)

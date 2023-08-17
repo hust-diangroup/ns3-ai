@@ -43,33 +43,59 @@ This installation works on Ubuntu 22.04 and macOS 13.0 or higher.
 
 ```shell
 cd contrib
-git clone https://github.com/ShenMuyuan/ns3-ai.git
-cd ns3-ai
+git clone https://github.com/ShenMuyuan/ns3-ai.git ./ai
+cd ai
 git checkout -b improvements origin/improvements
 cd ../../
 ./ns3 configure --enable-examples
 ```
 
-2. Build the examples
-
-When building examples, the `ns3-ai` library is built automatically.
+2. Build the `ai` library
 
 ```shell
-# build A-Plus-B
-./ns3 build ns3ai_apb_gym ns3ai_apb_msg_stru ns3ai_apb_msg_vec
-# build RL-TCP
-./ns3 build ns3ai_rltcp_msg ns3ai_rltcp_gym
-# build Rate-Control
-./ns3 build ns3ai_ratecontrol_constant ns3ai_ratecontrol_ts
-# build LTE-CQI
-./ns3 build ns3ai_ltecqi
-# or build them altogether
-./ns3 build ns3ai_apb_gym ns3ai_apb_msg_stru ns3ai_apb_msg_vec ns3ai_rltcp_msg ns3ai_rltcp_gym ns3ai_ratecontrol_constant ns3ai_ratecontrol_ts ns3ai_ltecqi
+./ns3 build ai
 ```
 
 3. Setup Gym interface
 
 ```shell
-cd cd contrib/ns3-ai/model/gym-interface/py
+cd contrib/ns3-ai/model/gym-interface/py
 pip install -e .
+```
+
+4. Build the examples (optional)
+
+All targets named `ns3ai_*` can be built separately.
+
+```shell
+# build all examples in all versions
+./ns3 build ns3ai_apb_gym ns3ai_apb_msg_stru ns3ai_apb_msg_vec ns3ai_rltcp_msg ns3ai_rltcp_gym ns3ai_ratecontrol_constant ns3ai_ratecontrol_ts ns3ai_multibss ns3ai_ltecqi
+
+# build A-Plus-B example
+# with Gym interface
+./ns3 build ns3ai_apb_gym
+# with Message interface - struct based
+./ns3 build ns3ai_apb_msg_stru
+# with Message interface - vector based
+./ns3 build ns3ai_apb_msg_vec
+
+# build Multi-BSS example
+# with Message interface - vector based
+./ns3 build ns3ai_multibss
+
+# build RL-TCP example
+# with Gym interface
+./ns3 build ns3ai_rltcp_gym
+# with Message interface - struct based
+./ns3 build ns3ai_rltcp_msg
+
+# build Rate-Control examples
+# constant rate example, with Message interface - struct based
+./ns3 build ns3ai_ratecontrol_constant
+# Thompson Sampling example, with Message interface - struct based
+./ns3 build ns3ai_ratecontrol_ts
+
+# build LTE-CQI example
+# with Message interface - struct based
+./ns3 build ns3ai_ltecqi
 ```

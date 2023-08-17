@@ -1,7 +1,7 @@
 #include <iostream>
 #include <random>
 #include <chrono>
-#include <ns3/ns3-ai-module.h>
+#include <ns3/ai-module.h>
 
 #include "apb.h"
 

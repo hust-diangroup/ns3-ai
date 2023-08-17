@@ -4,7 +4,7 @@ pybind11_add_module(ns3ai_ratecontrol_ts_py ai_thompson_sampling_py.cc)
 set_target_properties(ns3ai_ratecontrol_ts_py PROPERTIES
         LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(ns3ai_ratecontrol_ts_py PRIVATE
-        ${libns3-ai}
+        ${libai}
         ${libcore}
         ${libpoint-to-point}
         ${libnetwork}

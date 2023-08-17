@@ -28,11 +28,20 @@ set(gym_interface_hdrs
 )
 
 build_lib(
-        LIBNAME ns3-ai
+        LIBNAME ai
         SOURCE_FILES ${msg_interface_srcs} ${gym_interface_srcs}
         HEADER_FILES ${msg_interface_hdrs} ${gym_interface_hdrs}
         LIBRARIES_TO_LINK ${libcore} Boost::program_options protobuf::libprotobuf
 )
+
+# protobuf_generate function is missing in some installations by package manager
+check_function_exists(protobuf_generate protobuf_generate_exists)
+if(${protobuf_generate_exists})
+    message(STATUS "protobuf_generate function found")
+else()
+    message(STATUS "protobuf_generate function not found -> use a local copy from ${CMAKE_CURRENT_SOURCE_DIR}/protobuf-generate.cmake")
+    include(${CMAKE_CURRENT_SOURCE_DIR}/protobuf-generate.cmake)
+endif()
 
 add_library(proto-objects OBJECT "${CMAKE_CURRENT_SOURCE_DIR}/model/gym-interface/messages.proto")
 
@@ -50,6 +59,6 @@ protobuf_generate(
         PROTOC_OUT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/model/gym-interface/py"
 )
 
-add_dependencies(${libns3-ai} proto-objects)
+add_dependencies(${libai} proto-objects)
 
 add_subdirectory(model/gym-interface/py)

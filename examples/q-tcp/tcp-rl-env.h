@@ -26,7 +26,7 @@
 #include "ns3/network-module.h"
 #include "ns3/tcp-header.h"
 #include "ns3/tcp-socket-base.h"
-#include "ns3/ns3-ai-module.h"
+#include "ns3/ai-module.h"
 namespace ns3
 {
 struct sTcpRlEnv
