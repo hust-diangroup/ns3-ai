@@ -6,7 +6,7 @@
 
 namespace py = pybind11;
 
-PYBIND11_MODULE(ns3ai_apb_py_not_vec, m) {
+PYBIND11_MODULE(ns3ai_apb_py_stru, m) {
 
     py::class_<EnvStruct>(m, "PyEnvStruct")
         .def(py::init<>())

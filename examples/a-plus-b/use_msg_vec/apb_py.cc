@@ -10,7 +10,7 @@ namespace py = pybind11;
 PYBIND11_MAKE_OPAQUE(ns3::Ns3AiMsgInterface<EnvStruct, ActStruct>::Cpp2PyMsgVector);
 PYBIND11_MAKE_OPAQUE(ns3::Ns3AiMsgInterface<EnvStruct, ActStruct>::Py2CppMsgVector);
 
-PYBIND11_MODULE(ns3ai_apb_py, m) {
+PYBIND11_MODULE(ns3ai_apb_py_vec, m) {
 
     py::class_<EnvStruct>(m, "PyEnvStruct")
         .def(py::init<>())

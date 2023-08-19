@@ -196,7 +196,7 @@ OpenGymInterface::NotifyCurrentState()
 //    uint64_t cpp_send_env_cpu_cycle = get_cpu_cycle_x86();
     m_msgInterface.cpp_send_end();
 
-    // receive act msg form python
+    // receive act msg from python
     ns3_ai_gym::EnvActMsg envActMsg;
     m_msgInterface.cpp_recv_begin();
 //    // For benchmarking: here get CPU cycle

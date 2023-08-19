@@ -1,47 +1,14 @@
 import numpy as np
 import gymnasium as gym
 from gymnasium import spaces
-# from gymnasium.utils import seeding
 import messages_pb2 as pb
-import ns3ai_gym_msg_py as ns3msg
+import ns3ai_gym_msg_py as py_binding
 # import py_cycle
+from ns3ai_utils import Experiment
 
-class SharedMemoryBridge(object):
-    def __init__(self):
-        self.msg_interface = ns3msg.Ns3AiMsgInterface(
-            True,
-            False,
-            False,
-            ns3msg.msg_buffer_size * 4,  # should > approx twice the size of buffer
-            "My Seg",
-            "My Cpp to Python Msg",
-            "My Python to Cpp Msg",
-            "My Lockable")
 
-        self.envStopped = False
-        self.forceEnvStop = False
-
-        self._action_space = None
-        self._observation_space = None
-
-        self.newStateRx = False
-        self.obsData = None
-        self.reward = 0
-        self.gameOver = False
-        self.gameOverReason = None
-        self.extraInfo = None
-        # self.prev_recv_env_cycle = 0
-        # self.recv_env_cycle = 0
-        # self.prev_send_act_cycle = 0
-        print('Created message interface, waiting for C++ side to send initial environment...')
-
-    def close(self):
-        if not self.envStopped:
-            self.envStopped = True
-            self.force_env_stop()
-            self.rx_env_state()
-            self.send_close_command()
-            del self.msg_interface
+class Ns3Env(gym.Env):
+    _created = False
 
     def _create_space(self, spaceDesc):
         space = None
@@ -94,120 +61,6 @@ class SharedMemoryBridge(object):
 
         return space
 
-    def initialize_env(self):
-        simInitMsg = pb.SimInitMsg()
-        self.msg_interface.py_recv_begin()
-        request = self.msg_interface.m_single_cpp2py_msg.get_buffer()
-        simInitMsg.ParseFromString(request)
-        self.msg_interface.py_recv_end()
-
-        self._action_space = self._create_space(simInitMsg.actSpace)
-        self._observation_space = self._create_space(simInitMsg.obsSpace)
-
-        reply = pb.SimInitAck()
-        reply.done = True
-        reply.stopSimReq = False
-        reply_str = reply.SerializeToString()
-        assert len(reply_str) <= ns3msg.msg_buffer_size
-        self.msg_interface.py_send_begin()
-        self.msg_interface.m_single_py2cpp_msg.size = len(reply_str)
-        self.msg_interface.m_single_py2cpp_msg.get_buffer_full()[:len(reply_str)] = reply_str
-        self.msg_interface.py_send_end()
-        return True
-
-    def get_action_space(self):
-        return self._action_space
-
-    def get_observation_space(self):
-        return self._observation_space
-
-    def force_env_stop(self):
-        self.forceEnvStop = True
-
-    def rx_env_state(self):
-        if self.newStateRx:
-            return
-
-        # request = self.socket.recv()
-        envStateMsg = pb.EnvStateMsg()
-        self.msg_interface.py_recv_begin()
-        # # For benchmarking: here get CPU cycle
-        # self.prev_recv_env_cycle = self.recv_env_cycle
-        # self.recv_env_cycle = py_cycle.getCycle()
-        request = self.msg_interface.m_single_cpp2py_msg.get_buffer()
-        envStateMsg.ParseFromString(request)
-        self.msg_interface.py_recv_end()
-
-        self.obsData = self._create_data(envStateMsg.obsData)
-        self.reward = envStateMsg.reward
-        self.gameOver = envStateMsg.isGameOver
-        self.gameOverReason = envStateMsg.reason
-
-        if self.gameOver:
-            if self.gameOverReason == pb.EnvStateMsg.SimulationEnd:
-                self.envStopped = True
-                self.send_close_command()
-            else:
-                self.forceEnvStop = True
-                self.send_close_command()
-
-        self.extraInfo = envStateMsg.info
-        if not self.extraInfo:
-            self.extraInfo = {}
-
-        self.newStateRx = True
-
-    def send_close_command(self):
-        reply = pb.EnvActMsg()
-        reply.stopSimReq = True
-
-        # # last cycle information
-        # reply.pyRecvEnvCpuCycle = self.prev_recv_env_cycle
-        # reply.pySendActCpuCycle = self.prev_send_act_cycle
-
-        replyMsg = reply.SerializeToString()
-        assert len(replyMsg) <= ns3msg.msg_buffer_size
-        self.msg_interface.py_send_begin()
-        self.msg_interface.m_single_py2cpp_msg.size = len(replyMsg)
-        self.msg_interface.m_single_py2cpp_msg.get_buffer_full()[:len(replyMsg)] = replyMsg
-        self.msg_interface.py_send_end()
-
-        # self.socket.send(replyMsg)
-        self.newStateRx = False
-        return True
-
-    def send_actions(self, actions):
-        reply = pb.EnvActMsg()
-
-        actionMsg = self._pack_data(actions, self._action_space)
-        reply.actData.CopyFrom(actionMsg)
-
-        reply.stopSimReq = False
-        if self.forceEnvStop:
-            reply.stopSimReq = True
-
-        # # the values will be passed to C++ next time
-        # reply.pyRecvEnvCpuCycle = self.prev_recv_env_cycle
-        # reply.pySendActCpuCycle = self.prev_send_act_cycle
-
-        replyMsg = reply.SerializeToString()
-        assert len(replyMsg) <= ns3msg.msg_buffer_size
-        self.msg_interface.py_send_begin()
-        self.msg_interface.m_single_py2cpp_msg.size = len(replyMsg)
-        self.msg_interface.m_single_py2cpp_msg.get_buffer_full()[:len(replyMsg)] = replyMsg
-        # # For benchmarking: here get CPU cycle
-        # self.prev_send_act_cycle = py_cycle.getCycle()
-        self.msg_interface.py_send_end()
-        self.newStateRx = False
-        return True
-
-    def step(self, actions):
-        self.send_actions(actions)
-        self.rx_env_state()
-
-    def is_game_over(self):
-        return self.gameOver
-
     def _create_data(self, dataContainerPb):
         if dataContainerPb.type == pb.Discrete:
             discreteContainerPb = pb.DiscreteDataContainer()
@@ -257,11 +110,81 @@ class SharedMemoryBridge(object):
             data = myDataDict
             return data
 
+    def initialize_env(self):
+        simInitMsg = pb.SimInitMsg()
+        self.msgInterface.py_recv_begin()
+        request = self.msgInterface.m_single_cpp2py_msg.get_buffer()
+        simInitMsg.ParseFromString(request)
+        self.msgInterface.py_recv_end()
+
+        self.action_space = self._create_space(simInitMsg.actSpace)
+        self.observation_space = self._create_space(simInitMsg.obsSpace)
+
+        reply = pb.SimInitAck()
+        reply.done = True
+        reply.stopSimReq = False
+        reply_str = reply.SerializeToString()
+        assert len(reply_str) <= py_binding.msg_buffer_size
+
+        self.msgInterface.py_send_begin()
+        self.msgInterface.m_single_py2cpp_msg.size = len(reply_str)
+        self.msgInterface.m_single_py2cpp_msg.get_buffer_full()[:len(reply_str)] = reply_str
+        self.msgInterface.py_send_end()
+        return True
+
+    def send_close_command(self):
+        reply = pb.EnvActMsg()
+        reply.stopSimReq = True
+
+        # # last cycle information
+        # reply.pyRecvEnvCpuCycle = self.prev_recv_env_cycle
+        # reply.pySendActCpuCycle = self.prev_send_act_cycle
+
+        replyMsg = reply.SerializeToString()
+        assert len(replyMsg) <= py_binding.msg_buffer_size
+        self.msgInterface.py_send_begin()
+        self.msgInterface.m_single_py2cpp_msg.size = len(replyMsg)
+        self.msgInterface.m_single_py2cpp_msg.get_buffer_full()[:len(replyMsg)] = replyMsg
+        self.msgInterface.py_send_end()
+
+        self.newStateRx = False
+        return True
+
+    def rx_env_state(self):
+        if self.newStateRx:
+            return
+
+        envStateMsg = pb.EnvStateMsg()
+        self.msgInterface.py_recv_begin()
+        # # For benchmarking: here get CPU cycle
+        # self.prev_recv_env_cycle = self.recv_env_cycle
+        # self.recv_env_cycle = py_cycle.getCycle()
+        request = self.msgInterface.m_single_cpp2py_msg.get_buffer()
+        envStateMsg.ParseFromString(request)
+        self.msgInterface.py_recv_end()
+
+        self.obsData = self._create_data(envStateMsg.obsData)
+        self.reward = envStateMsg.reward
+        self.gameOver = envStateMsg.isGameOver
+        self.gameOverReason = envStateMsg.reason
+
+        if self.gameOver:
+            self.send_close_command()
+
+        self.extraInfo = envStateMsg.info
+        if not self.extraInfo:
+            self.extraInfo = {}
+
+        self.newStateRx = True
+
     def get_obs(self):
         return self.obsData
 
     def get_reward(self):
         return self.reward
+
+    def is_game_over(self):
+        return self.gameOver
 
     def get_extra_info(self):
         return self.extraInfo
@@ -309,7 +232,7 @@ class SharedMemoryBridge(object):
             dataContainer.type = pb.Tuple
             tupleDataPb = pb.TupleDataContainer()
 
-            spaceList = list(self._action_space.spaces)
+            spaceList = list(self.action_space.spaces)
             subDataList = []
             for subAction, subActSpaceType in zip(actions, spaceList):
                 subData = self._pack_data(subAction, subActSpaceType)
@@ -324,7 +247,7 @@ class SharedMemoryBridge(object):
 
             subDataList = []
             for sName, subAction in actions.items():
-                subActSpaceType = self._action_space.spaces[sName]
+                subActSpaceType = self.action_space.spaces[sName]
                 subData = self._pack_data(subAction, subActSpaceType)
                 subData.name = sName
                 subDataList.append(subData)
@@ -334,51 +257,84 @@ class SharedMemoryBridge(object):
 
         return dataContainer
 
+    def send_actions(self, actions):
+        reply = pb.EnvActMsg()
 
-class Ns3Env(gym.Env):
-    def __init__(self):
-        self.SharedMemoryBridge = SharedMemoryBridge()
-        self.SharedMemoryBridge.initialize_env()
-        self.action_space = self.SharedMemoryBridge.get_action_space()
-        self.observation_space = self.SharedMemoryBridge.get_observation_space()
-        # get first observations
-        self.SharedMemoryBridge.rx_env_state()
-        self.envDirty = False
-        # self.seed()
+        actionMsg = self._pack_data(actions, self.action_space)
+        reply.actData.CopyFrom(actionMsg)
 
-    # def seed(self, seed=None):
-    #     self.np_random, seed = seeding.np_random(seed)
-    #     return [seed]
+        # # the values will be passed to C++ next time
+        # reply.pyRecvEnvCpuCycle = self.prev_recv_env_cycle
+        # reply.pySendActCpuCycle = self.prev_send_act_cycle
+
+        replyMsg = reply.SerializeToString()
+        assert len(replyMsg) <= py_binding.msg_buffer_size
+        self.msgInterface.py_send_begin()
+        self.msgInterface.m_single_py2cpp_msg.size = len(replyMsg)
+        self.msgInterface.m_single_py2cpp_msg.get_buffer_full()[:len(replyMsg)] = replyMsg
+        # # For benchmarking: here get CPU cycle
+        # self.prev_send_act_cycle = py_cycle.getCycle()
+        self.msgInterface.py_send_end()
+        self.newStateRx = False
+        return True
 
     def get_state(self):
-        obs = self.SharedMemoryBridge.get_obs()
-        reward = self.SharedMemoryBridge.get_reward()
-        done = self.SharedMemoryBridge.is_game_over()
-        extraInfo = {"info": self.SharedMemoryBridge.get_extra_info()}
+        obs = self.get_obs()
+        reward = self.get_reward()
+        done = self.is_game_over()
+        extraInfo = {"info": self.get_extra_info()}
         return obs, reward, done, False, extraInfo
 
-    def step(self, action):
-        self.SharedMemoryBridge.step(action)
+    def __init__(self, targetName, ns3Path, shmSize):
+        if self._created:
+            raise Exception('Error: Ns3Env is singleton')
+        self._created = True
+        self.exp = Experiment(targetName, ns3Path, py_binding, shmSize=shmSize)
+
+        self.newStateRx = False
+        self.obsData = None
+        self.reward = 0
+        self.gameOver = False
+        self.gameOverReason = None
+        self.extraInfo = None
+
+        self.msgInterface = self.exp.run(show_output=True)
+        self.initialize_env()
+        # get first observations
+        self.rx_env_state()
+        self.envDirty = False
+
+    def step(self, actions):
+        self.send_actions(actions)
+        self.rx_env_state()
         self.envDirty = True
         return self.get_state()
 
     def reset(self, seed=None, options=None):
         if not self.envDirty:
-            obs = self.SharedMemoryBridge.get_obs()
+            obs = self.get_obs()
             return obs, {}
 
-        if self.SharedMemoryBridge:
-            self.SharedMemoryBridge.close()
-            self.SharedMemoryBridge = None
+        # not using self.exp.kill() here in order for semaphores to reset to initial state
+        if not self.gameOver:
+            self.rx_env_state()
+            self.send_close_command()
 
+        self.msgInterface = None
+        self.newStateRx = False
+        self.obsData = None
+        self.reward = 0
+        self.gameOver = False
+        self.gameOverReason = None
+        self.extraInfo = None
+
+        self.msgInterface = self.exp.run(show_output=True)
+        self.initialize_env()
+        # get first observations
+        self.rx_env_state()
         self.envDirty = False
-        self.SharedMemoryBridge = SharedMemoryBridge()
-        self.SharedMemoryBridge.initialize_env()
-        self.action_space = self.SharedMemoryBridge.get_action_space()
-        self.observation_space = self.SharedMemoryBridge.get_observation_space()
-        # get first observation
-        self.SharedMemoryBridge.rx_env_state()
-        obs = self.SharedMemoryBridge.get_obs()
+
+        obs = self.get_obs()
         return obs, {}
 
     def render(self, mode='human'):
@@ -389,9 +345,7 @@ class Ns3Env(gym.Env):
         return act
 
     def close(self):
-        if self.SharedMemoryBridge:
-            self.SharedMemoryBridge.close()
-            self.SharedMemoryBridge = None
-
-        # if self.viewer:
-        #     self.viewer.close()
+        # environment is not needed anymore, so kill subprocess in a straightforward way
+        self.exp.kill()
+        # destroy the message interface and its shared memory segment
+        del self.exp

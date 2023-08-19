@@ -1,18 +1,26 @@
-import ns3ai_apb_py_not_vec as apb
+import ns3ai_apb_py_stru as py_binding
+from ns3ai_utils import Experiment
 
-rl = apb.Ns3AiMsgInterface(True, False, True, 4096, "My Seg", "My Cpp to Python Msg", "My Python to Cpp Msg", "My Lockable")
+exp = Experiment("ns3ai_apb_msg_stru", "../../../../../", py_binding,
+                 handleFinish=True)
+msgInterface = exp.run(show_output=True)
 
-print('Created message interface, waiting for C++ side to send initial environment...')
+try:
+    while True:
+        # receive from C++ side
+        msgInterface.py_recv_begin()
+        if msgInterface.py_get_finished():
+            break
+        # calculate the sum
+        temp = msgInterface.m_single_cpp2py_msg.a + msgInterface.m_single_cpp2py_msg.b
+        msgInterface.py_recv_end()
 
-while True:
-    rl.py_recv_begin()
-    if rl.py_get_finished():
-        break
-    temp = rl.m_single_cpp2py_msg.a + rl.m_single_cpp2py_msg.b
-    rl.py_recv_end()
-
-    rl.py_send_begin()
-    rl.m_single_py2cpp_msg.c = temp
-    rl.py_send_end()
-
-del rl
+        # send to C++ side
+        msgInterface.py_send_begin()
+        msgInterface.m_single_py2cpp_msg.c = temp
+        msgInterface.py_send_end()
+except Exception as e:
+    print("Exception occurred in experiment:")
+    print(e)
+finally:
+    del exp

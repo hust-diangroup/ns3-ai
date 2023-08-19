@@ -1,23 +1,28 @@
-import ns3ai_apb_py as apb
+import ns3ai_apb_py_vec as py_binding
+from ns3ai_utils import Experiment
 
 APB_SIZE = 3
 
-rl = apb.Ns3AiMsgInterface(True, True, True, 4096, "My Seg", "My Cpp to Python Msg", "My Python to Cpp Msg", "My Lockable")
+exp = Experiment("ns3ai_apb_msg_vec", "../../../../../", py_binding,
+                 handleFinish=True, useVector=True, vectorSize=APB_SIZE)
+msgInterface = exp.run(show_output=True)
 
-assert len(rl.m_py2cpp_msg) == 0
-rl.m_py2cpp_msg.resize(APB_SIZE)
-assert len(rl.m_cpp2py_msg) == 0
-rl.m_cpp2py_msg.resize(APB_SIZE)
-print('Created message interface, waiting for C++ side to send initial environment...')
+try:
+    while True:
+        # receive from C++ side
+        msgInterface.py_recv_begin()
+        if msgInterface.py_get_finished():
+            break
 
-while True:
-    rl.py_recv_begin()
-    rl.py_send_begin()
-    if rl.py_get_finished():
-        break
-    for i in range(len(rl.m_cpp2py_msg)):
-        rl.m_py2cpp_msg[i].c = rl.m_cpp2py_msg[i].a + rl.m_cpp2py_msg[i].b
-    rl.py_recv_end()
-    rl.py_send_end()
-
-del rl
+        # send to C++ side
+        msgInterface.py_send_begin()
+        for i in range(len(msgInterface.m_cpp2py_msg)):
+            # calculate the sums
+            msgInterface.m_py2cpp_msg[i].c = msgInterface.m_cpp2py_msg[i].a + msgInterface.m_cpp2py_msg[i].b
+        msgInterface.py_recv_end()
+        msgInterface.py_send_end()
+except Exception as e:
+    print("Exception occurred in experiment:")
+    print(e)
+finally:
+    del exp
