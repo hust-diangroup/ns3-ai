@@ -1794,6 +1794,7 @@ main(int argc, char* argv[])
     bool calculateStats = false;
     int ring = 0;
     bool autoMCS = false;
+    std::string configFileName = "foo.config.txt";
     CommandLine cmd(__FILE__);
     cmd.AddValue("pktSize", "The packet size in bytes", pktSize);
     cmd.AddValue("rng", "The seed run number", seedNumber);
@@ -1829,6 +1830,7 @@ main(int argc, char* argv[])
     cmd.AddValue("pktInterval", "Set the socket packet interval in microseconds", pktInterval);
     cmd.AddValue("boxsize", "Set the size of the box in meters", boxSize);
     cmd.AddValue("drl", "Enable the use of DRL for setting ccaSensitivity", drlCca);
+    cmd.AddValue("configFile", "Configuration file of Multi-BSS example", configFileName);
     cmd.Parse(argc, argv);
 
     RngSeedManager::SetSeed(seedNumber);
@@ -1856,7 +1858,6 @@ main(int argc, char* argv[])
     // LogComponentEnable("PhyEntity", LOG_LEVEL_ALL);
     int channelWidth = channelWidths;
     int gi = guardIntervalNs;
-    std::string configFileName = "contrib/ns3-ai/examples/multi-bss/config.txt";
     apNodes.Create(apNodeCount);
     staNodes.Create(apNodeCount * networkSize);
     if (appType == "setup")

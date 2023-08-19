@@ -45,100 +45,102 @@ def get_agent(socketUuid, useRl):
 # initialize variable
 get_agent.tcpAgents = {}
 
-if __name__ == '__main__':
+parser = argparse.ArgumentParser()
+parser.add_argument('--seed', type=int,
+                    help='set seed for reproducibility')
+parser.add_argument('--show_log', action='store_true',
+                    help='whether show observation and action')
+parser.add_argument('--result', action='store_true',
+                    help='whether output figures')
+parser.add_argument('--result_dir', type=str,
+                    default='./rl_tcp_results', help='output figures path')
+parser.add_argument('--use_rl', action='store_true',
+                    help='whether use rl algorithm')
 
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--seed', type=int,
-                        help='set seed for reproducibility')
-    parser.add_argument('--show_log', action='store_true',
-                        help='whether show observation and action')
-    parser.add_argument('--result', action='store_true',
-                        help='whether output figures')
-    parser.add_argument('--result_dir', type=str,
-                        default='./result', help='output figures path')
-    parser.add_argument('--use_rl', action='store_true',
-                        help='whether use rl algorithm')
+args = parser.parse_args()
+my_seed = 42
+if args.seed is not None:
+    my_seed = args.seed
+print("Python side random seed {}".format(my_seed))
+np.random.seed(my_seed)
+torch.manual_seed(my_seed)
 
-    args = parser.parse_args()
-    my_seed = 42
-    if args.seed is not None:
-        my_seed = args.seed
-    print("Python side random seed {}".format(my_seed))
-    np.random.seed(my_seed)
-    torch.manual_seed(my_seed)
+res_list = ['ssThresh_l', 'cWnd_l', 'segmentsAcked_l',
+            'segmentSize_l', 'bytesInFlight_l']
+if args.result:
+    for res in res_list:
+        globals()[res] = []
 
-    res_list = ['ssThresh_l', 'cWnd_l', 'segmentsAcked_l',
-                'segmentSize_l', 'bytesInFlight_l']
-    if args.result:
-        for res in res_list:
-            globals()[res] = []
-        if args.result_dir:
-            if not os.path.exists(args.result_dir):
-                os.mkdir(args.result_dir)
+stepIdx = 0
+ns3Settings = {
+    'transport_prot': 'TcpRlTimeBased',
+    'duration': 100}
+env = gym.make("ns3ai_gym_env/Ns3-v0", targetName="ns3ai_rltcp_gym",
+               ns3Path="../../../../../", ns3Settings=ns3Settings)
+ob_space = env.observation_space
+ac_space = env.action_space
+print("Observation space: ", ob_space, ob_space.dtype)
+print("Action space: ", ac_space, ac_space.dtype)
 
-    env = gym.make("ns3ai_gym_env/Ns3-v0")
-    ob_space = env.observation_space
-    ac_space = env.action_space
-    print("Observation space: ", ob_space, ob_space.dtype)
-    print("Action space: ", ac_space, ac_space.dtype)
+try:
+    obs, info = env.reset()
+    reward = 0
+    done = False
 
-    stepIdx = 0
+    # get existing agent or create new TCP agent if needed
+    tcpAgent = get_agent(obs[0], args.use_rl)
 
-    try:
-        obs, info = env.reset()
-        reward = 0
-        done = False
+    while True:
+        # current ssThreshold
+        ssThresh = obs[4]
+        # current contention window size
+        cWnd = obs[5]
+        # segment size
+        segmentSize = obs[6]
+        # number of acked segments
+        segmentsAcked = obs[9]
+        # estimated bytes in flight
+        bytesInFlight = obs[7]
 
-        # get existing agent or create new TCP agent if needed
+        cur_obs = [ssThresh, cWnd, segmentsAcked, segmentSize, bytesInFlight]
+        if args.show_log:
+            print("Recv obs:", cur_obs)
+
+        if args.result:
+            for res in res_list:
+                globals()[res].append(globals()[res[:-2]])
+
+        action = tcpAgent.get_action(obs, reward, done, info)
+
+        if args.show_log:
+            print("Step:", stepIdx)
+            stepIdx += 1
+            print("Send act:", action)
+
+        obs, reward, done, _, info = env.step(action)
+
+        if done:
+            print("Simulation ended")
+            break
+
+        # get existing agent of create new TCP agent if needed
         tcpAgent = get_agent(obs[0], args.use_rl)
 
-        while True:
-            # current ssThreshold
-            ssThresh = obs[4]
-            # current contention window size
-            cWnd = obs[5]
-            # segment size
-            segmentSize = obs[6]
-            # number of acked segments
-            segmentsAcked = obs[9]
-            # estimated bytes in flight
-            bytesInFlight = obs[7]
+except Exception as e:
+    print("Exception occurred in experiment:")
+    print(e)
+finally:
+    env.close()
 
-            cur_obs = [ssThresh, cWnd, segmentsAcked, segmentSize, bytesInFlight]
-            if args.show_log:
-                print("Recv obs:", cur_obs)
-
-            if args.result:
-                for res in res_list:
-                    globals()[res].append(globals()[res[:-2]])
-
-            action = tcpAgent.get_action(obs, reward, done, info)
-
-            if args.show_log:
-                print("Step:", stepIdx)
-                stepIdx += 1
-                print("Send act:", action)
-
-            obs, reward, done, _, info = env.step(action)
-
-            if done:
-                print("Simulation ended")
-                break
-
-            # get existing agent of create new TCP agent if needed
-            tcpAgent = get_agent(obs[0], args.use_rl)
-
-    except KeyboardInterrupt:
-        print("Ctrl-C -> Exit")
-    finally:
-        env.close()
-
-    if args.result:
-        for res in res_list:
-            y = globals()[res]
-            x = range(len(y))
-            plt.clf()
-            plt.plot(x, y, label=res[:-2], linewidth=1, color='r')
-            plt.xlabel('Step Number')
-            plt.title('Information of {}'.format(res[:-2]))
-            plt.savefig('{}.png'.format(os.path.join(args.result_dir, res[:-2])))
+if args.result:
+    if args.result_dir:
+        if not os.path.exists(args.result_dir):
+            os.mkdir(args.result_dir)
+    for res in res_list:
+        y = globals()[res]
+        x = range(len(y))
+        plt.clf()
+        plt.plot(x, y, label=res[:-2], linewidth=1, color='r')
+        plt.xlabel('Step Number')
+        plt.title('Information of {}'.format(res[:-2]))
+        plt.savefig('{}.png'.format(os.path.join(args.result_dir, res[:-2])))

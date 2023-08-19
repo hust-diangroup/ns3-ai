@@ -19,7 +19,6 @@
 #         Hao Yin <haoyin@uw.edu>
 
 
-from collections import deque
 import numpy as np
 import tensorflow as tf
 import keras
@@ -27,15 +26,13 @@ from keras.layers import *
 import sys
 import gc
 import keras.backend as K
-import ns3ai_ltecqi_py as ns3ai
+import ns3ai_ltecqi_py as py_binding
+from ns3ai_utils import Experiment
 
 # delta for prediction
 delta = int(sys.argv[1])
 
 MAX_RBG_NUM = 32
-
-ns3ai_msg = ns3ai.Ns3AiMsgInterface(True, False, True, 4096, "My Seg", "My Cpp to Python Msg", "My Python to Cpp Msg", "My Lockable")
-print('Created message interface, waiting for C++ side to send initial environment...')
 
 
 def new_print(filename="log", print_screen=False):
@@ -59,21 +56,17 @@ np.random.seed(1)
 
 input_len = 200
 pred_len = 40
-
 batch_size = 20
 alpha = 0.6
 not_train = False
 
 lstm_input_vec = Input(shape=(input_len, 1), name="input_vec")
-
-
 dense1 = Dense(30, activation='selu', kernel_regularizer='l1',)(
     lstm_input_vec[:, :, 0])
 old_print(dense1)
 lstm_l1_mse = K.expand_dims(dense1, axis=-1)
 lstm_mse = LSTM(20)(lstm_l1_mse)
 predict_lstm_mse = Dense(1)(lstm_mse)
-
 lstm_model_mse = keras.Model(inputs=lstm_input_vec, outputs=predict_lstm_mse)
 lstm_model_mse.compile(optimizer="adam", loss="MSE")
 
@@ -97,17 +90,18 @@ train_data = []
 is_train = True
 CQI = 0
 delay_queue = []
-# exp = Experiment(1234, 4096, 'lte_cqi', '../../', using_waf=False)
-# exp.run(show_output=1)
+
+exp = Experiment("ns3ai_ltecqi", "../../../../", py_binding, handleFinish=True)
+msgInterface = exp.run(show_output=True)
 try:
     while True:
-        ns3ai_msg.py_recv_begin()
-        if ns3ai_msg.py_get_finished():
+        msgInterface.py_recv_begin()
+        if msgInterface.py_get_finished():
             break
         gc.collect()
         # Get CQI
-        CQI = ns3ai_msg.m_single_cpp2py_msg.wbCqi
-        ns3ai_msg.py_recv_end()
+        CQI = msgInterface.m_single_cpp2py_msg.wbCqi
+        msgInterface.py_recv_end()
 
         if CQI > 15:
             break
@@ -119,9 +113,9 @@ try:
         else:
             CQI = delay_queue[-delta]
         if not_train:
-            ns3ai_msg.py_send_begin()
-            ns3ai_msg.m_single_py2cpp_msg.new_wbCqi = CQI
-            ns3ai_msg.py_send_end()
+            msgInterface.py_send_begin()
+            msgInterface.m_single_py2cpp_msg.new_wbCqi = CQI
+            msgInterface.py_send_end()
             continue
         cqi_queue.append(CQI)
         if len(cqi_queue) >= input_len + delta:
@@ -130,9 +124,9 @@ try:
             one_data = cqi_queue[-input_len:]
             train_data.append(one_data)
         else:
-            ns3ai_msg.py_send_begin()
-            ns3ai_msg.m_single_py2cpp_msg.new_wbCqi = CQI
-            ns3ai_msg.py_send_end()
+            msgInterface.py_send_begin()
+            msgInterface.m_single_py2cpp_msg.new_wbCqi = CQI
+            msgInterface.py_send_end()
             old_print("set: %d" % CQI)
             continue
 
@@ -161,9 +155,9 @@ try:
             else:
                 corrected_predict[-1] = last[-1]
                 if err_t <= 1e-6:
-                    ns3ai_msg.py_send_begin()
-                    ns3ai_msg.m_single_py2cpp_msg.new_wbCqi = CQI
-                    ns3ai_msg.py_send_end()
+                    msgInterface.py_send_begin()
+                    msgInterface.m_single_py2cpp_msg.new_wbCqi = CQI
+                    msgInterface.py_send_end()
                     print("set: %d" % CQI)
                     continue
                 else:
@@ -180,14 +174,15 @@ try:
         else:
             corrected_predict[-1] = last[-1]
         # sm.Set(corrected_predict[-1])
-        ns3ai_msg.py_send_begin()
-        ns3ai_msg.m_single_py2cpp_msg.new_wbCqi = CQI
-        ns3ai_msg.py_send_end()
+        msgInterface.py_send_begin()
+        msgInterface.m_single_py2cpp_msg.new_wbCqi = CQI
+        msgInterface.py_send_end()
         print("set: %d" % corrected_predict[-1])
-except KeyboardInterrupt:
-    print('Ctrl C')
+except Exception as e:
+    print("Exception occurred in experiment:")
+    print(e)
 finally:
-    del ns3ai_msg
+    del exp
 
 
 print('Finish')

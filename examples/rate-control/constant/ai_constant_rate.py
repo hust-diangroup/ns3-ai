@@ -18,54 +18,43 @@
 # Author: Xun Deng <dorence@hust.edu.cn>
 #         Hao Yin <haoyin@uw.edu>
 
-# import sys
-# sys.path.append("../../../utils")
-# import ns3_util
 
-import ns3ai_ratecontrol_constant_py as cr
-
-class AiConstantRateContainer:
-    use_ns3ai = True
-
-    def __init__(self) -> None:
-        self.rl = cr.Ns3AiMsgInterface(True, False, True, 4096, "My Seg", "My Cpp to Python Msg", "My Python to Cpp Msg", "My Lockable")
-        print('Created message interface, waiting for C++ side to send initial environment...')
-        # print('({})size: Env {} Act {}'.format(uid, sizeof(AiConstantRateEnv), sizeof(AiConstantRateAct)))
-        pass
-
-    def __del__(self):
-        del self.rl
-
-    def do(self, env: cr.PyEnvStruct, act: cr.PyActStruct):
-        # DoGetDataTxVector
-        act.nss = min(env.transmitStreams, env.supportedStreams)
-        if env.msc != 0xff:
-            act.nss = 1 + env.msc // 8
-        # set next_mcs as previous msc
-        act.next_mcs = env.msc
-
-        # uncomment to specify arbitrary MCS
-        # act.next_mcs = 5
+import ns3ai_ratecontrol_constant_py as py_binding
+from ns3ai_utils import Experiment
 
 
-if __name__ == '__main__':
-    # ns3Settings = {'raa': 'AiConstantRate', 'nWifi': 3, 'standard': '11ac', 'duration': 5}
-    # mempool_key = 1234 # memory pool key, arbitrary integer large than 1000
-    # mem_size = 4096 # memory pool size in bytes
-    # exp = Experiment(mempool_key, mem_size, 'rate-control', '../../', using_waf=False)
-    # exp.reset()
+def get_action(env):
+    nss = min(env.transmitStreams, env.supportedStreams)
+    if env.mcs != 0xff:
+        nss = 1 + env.mcs // 8
+    # set next_mcs as previous mcs
+    next_mcs = env.mcs
+    # uncomment to specify arbitrary MCS
+    # act.next_mcs = 5
+    return nss, next_mcs
 
-    c = AiConstantRateContainer()
 
-    # pro = exp.run(setting=ns3Settings, show_output=True)
-    # print("run rate-control", ns3Settings)
+ns3Settings = {
+    'raa': 'AiConstantRate',
+    'nWifi': 3,
+    'standard': '11ac',
+    'duration': 5}
+
+exp = Experiment("ns3ai_ratecontrol_constant", "../../../../../", py_binding, handleFinish=True)
+msgInterface = exp.run(setting=ns3Settings, show_output=True)
+
+try:
     while True:
-        c.rl.py_recv_begin()
-        c.rl.py_send_begin()
-        if c.rl.py_get_finished():
+        msgInterface.py_recv_begin()
+        msgInterface.py_send_begin()
+        if msgInterface.py_get_finished():
             break
-        c.do(c.rl.m_single_cpp2py_msg, c.rl.m_single_py2cpp_msg)
-        c.rl.py_recv_end()
-        c.rl.py_send_end()
-
-    del c
+        msgInterface.m_single_py2cpp_msg.nss, msgInterface.m_single_py2cpp_msg.next_mcs = (
+            get_action(msgInterface.m_single_cpp2py_msg))
+        msgInterface.py_recv_end()
+        msgInterface.py_send_end()
+except Exception as e:
+    print("Exception occurred in experiment:")
+    print(e)
+finally:
+    del exp

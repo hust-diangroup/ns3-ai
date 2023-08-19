@@ -1,20 +1,15 @@
 import random
-import os
 import numpy as np
 import matplotlib.pyplot as plt
-import pylab as pl
 import matplotlib
-from mpl_toolkits.axes_grid1 import host_subplot
 from collections import namedtuple, deque
-from itertools import count
 import math
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from torch.autograd import Variable
 import torch.optim as optim
-import subprocess
-import ns3ai_multibss_py as ns3ai
+import ns3ai_multibss_py as py_binding
+from ns3ai_utils import Experiment
 
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -60,32 +55,26 @@ class DQN(nn.Module):
         return self.layer3(x)
 
 
-# ns3Settings = {
-#     'pktSize': 1500,
-#     'duration':200,
-#     'gi': 800,
-#     'channelWidth': 20,
-#     'rng': 2,
-#     'apNodes': 4,
-#     'networkSize': 4,
-#     'ring': 0,
-#     'maxMpdus': 5,
-#     'autoMCS': True,
-#     'prop': 'tgax',
-#     'app': 'setup-done',
-#     'pktInterval': 5000,
-#     'boxsize': 25,
-#     'drl': True,
-# }
-# mempool_key = 1234                                          # memory pool key, arbitrary integer large than 1000
-# mem_size = 4096                                             # memory pool size in bytes
-# memblock_key = 2333                                         # memory block key, need to keep the same in the ns-3 script
-# using_waf = False
-
-# n_ap = int(ns3Settings['apNodes'])
-# n_sta = int(ns3Settings['networkSize'])
-n_ap = 4
-n_sta = 4
+ns3Settings = {
+    'pktSize': 1500,
+    'duration': 100,
+    'gi': 800,
+    'channelWidth': 20,
+    'rng': 2,
+    'apNodes': 4,
+    'networkSize': 4,
+    'ring': 0,
+    'maxMpdus': 5,
+    'autoMCS': True,
+    'prop': 'tgax',
+    'app': 'setup-done',
+    'pktInterval': 5000,
+    'boxsize': 25,
+    'drl': True,
+    'configFile': 'contrib/ai/examples/multi-bss/config.txt',
+}
+n_ap = int(ns3Settings['apNodes'])
+n_sta = int(ns3Settings['networkSize'])
 n_total = n_ap * (n_sta + 1)
 state = np.zeros((n_sta+1, n_total+1))
 rewards = []
@@ -207,86 +196,74 @@ def optimize_model():
     torch.nn.utils.clip_grad_value_(policy_net.parameters(), 100)
     optimizer.step()
 
-
-# exp = Experiment(mempool_key, mem_size, 'tgax-residential', './', using_waf)      # Set up the ns-3 environment
-    # exp.reset()                                             # Reset the environment
-    # rl = Ns3AIRL(memblock_key, Env, Act)                    # Link the shared memory block with ns-3 script
-    # pro = exp.run(setting=ns3Settings, show_output=True)    # Set and run the ns-3 script (sim.cc)
-rl = ns3ai.Ns3AiMsgInterface(True, True, True, 4096,
-                             "My Seg", "My Cpp to Python Msg", "My Python to Cpp Msg", "My Lockable")
-assert len(rl.m_py2cpp_msg) == 0
-rl.m_py2cpp_msg.resize(1)
-assert len(rl.m_cpp2py_msg) == 0
-rl.m_cpp2py_msg.resize(n_total)
-print('Created message interface, waiting for C++ side to send initial environment...')
-
-# thpt = 0
-# hol = 0
-# vrtpt = 0
 times = 0
 alpha = 1
 beta = 5
 vr_constrant = 5
 vrtpt_cons = 14.7
 eta = 1
-# try:
-while True:
-    # Get current state from C++
-    rl.py_recv_begin()
-    if rl.py_get_finished():
-        print("Finished")
-        break
-    throughput = 0
-    for i in range(n_total):
-        txNode = rl.m_cpp2py_msg[i].txNode
-        # print("processing i {} txNode {}".format(i, txNode))
-        for j in range(n_sta+1):
-            state[j, txNode] = rl.m_cpp2py_msg[i].rxPower[j]
-        # state[:, txNode] = rl.m_cpp2py_msg[i].rxPower
-        if txNode % n_ap == 0:  # record mcs in BSS-0
-            state[int(txNode/n_ap)][-1] = rl.m_cpp2py_msg[i].mcs
-        if txNode == n_ap:     # record delay and tpt of the VR node
-            vrDelay = rl.m_cpp2py_msg[i].holDelay
-            vrThroughput = rl.m_cpp2py_msg[i].throughput
-        # Sum all nodes' throughput
-        throughput += rl.m_cpp2py_msg[i].throughput
-    rl.py_recv_end()
 
-    print("step = {}, VR avg delay = {} ms, VR UL tpt = {} Mbps, total UL tpt = {} Mbps".format(
-        times, vrDelay, vrThroughput, throughput
-    ))
+exp = Experiment("ns3ai_multibss", "../../../../", py_binding,
+                 handleFinish=True, useVector=True, vectorSize=n_total)
+msgInterface = exp.run(setting=ns3Settings, show_output=True)
 
-    # RL algorithm here, select action
-    cur_state = torch.tensor(state.reshape(1, -1)[0], dtype=torch.float32, device=device).unsqueeze(0)
-    if times == 0:
-        prev_state = cur_state
-        action = torch.tensor([[0]], device=device, dtype=torch.long)
-    else:
-        reward = alpha * throughput + beta * (vr_constrant - vrDelay) + eta * (vrThroughput - vrtpt_cons)
-        rewards.append(reward)
-        reward = torch.tensor([reward], device=device)
-        memory.push(prev_state, action, cur_state, reward)
-        prev_state = cur_state
-        action = select_action(cur_state)
-        optimize_model()
-        target_net_state_dict = target_net.state_dict()
-        policy_net_state_dict = policy_net.state_dict()
-        for key in policy_net_state_dict:
-            target_net_state_dict[key] = policy_net_state_dict[key]*TAU + target_net_state_dict[key]*(1-TAU)
-        target_net.load_state_dict(target_net_state_dict)
+try:
+    while True:
+        # Get current state from C++
+        msgInterface.py_recv_begin()
+        if msgInterface.py_get_finished():
+            print("Finished")
+            break
+        throughput = 0
+        for i in range(n_total):
+            txNode = msgInterface.m_cpp2py_msg[i].txNode
+            # print("processing i {} txNode {}".format(i, txNode))
+            for j in range(n_sta+1):
+                state[j, txNode] = msgInterface.m_cpp2py_msg[i].rxPower[j]
+            # state[:, txNode] = msgInterface.m_cpp2py_msg[i].rxPower
+            if txNode % n_ap == 0:  # record mcs in BSS-0
+                state[int(txNode/n_ap)][-1] = msgInterface.m_cpp2py_msg[i].mcs
+            if txNode == n_ap:     # record delay and tpt of the VR node
+                vrDelay = msgInterface.m_cpp2py_msg[i].holDelay
+                vrThroughput = msgInterface.m_cpp2py_msg[i].throughput
+            # Sum all nodes' throughput
+            throughput += msgInterface.m_cpp2py_msg[i].throughput
+        msgInterface.py_recv_end()
 
-    # put the action back to C++
-    rl.py_send_begin()
-    rl.m_py2cpp_msg[0].newCcaSensitivity = -82 + action
-    rl.py_send_end()
-    print("new CCA: {}".format(rl.m_py2cpp_msg[0].newCcaSensitivity))
-    times += 1
+        print("step = {}, VR avg delay = {} ms, VR UL tpt = {} Mbps, total UL tpt = {} Mbps".format(
+            times, vrDelay, vrThroughput, throughput
+        ))
 
-# except Exception as e:
-#     print('Something wrong')
-#     print(e)
-# finally:
-#     del rl
+        # RL algorithm here, select action
+        cur_state = torch.tensor(state.reshape(1, -1)[0], dtype=torch.float32, device=device).unsqueeze(0)
+        if times == 0:
+            prev_state = cur_state
+            action = torch.tensor([[0]], device=device, dtype=torch.long)
+        else:
+            reward = alpha * throughput + beta * (vr_constrant - vrDelay) + eta * (vrThroughput - vrtpt_cons)
+            rewards.append(reward)
+            reward = torch.tensor([reward], device=device)
+            memory.push(prev_state, action, cur_state, reward)
+            prev_state = cur_state
+            action = select_action(cur_state)
+            optimize_model()
+            target_net_state_dict = target_net.state_dict()
+            policy_net_state_dict = policy_net.state_dict()
+            for key in policy_net_state_dict:
+                target_net_state_dict[key] = policy_net_state_dict[key]*TAU + target_net_state_dict[key]*(1-TAU)
+            target_net.load_state_dict(target_net_state_dict)
+
+        # put the action back to C++
+        msgInterface.py_send_begin()
+        msgInterface.m_py2cpp_msg[0].newCcaSensitivity = -82 + action
+        msgInterface.py_send_end()
+        print("new CCA: {}".format(msgInterface.m_py2cpp_msg[0].newCcaSensitivity))
+        times += 1
+except Exception as e:
+    print("Exception occurred in experiment:")
+    print(e)
+finally:
+    del exp
 
 plt.figure(2)
 plt.title('Rewards')

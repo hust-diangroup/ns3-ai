@@ -24,7 +24,8 @@ import argparse
 import numpy as np
 import matplotlib.pyplot as plt
 from agents import TcpNewRenoAgent, TcpRlAgent
-import ns3ai_rltcp_msg_py as ns3ai_msg
+import ns3ai_rltcp_msg_py as py_binding
+from ns3ai_utils import Experiment
 
 
 def get_agent(socketUuid, useRl):
@@ -44,92 +45,93 @@ def get_agent(socketUuid, useRl):
 # initialize variable
 get_agent.tcpAgents = {}
 
-if __name__ == '__main__':
+parser = argparse.ArgumentParser()
+parser.add_argument('--seed', type=int,
+                    help='set seed for reproducibility')
+parser.add_argument('--show_log', action='store_true',
+                    help='whether show observation and action')
+parser.add_argument('--result', action='store_true',
+                    help='whether output figures')
+parser.add_argument('--result_dir', type=str,
+                    default='./rl_tcp_results', help='output figures path')
+parser.add_argument('--use_rl', action='store_true',
+                    help='whether use rl algorithm')
 
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--seed', type=int,
-                        help='set seed for reproducibility')
-    parser.add_argument('--show_log', action='store_true',
-                        help='whether show observation and action')
-    parser.add_argument('--result', action='store_true',
-                        help='whether output figures')
-    parser.add_argument('--result_dir', type=str,
-                        default='./result', help='output figures path')
-    parser.add_argument('--use_rl', action='store_true',
-                        help='whether use rl algorithm')
+args = parser.parse_args()
+my_seed = 42
+if args.seed:
+    my_seed = args.seed
+print("Python side random seed {}".format(my_seed))
+np.random.seed(my_seed)
+torch.manual_seed(my_seed)
 
-    args = parser.parse_args()
-    my_seed = 42
-    if args.seed:
-        my_seed = args.seed
-    print("Python side random seed {}".format(my_seed))
-    np.random.seed(my_seed)
-    torch.manual_seed(my_seed)
+res_list = ['ssThresh_l', 'cWnd_l', 'segmentsAcked_l',
+            'segmentSize_l', 'bytesInFlight_l']
+if args.result:
+    for res in res_list:
+        globals()[res] = []
 
-    res_list = ['ssThresh_l', 'cWnd_l', 'segmentsAcked_l',
-                'segmentSize_l', 'bytesInFlight_l']
-    if args.result:
-        for res in res_list:
-            globals()[res] = []
-        if args.result_dir:
-            if not os.path.exists(args.result_dir):
-                os.mkdir(args.result_dir)
+stepIdx = 0
 
-    ns3ai = ns3ai_msg.Ns3AiMsgInterface(True, False, True, 4096, "My Seg", "My Cpp to Python Msg", "My Python to Cpp Msg", "My Lockable")
-    print('Created message interface, waiting for C++ side to send initial environment...')
+ns3Settings = {
+    'transport_prot': 'TcpRlTimeBased',
+    'duration': 1000}
+exp = Experiment("ns3ai_rltcp_msg", "../../../../../", py_binding, handleFinish=True)
+msgInterface = exp.run(setting=ns3Settings, show_output=True)
 
-    stepIdx = 0
+try:
+    while True:
+        # receive observation from C++
+        msgInterface.py_recv_begin()
+        if msgInterface.py_get_finished():
+            print("Simulation ended")
+            break
+        ssThresh = msgInterface.m_single_cpp2py_msg.ssThresh
+        cWnd = msgInterface.m_single_cpp2py_msg.cWnd
+        segmentsAcked = msgInterface.m_single_cpp2py_msg.segmentsAcked
+        segmentSize = msgInterface.m_single_cpp2py_msg.segmentSize
+        bytesInFlight = msgInterface.m_single_cpp2py_msg.bytesInFlight
+        socketId = msgInterface.m_single_cpp2py_msg.socketUid
+        msgInterface.py_recv_end()
 
-    try:
-        while True:
-            # receive observation from C++
-            ns3ai.py_recv_begin()
-            if ns3ai.py_get_finished():
-                print("Simulation ended")
-                break
-            ssThresh = ns3ai.m_single_cpp2py_msg.ssThresh
-            cWnd = ns3ai.m_single_cpp2py_msg.cWnd
-            segmentsAcked = ns3ai.m_single_cpp2py_msg.segmentsAcked
-            segmentSize = ns3ai.m_single_cpp2py_msg.segmentSize
-            bytesInFlight = ns3ai.m_single_cpp2py_msg.bytesInFlight
-            socketId = ns3ai.m_single_cpp2py_msg.socketUid
-            ns3ai.py_recv_end()
+        obs = [ssThresh, cWnd, segmentsAcked, segmentSize, bytesInFlight]
+        if args.show_log:
+            print("Recv obs:", obs)
 
-            obs = [ssThresh, cWnd, segmentsAcked, segmentSize, bytesInFlight]
-            if args.show_log:
-                print("Recv obs:", obs)
+        if args.result:
+            for res in res_list:
+                globals()[res].append(globals()[res[:-2]])
 
-            if args.result:
-                for res in res_list:
-                    globals()[res].append(globals()[res[:-2]])
+        tcpAgent = get_agent(socketId, args.use_rl)
+        act = tcpAgent.get_action(obs)
+        new_cWnd = act[0]
+        new_ssThresh = act[1]
 
-            tcpAgent = get_agent(socketId, args.use_rl)
-            act = tcpAgent.get_action(obs)
-            new_cWnd = act[0]
-            new_ssThresh = act[1]
+        # send action to C++
+        msgInterface.py_send_begin()
+        msgInterface.m_single_py2cpp_msg.new_cWnd = new_cWnd
+        msgInterface.m_single_py2cpp_msg.new_ssThresh = new_ssThresh
+        msgInterface.py_send_end()
 
-            # send action to C++
-            ns3ai.py_send_begin()
-            ns3ai.m_single_py2cpp_msg.new_cWnd = new_cWnd
-            ns3ai.m_single_py2cpp_msg.new_ssThresh = new_ssThresh
-            ns3ai.py_send_end()
+        if args.show_log:
+            print("Step:", stepIdx)
+            stepIdx += 1
+            print("Send act:", act)
+except Exception as e:
+    print("Exception occurred in experiment:")
+    print(e)
+finally:
+    del exp
 
-            if args.show_log:
-                print("Step:", stepIdx)
-                stepIdx += 1
-                print("Send act:", act)
-
-    except KeyboardInterrupt:
-        print("Ctrl-C -> Exit")
-    finally:
-        del ns3ai
-
-    if args.result:
-        for res in res_list:
-            y = globals()[res]
-            x = range(len(y))
-            plt.clf()
-            plt.plot(x, y, label=res[:-2], linewidth=1, color='r')
-            plt.xlabel('Step Number')
-            plt.title('Information of {}'.format(res[:-2]))
-            plt.savefig('{}.png'.format(os.path.join(args.result_dir, res[:-2])))
+if args.result:
+    if args.result_dir:
+        if not os.path.exists(args.result_dir):
+            os.mkdir(args.result_dir)
+    for res in res_list:
+        y = globals()[res]
+        x = range(len(y))
+        plt.clf()
+        plt.plot(x, y, label=res[:-2], linewidth=1, color='r')
+        plt.xlabel('Step Number')
+        plt.title('Information of {}'.format(res[:-2]))
+        plt.savefig('{}.png'.format(os.path.join(args.result_dir, res[:-2])))

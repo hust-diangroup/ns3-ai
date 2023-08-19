@@ -21,17 +21,15 @@
 import copy
 from typing import List
 import numpy as np
-# import sys
-# sys.path.append("../../../utils")
-# import ns3_util
+import ns3ai_ratecontrol_ts_py as py_binding
+from ns3ai_utils import Experiment
 
-import ns3ai_ratecontrol_ts_py as ts
 
 class AiThompsonSamplingStation:
     _id = -1
     m_nextMode: int = 0
     m_lastMode: int = 0
-    m_mcsStats: List[ts.ThompsonSamplingRateStats]
+    m_mcsStats: List[py_binding.ThompsonSamplingRateStats]
 
     def __init__(self, id=-1) -> None:
         self._id = id
@@ -98,20 +96,15 @@ class AiThompsonSamplingManager:
 
 
 class AiThompsonSamplingContainer:
-    use_ns3ai = True
     wifiManager: List[AiThompsonSamplingManager] = []
     wifiStation: List[AiThompsonSamplingStation] = []
 
-    def __init__(self, stream=1) -> None:
-        self.rl = ts.Ns3AiMsgInterface(True, False, True, 4096, "My Seg", "My Cpp to Python Msg", "My Python to Cpp Msg", "My Lockable")
-        print('Created message interface, waiting for C++ side to send initial environment...')
+    def __init__(self, msgInterface=None, stream=1) -> None:
+        self.msgInterface = msgInterface
         self.default_stream = stream
         pass
 
-    def __del__(self):
-        del self.rl
-
-    def do(self, env: ts.PyEnvStruct, act: ts.PyActStruct):
+    def do(self, env: py_binding.PyEnvStruct, act: py_binding.PyActStruct):
         if env.type == 0x01:  # AiThompsonSamplingWifiManager
             n_manager = len(self.wifiManager)
             self.wifiManager.append(AiThompsonSamplingManager(id=n_manager, stream=self.default_stream))
@@ -186,25 +179,28 @@ class AiThompsonSamplingContainer:
             act.stationId = env.stationId  # only for check
 
 
-if __name__ == '__main__':
-    # ns3Settings = {'raa': 'AiThompsonSampling', 'nWifi': 3, 'standard': '11ac', 'duration': 5}
-    # mempool_key = 1234 # memory pool key, arbitrary integer large than 1000
-    # mem_size = 4096 # memory pool size in bytes
-    # exp = Experiment(mempool_key, mem_size, 'rate-control', '../../', using_waf=False)
-    # exp.reset()
+ns3Settings = {
+    'raa': 'AiThompsonSampling', 
+    'nWifi': 3, 
+    'standard': '11ac', 
+    'duration': 5}
 
-    random_stream = 100
-    c = AiThompsonSamplingContainer(stream=random_stream)
+exp = Experiment("ns3ai_ratecontrol_ts", "../../../../../", py_binding, handleFinish=True)
+msgInterface = exp.run(setting=ns3Settings, show_output=True)
+random_stream = 100
+c = AiThompsonSamplingContainer(msgInterface=msgInterface, stream=random_stream)
 
-    # pro = exp.run(setting=ns3Settings, show_output=True)
-    # print("run rate-control", ns3Settings)
+try:
     while True:
-        c.rl.py_recv_begin()
-        c.rl.py_send_begin()
-        if c.rl.py_get_finished():
+        c.msgInterface.py_recv_begin()
+        c.msgInterface.py_send_begin()
+        if c.msgInterface.py_get_finished():
             break
-        c.do(c.rl.m_single_cpp2py_msg, c.rl.m_single_py2cpp_msg)
-        c.rl.py_recv_end()
-        c.rl.py_send_end()
-
-    del c
+        c.do(c.msgInterface.m_single_cpp2py_msg, c.msgInterface.m_single_py2cpp_msg)
+        c.msgInterface.py_recv_end()
+        c.msgInterface.py_send_end()
+except Exception as e:
+    print("Exception occurred in experiment:")
+    print(e)
+finally:
+    del exp

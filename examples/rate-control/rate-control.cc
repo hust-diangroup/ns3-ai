@@ -157,7 +157,7 @@ main (int argc, char *argv[])
   cmd.AddValue ("nWifi", "Number of wifi STA devices", nWifi);
   cmd.AddValue ("verbose", "Tell echo applications to log if true", verbose);
   cmd.AddValue ("tracing", "Enable pcap tracing", tracing);
-  cmd.AddValue ("raa", "MinstrelHt / ConstantRate / Ideal", raaAlgo);
+  cmd.AddValue ("raa", "Rate adaptation algorithm, AiConstantRate or AiThompsonSampling", raaAlgo);
   cmd.AddValue ("maxBytes", "Max number of Bytes to be sent", maxBytes);
   cmd.AddValue ("p2pRate", "Mbps", p2pRate);
   cmd.AddValue ("p2pDelay", "MilliSeconds", p2pDelay);

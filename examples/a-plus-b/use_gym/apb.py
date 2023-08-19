@@ -20,7 +20,7 @@ class ApbAgent:
 
 if __name__ == '__main__':
 
-    env = gym.make("ns3ai_gym_env/Ns3-v0", targetName="ns3ai_apb_gym", ns3Path="../../../../../", shmSize=4096)
+    env = gym.make("ns3ai_gym_env/Ns3-v0", targetName="ns3ai_apb_gym", ns3Path="../../../../../")
     ob_space = env.observation_space
     ac_space = env.action_space
     print("Observation space: ", ob_space, ob_space.dtype)

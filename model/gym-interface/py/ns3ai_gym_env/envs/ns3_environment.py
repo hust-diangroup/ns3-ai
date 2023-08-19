@@ -285,11 +285,12 @@ class Ns3Env(gym.Env):
         extraInfo = {"info": self.get_extra_info()}
         return obs, reward, done, False, extraInfo
 
-    def __init__(self, targetName, ns3Path, shmSize):
+    def __init__(self, targetName, ns3Path, ns3Settings=None, shmSize=4096):
         if self._created:
             raise Exception('Error: Ns3Env is singleton')
         self._created = True
         self.exp = Experiment(targetName, ns3Path, py_binding, shmSize=shmSize)
+        self.ns3Settings = ns3Settings
 
         self.newStateRx = False
         self.obsData = None
@@ -298,7 +299,7 @@ class Ns3Env(gym.Env):
         self.gameOverReason = None
         self.extraInfo = None
 
-        self.msgInterface = self.exp.run(show_output=True)
+        self.msgInterface = self.exp.run(setting=self.ns3Settings, show_output=True)
         self.initialize_env()
         # get first observations
         self.rx_env_state()
