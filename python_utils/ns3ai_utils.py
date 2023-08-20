@@ -122,7 +122,7 @@ class Experiment:
         self.py2cppMsgName = py2cppMsgName
         self.lockableName = lockableName
 
-        self.msgInterface = msgModule.Ns3AiMsgInterface(
+        self.msgInterface = msgModule.Ns3AiMsgInterfaceImpl(
             True, self.useVector, self.handleFinish,
             self.shmSize, self.segName, self.cpp2pyMsgName, self.py2cppMsgName, self.lockableName
         )

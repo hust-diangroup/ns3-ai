@@ -37,9 +37,6 @@ NS_LOG_COMPONENT_DEFINE("AiConstantRateWifiManager");
 
 NS_OBJECT_ENSURE_REGISTERED(AiConstantRateWifiManager);
 
-Ns3AiMsgInterface<AiConstantRateEnvStruct, AiConstantRateActStruct> m_ns3ai_mod =
-    Ns3AiMsgInterface<AiConstantRateEnvStruct, AiConstantRateActStruct>(false, false, true);
-
 TypeId
 AiConstantRateWifiManager::GetTypeId()
 {
@@ -64,6 +61,9 @@ AiConstantRateWifiManager::GetTypeId()
 AiConstantRateWifiManager::AiConstantRateWifiManager()
 {
     NS_LOG_FUNCTION(this);
+    Ns3AiMsgInterface::Get()->SetIsMemoryCreator(false);
+    Ns3AiMsgInterface::Get()->SetUseVector(false);
+    Ns3AiMsgInterface::Get()->SetHandleFinish(true);
 }
 
 AiConstantRateWifiManager::~AiConstantRateWifiManager()
@@ -133,22 +133,24 @@ WifiTxVector
 AiConstantRateWifiManager::DoGetDataTxVector(WifiRemoteStation* st, uint16_t allowedWidth)
 {
     NS_LOG_FUNCTION(this << st);
+    Ns3AiMsgInterfaceImpl<AiConstantRateEnvStruct, AiConstantRateActStruct> *msgInterface = 
+        Ns3AiMsgInterface::Get()->GetInterface<AiConstantRateEnvStruct, AiConstantRateActStruct>();
 
-    m_ns3ai_mod.cpp_send_begin();
-    m_ns3ai_mod.m_single_cpp2py_msg->transmitStreams = GetMaxNumberOfTransmitStreams();
-    m_ns3ai_mod.m_single_cpp2py_msg->supportedStreams = GetNumberOfSupportedStreams(st);
+    msgInterface->cpp_send_begin();
+    msgInterface->m_single_cpp2py_msg->transmitStreams = GetMaxNumberOfTransmitStreams();
+    msgInterface->m_single_cpp2py_msg->supportedStreams = GetNumberOfSupportedStreams(st);
     if (m_dataMode.GetModulationClass() == WIFI_MOD_CLASS_HT) {
-        m_ns3ai_mod.m_single_cpp2py_msg->mcs = m_dataMode.GetMcsValue();
+        msgInterface->m_single_cpp2py_msg->mcs = m_dataMode.GetMcsValue();
     } else {
-        m_ns3ai_mod.m_single_cpp2py_msg->mcs = 0xffU;
+        msgInterface->m_single_cpp2py_msg->mcs = 0xffU;
     }
-    m_ns3ai_mod.cpp_send_end();
+    msgInterface->cpp_send_end();
 
-    m_ns3ai_mod.cpp_recv_begin();
-    uint8_t nss = m_ns3ai_mod.m_single_py2cpp_msg->nss;
-    uint8_t next_mcs = m_ns3ai_mod.m_single_py2cpp_msg->next_mcs;
+    msgInterface->cpp_recv_begin();
+    uint8_t nss = msgInterface->m_single_py2cpp_msg->nss;
+    uint8_t next_mcs = msgInterface->m_single_py2cpp_msg->next_mcs;
     NS_LOG_FUNCTION(next_mcs);
-    m_ns3ai_mod.cpp_recv_end();
+    msgInterface->cpp_recv_end();
 
     // uncomment to specify arbitrary MCS
     // m_dataMode = GetMcsSupported (st, next_mcs);

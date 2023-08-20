@@ -38,9 +38,6 @@ NS_OBJECT_ENSURE_REGISTERED(AiThompsonSamplingWifiManager);
 
 NS_LOG_COMPONENT_DEFINE("AiThompsonSamplingWifiManager");
 
-Ns3AiMsgInterface<AiThompsonSamplingEnvStruct, AiThompsonSamplingActStruct> m_ns3ai_mod =
-    Ns3AiMsgInterface<AiThompsonSamplingEnvStruct, AiThompsonSamplingActStruct>(false, false, true);
-
 /**
  * A structure containing parameters of a single rate and its
  * statistics.
@@ -89,14 +86,19 @@ AiThompsonSamplingWifiManager::AiThompsonSamplingWifiManager()
     : m_currentRate{0}
 {
     NS_LOG_FUNCTION(this);
+    Ns3AiMsgInterface::Get()->SetIsMemoryCreator(false);
+    Ns3AiMsgInterface::Get()->SetUseVector(false);
+    Ns3AiMsgInterface::Get()->SetHandleFinish(true);
+    Ns3AiMsgInterfaceImpl<AiThompsonSamplingEnvStruct, AiThompsonSamplingActStruct> *msgInterface = 
+        Ns3AiMsgInterface::Get()->GetInterface<AiThompsonSamplingEnvStruct, AiThompsonSamplingActStruct>();
 
-    m_ns3ai_mod.cpp_send_begin();
-    m_ns3ai_mod.m_single_cpp2py_msg->type = 0x01;
-    m_ns3ai_mod.cpp_send_end();
+    msgInterface->cpp_send_begin();
+    msgInterface->m_single_cpp2py_msg->type = 0x01;
+    msgInterface->cpp_send_end();
 
-    m_ns3ai_mod.cpp_recv_begin();
-    m_ns3ai_manager_id = m_ns3ai_mod.m_single_py2cpp_msg->managerId;
-    m_ns3ai_mod.cpp_recv_end();
+    msgInterface->cpp_recv_begin();
+    m_ns3ai_manager_id = msgInterface->m_single_py2cpp_msg->managerId;
+    msgInterface->cpp_recv_end();
 }
 
 AiThompsonSamplingWifiManager::~AiThompsonSamplingWifiManager()
@@ -109,14 +111,16 @@ AiThompsonSamplingWifiManager::DoCreateStation() const
 {
     NS_LOG_FUNCTION(this);
     AiThompsonSamplingWifiRemoteStation* station = new AiThompsonSamplingWifiRemoteStation();
+    Ns3AiMsgInterfaceImpl<AiThompsonSamplingEnvStruct, AiThompsonSamplingActStruct> *msgInterface =
+        Ns3AiMsgInterface::Get()->GetInterface<AiThompsonSamplingEnvStruct, AiThompsonSamplingActStruct>();
 
-    m_ns3ai_mod.cpp_send_begin();
-    m_ns3ai_mod.m_single_cpp2py_msg->type = 0x02;
-    m_ns3ai_mod.cpp_send_end();
+    msgInterface->cpp_send_begin();
+    msgInterface->m_single_cpp2py_msg->type = 0x02;
+    msgInterface->cpp_send_end();
 
-    m_ns3ai_mod.cpp_recv_begin();
-    station->m_ns3ai_station_id = m_ns3ai_mod.m_single_py2cpp_msg->stationId;
-    m_ns3ai_mod.cpp_recv_end();
+    msgInterface->cpp_recv_begin();
+    station->m_ns3ai_station_id = msgInterface->m_single_py2cpp_msg->stationId;
+    msgInterface->cpp_recv_end();
 
     return station;
 }
@@ -184,14 +188,17 @@ AiThompsonSamplingWifiManager::InitializeStation(WifiRemoteStation* st) const
 
     NS_ASSERT_MSG(!station->m_mcsStats.empty(), "No usable MCS found");
 
-    m_ns3ai_mod.cpp_send_begin();
-    m_ns3ai_mod.m_single_cpp2py_msg->type = 0x03;
-    m_ns3ai_mod.m_single_cpp2py_msg->managerId = m_ns3ai_manager_id;
-    m_ns3ai_mod.m_single_cpp2py_msg->stationId = station->m_ns3ai_station_id;
+    Ns3AiMsgInterfaceImpl<AiThompsonSamplingEnvStruct, AiThompsonSamplingActStruct> *msgInterface =
+        Ns3AiMsgInterface::Get()->GetInterface<AiThompsonSamplingEnvStruct, AiThompsonSamplingActStruct>();
+
+    msgInterface->cpp_send_begin();
+    msgInterface->m_single_cpp2py_msg->type = 0x03;
+    msgInterface->m_single_cpp2py_msg->managerId = m_ns3ai_manager_id;
+    msgInterface->m_single_cpp2py_msg->stationId = station->m_ns3ai_station_id;
 
     NS_ASSERT_MSG(station->m_mcsStats.size() <= 64, "m_mcsStats too long");
 
-    auto& s = m_ns3ai_mod.m_single_cpp2py_msg->data.stats;
+    auto& s = msgInterface->m_single_cpp2py_msg->data.stats;
     for (size_t i = 0; i < station->m_mcsStats.size(); i++)
     {
         const WifiMode mode{station->m_mcsStats.at(i).mode};
@@ -202,12 +209,12 @@ AiThompsonSamplingWifiManager::InitializeStation(WifiRemoteStation* st) const
             mode.GetDataRate(s.at(i).channelWidth, s.at(i).guardInterval, s.at(i).nss);
     }
     s[station->m_mcsStats.size()].lastDecay = -1.0;
-    m_ns3ai_mod.cpp_send_end();
+    msgInterface->cpp_send_end();
 
-    m_ns3ai_mod.cpp_recv_begin();
-    NS_ASSERT_MSG(m_ns3ai_mod.m_single_py2cpp_msg->stationId == m_ns3ai_mod.m_single_cpp2py_msg->stationId,
+    msgInterface->cpp_recv_begin();
+    NS_ASSERT_MSG(msgInterface->m_single_py2cpp_msg->stationId == msgInterface->m_single_cpp2py_msg->stationId,
                   "Error 0x03");
-    m_ns3ai_mod.cpp_recv_end();
+    msgInterface->cpp_recv_end();
 
     UpdateNextMode(st);
 }
@@ -232,19 +239,21 @@ AiThompsonSamplingWifiManager::DoReportDataFailed(WifiRemoteStation* st)
     NS_LOG_FUNCTION(this << st);
     InitializeStation(st);
     auto station = static_cast<AiThompsonSamplingWifiRemoteStation*>(st);
+    Ns3AiMsgInterfaceImpl<AiThompsonSamplingEnvStruct, AiThompsonSamplingActStruct> *msgInterface =
+        Ns3AiMsgInterface::Get()->GetInterface<AiThompsonSamplingEnvStruct, AiThompsonSamplingActStruct>();
 
-    m_ns3ai_mod.cpp_send_begin();
-    m_ns3ai_mod.m_single_cpp2py_msg->type = 0x05;
-    m_ns3ai_mod.m_single_cpp2py_msg->managerId = m_ns3ai_manager_id;
-    m_ns3ai_mod.m_single_cpp2py_msg->stationId = station->m_ns3ai_station_id;
-    m_ns3ai_mod.m_single_cpp2py_msg->data.decay.decay = m_decay;
-    m_ns3ai_mod.m_single_cpp2py_msg->data.decay.now = Simulator::Now().GetSeconds();
-    m_ns3ai_mod.cpp_send_end();
+    msgInterface->cpp_send_begin();
+    msgInterface->m_single_cpp2py_msg->type = 0x05;
+    msgInterface->m_single_cpp2py_msg->managerId = m_ns3ai_manager_id;
+    msgInterface->m_single_cpp2py_msg->stationId = station->m_ns3ai_station_id;
+    msgInterface->m_single_cpp2py_msg->data.decay.decay = m_decay;
+    msgInterface->m_single_cpp2py_msg->data.decay.now = Simulator::Now().GetSeconds();
+    msgInterface->cpp_send_end();
 
-    m_ns3ai_mod.cpp_recv_begin();
-    NS_ASSERT_MSG(m_ns3ai_mod.m_single_py2cpp_msg->stationId == m_ns3ai_mod.m_single_cpp2py_msg->stationId,
+    msgInterface->cpp_recv_begin();
+    NS_ASSERT_MSG(msgInterface->m_single_py2cpp_msg->stationId == msgInterface->m_single_cpp2py_msg->stationId,
                   "Error 0x05");
-    m_ns3ai_mod.cpp_recv_end();
+    msgInterface->cpp_recv_end();
 }
 
 void
@@ -262,19 +271,21 @@ AiThompsonSamplingWifiManager::UpdateNextMode(WifiRemoteStation* st) const
     InitializeStation(st);
     auto station = static_cast<AiThompsonSamplingWifiRemoteStation*>(st);
     NS_ASSERT(!station->m_mcsStats.empty());
+    Ns3AiMsgInterfaceImpl<AiThompsonSamplingEnvStruct, AiThompsonSamplingActStruct> *msgInterface =
+        Ns3AiMsgInterface::Get()->GetInterface<AiThompsonSamplingEnvStruct, AiThompsonSamplingActStruct>();
 
-    m_ns3ai_mod.cpp_send_begin();
-    m_ns3ai_mod.m_single_cpp2py_msg->type = 0x0a;
-    m_ns3ai_mod.m_single_cpp2py_msg->managerId = m_ns3ai_manager_id;
-    m_ns3ai_mod.m_single_cpp2py_msg->stationId = station->m_ns3ai_station_id;
-    m_ns3ai_mod.m_single_cpp2py_msg->data.decay.decay = m_decay;
-    m_ns3ai_mod.m_single_cpp2py_msg->data.decay.now = Simulator::Now().GetSeconds();
-    m_ns3ai_mod.cpp_send_end();
+    msgInterface->cpp_send_begin();
+    msgInterface->m_single_cpp2py_msg->type = 0x0a;
+    msgInterface->m_single_cpp2py_msg->managerId = m_ns3ai_manager_id;
+    msgInterface->m_single_cpp2py_msg->stationId = station->m_ns3ai_station_id;
+    msgInterface->m_single_cpp2py_msg->data.decay.decay = m_decay;
+    msgInterface->m_single_cpp2py_msg->data.decay.now = Simulator::Now().GetSeconds();
+    msgInterface->cpp_send_end();
 
-    m_ns3ai_mod.cpp_recv_begin();
-    NS_ASSERT_MSG(m_ns3ai_mod.m_single_py2cpp_msg->stationId == m_ns3ai_mod.m_single_cpp2py_msg->stationId,
+    msgInterface->cpp_recv_begin();
+    NS_ASSERT_MSG(msgInterface->m_single_py2cpp_msg->stationId == msgInterface->m_single_cpp2py_msg->stationId,
                   "Error 0x0a");
-    m_ns3ai_mod.cpp_recv_end();
+    msgInterface->cpp_recv_end();
 }
 
 void
@@ -288,19 +299,21 @@ AiThompsonSamplingWifiManager::DoReportDataOk(WifiRemoteStation* st,
     NS_LOG_FUNCTION(this << st << ackSnr << ackMode.GetUniqueName() << dataSnr);
     InitializeStation(st);
     auto station = static_cast<AiThompsonSamplingWifiRemoteStation*>(st);
+    Ns3AiMsgInterfaceImpl<AiThompsonSamplingEnvStruct, AiThompsonSamplingActStruct> *msgInterface =
+        Ns3AiMsgInterface::Get()->GetInterface<AiThompsonSamplingEnvStruct, AiThompsonSamplingActStruct>();
 
-    m_ns3ai_mod.cpp_send_begin();
-    m_ns3ai_mod.m_single_cpp2py_msg->type = 0x06;
-    m_ns3ai_mod.m_single_cpp2py_msg->managerId = m_ns3ai_manager_id;
-    m_ns3ai_mod.m_single_cpp2py_msg->stationId = station->m_ns3ai_station_id;
-    m_ns3ai_mod.m_single_cpp2py_msg->data.decay.decay = m_decay;
-    m_ns3ai_mod.m_single_cpp2py_msg->data.decay.now = Simulator::Now().GetSeconds();
-    m_ns3ai_mod.cpp_send_end();
+    msgInterface->cpp_send_begin();
+    msgInterface->m_single_cpp2py_msg->type = 0x06;
+    msgInterface->m_single_cpp2py_msg->managerId = m_ns3ai_manager_id;
+    msgInterface->m_single_cpp2py_msg->stationId = station->m_ns3ai_station_id;
+    msgInterface->m_single_cpp2py_msg->data.decay.decay = m_decay;
+    msgInterface->m_single_cpp2py_msg->data.decay.now = Simulator::Now().GetSeconds();
+    msgInterface->cpp_send_end();
 
-    m_ns3ai_mod.cpp_recv_begin();
-    NS_ASSERT_MSG(m_ns3ai_mod.m_single_py2cpp_msg->stationId == m_ns3ai_mod.m_single_cpp2py_msg->stationId,
+    msgInterface->cpp_recv_begin();
+    NS_ASSERT_MSG(msgInterface->m_single_py2cpp_msg->stationId == msgInterface->m_single_cpp2py_msg->stationId,
                   "Error 0x06");
-    m_ns3ai_mod.cpp_recv_end();
+    msgInterface->cpp_recv_end();
 }
 
 void
@@ -315,20 +328,22 @@ AiThompsonSamplingWifiManager::DoReportAmpduTxStatus(WifiRemoteStation* st,
     NS_LOG_FUNCTION(this << st << nSuccessfulMpdus << nFailedMpdus << rxSnr << dataSnr);
     InitializeStation(st);
     auto station = static_cast<AiThompsonSamplingWifiRemoteStation*>(st);
+    Ns3AiMsgInterfaceImpl<AiThompsonSamplingEnvStruct, AiThompsonSamplingActStruct> *msgInterface =
+        Ns3AiMsgInterface::Get()->GetInterface<AiThompsonSamplingEnvStruct, AiThompsonSamplingActStruct>();
 
-    m_ns3ai_mod.cpp_send_begin();
-    m_ns3ai_mod.m_single_cpp2py_msg->type = 0x07;
-    m_ns3ai_mod.m_single_cpp2py_msg->managerId = m_ns3ai_manager_id;
-    m_ns3ai_mod.m_single_cpp2py_msg->stationId = station->m_ns3ai_station_id;
-    m_ns3ai_mod.m_single_cpp2py_msg->var = (uint64_t)nSuccessfulMpdus << 32 | nFailedMpdus;
-    m_ns3ai_mod.m_single_cpp2py_msg->data.decay.decay = m_decay;
-    m_ns3ai_mod.m_single_cpp2py_msg->data.decay.now = Simulator::Now().GetSeconds();
-    m_ns3ai_mod.cpp_send_end();
+    msgInterface->cpp_send_begin();
+    msgInterface->m_single_cpp2py_msg->type = 0x07;
+    msgInterface->m_single_cpp2py_msg->managerId = m_ns3ai_manager_id;
+    msgInterface->m_single_cpp2py_msg->stationId = station->m_ns3ai_station_id;
+    msgInterface->m_single_cpp2py_msg->var = (uint64_t)nSuccessfulMpdus << 32 | nFailedMpdus;
+    msgInterface->m_single_cpp2py_msg->data.decay.decay = m_decay;
+    msgInterface->m_single_cpp2py_msg->data.decay.now = Simulator::Now().GetSeconds();
+    msgInterface->cpp_send_end();
 
-    m_ns3ai_mod.cpp_recv_begin();
-    NS_ASSERT_MSG(m_ns3ai_mod.m_single_py2cpp_msg->stationId == m_ns3ai_mod.m_single_cpp2py_msg->stationId,
+    msgInterface->cpp_recv_begin();
+    NS_ASSERT_MSG(msgInterface->m_single_py2cpp_msg->stationId == msgInterface->m_single_cpp2py_msg->stationId,
                   "Error 0x07");
-    m_ns3ai_mod.cpp_recv_end();
+    msgInterface->cpp_recv_end();
 }
 
 void
@@ -368,20 +383,22 @@ AiThompsonSamplingWifiManager::DoGetDataTxVector(WifiRemoteStation* st, uint16_t
     NS_LOG_FUNCTION(this << st);
     InitializeStation(st);
     auto station = static_cast<AiThompsonSamplingWifiRemoteStation*>(st);
+    Ns3AiMsgInterfaceImpl<AiThompsonSamplingEnvStruct, AiThompsonSamplingActStruct> *msgInterface =
+        Ns3AiMsgInterface::Get()->GetInterface<AiThompsonSamplingEnvStruct, AiThompsonSamplingActStruct>();
 
-    m_ns3ai_mod.cpp_send_begin();
-    m_ns3ai_mod.m_single_cpp2py_msg->type = 0x08;
-    m_ns3ai_mod.m_single_cpp2py_msg->managerId = m_ns3ai_manager_id;
-    m_ns3ai_mod.m_single_cpp2py_msg->stationId = station->m_ns3ai_station_id;
-    m_ns3ai_mod.cpp_send_end();
+    msgInterface->cpp_send_begin();
+    msgInterface->m_single_cpp2py_msg->type = 0x08;
+    msgInterface->m_single_cpp2py_msg->managerId = m_ns3ai_manager_id;
+    msgInterface->m_single_cpp2py_msg->stationId = station->m_ns3ai_station_id;
+    msgInterface->cpp_send_end();
 
-    m_ns3ai_mod.cpp_recv_begin();
-    WifiMode mode = station->m_mcsStats.at(m_ns3ai_mod.m_single_py2cpp_msg->res).mode;
-    uint8_t nss = m_ns3ai_mod.m_single_py2cpp_msg->stats.nss;
+    msgInterface->cpp_recv_begin();
+    WifiMode mode = station->m_mcsStats.at(msgInterface->m_single_py2cpp_msg->res).mode;
+    uint8_t nss = msgInterface->m_single_py2cpp_msg->stats.nss;
     uint16_t channelWidth =
-        std::min(m_ns3ai_mod.m_single_py2cpp_msg->stats.channelWidth, GetPhy()->GetChannelWidth());
-    uint16_t guardInterval = m_ns3ai_mod.m_single_py2cpp_msg->stats.guardInterval;
-    m_ns3ai_mod.cpp_recv_end();
+        std::min(msgInterface->m_single_py2cpp_msg->stats.channelWidth, GetPhy()->GetChannelWidth());
+    uint16_t guardInterval = msgInterface->m_single_py2cpp_msg->stats.guardInterval;
+    msgInterface->cpp_recv_end();
 
     uint64_t rate = mode.GetDataRate(channelWidth, guardInterval, nss);
     if (m_currentRate != rate)
@@ -409,20 +426,22 @@ AiThompsonSamplingWifiManager::DoGetRtsTxVector(WifiRemoteStation* st)
     NS_LOG_FUNCTION(this << st);
     InitializeStation(st);
     auto station = static_cast<AiThompsonSamplingWifiRemoteStation*>(st);
+    Ns3AiMsgInterfaceImpl<AiThompsonSamplingEnvStruct, AiThompsonSamplingActStruct> *msgInterface =
+        Ns3AiMsgInterface::Get()->GetInterface<AiThompsonSamplingEnvStruct, AiThompsonSamplingActStruct>();
 
-    m_ns3ai_mod.cpp_send_begin();
-    m_ns3ai_mod.m_single_cpp2py_msg->type = 0x09;
-    m_ns3ai_mod.m_single_cpp2py_msg->managerId = m_ns3ai_manager_id;
-    m_ns3ai_mod.m_single_cpp2py_msg->stationId = station->m_ns3ai_station_id;
-    m_ns3ai_mod.cpp_send_end();
+    msgInterface->cpp_send_begin();
+    msgInterface->m_single_cpp2py_msg->type = 0x09;
+    msgInterface->m_single_cpp2py_msg->managerId = m_ns3ai_manager_id;
+    msgInterface->m_single_cpp2py_msg->stationId = station->m_ns3ai_station_id;
+    msgInterface->cpp_send_end();
 
-    m_ns3ai_mod.cpp_recv_begin();
-    WifiMode mode = station->m_mcsStats.at(m_ns3ai_mod.m_single_py2cpp_msg->res).mode;
-    uint8_t nss = m_ns3ai_mod.m_single_py2cpp_msg->stats.nss;
+    msgInterface->cpp_recv_begin();
+    WifiMode mode = station->m_mcsStats.at(msgInterface->m_single_py2cpp_msg->res).mode;
+    uint8_t nss = msgInterface->m_single_py2cpp_msg->stats.nss;
     uint16_t channelWidth =
-        std::min(m_ns3ai_mod.m_single_py2cpp_msg->stats.channelWidth, GetPhy()->GetChannelWidth());
-    uint16_t guardInterval = m_ns3ai_mod.m_single_py2cpp_msg->stats.guardInterval;
-    m_ns3ai_mod.cpp_recv_end();
+        std::min(msgInterface->m_single_py2cpp_msg->stats.channelWidth, GetPhy()->GetChannelWidth());
+    uint16_t guardInterval = msgInterface->m_single_py2cpp_msg->stats.guardInterval;
+    msgInterface->cpp_recv_end();
 
     // Make sure control frames are sent using 1 spatial stream.
     NS_ASSERT(nss == 1);

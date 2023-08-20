@@ -894,9 +894,6 @@ PrintPythonPlotCSV(std::string filename)
     }
 }
 
-Ns3AiMsgInterface<Env, Act> m_ns3ai_mod =
-    Ns3AiMsgInterface<Env, Act>(false, true, true);
-
 void
 RestartIntervalThroughputHolDelay()
 {
@@ -908,6 +905,8 @@ RestartIntervalThroughputHolDelay()
 void
 MeasureIntervalThroughputHolDelay()
 {
+    Ns3AiMsgInterfaceImpl<Env, Act> *msgInterface =
+        Ns3AiMsgInterface::Get()->GetInterface<Env, Act>();
     // std::cout << "\nInterval T " << Simulator::Now().GetSeconds() << std::endl;
     std::map<uint32_t, std::tuple<double, double, double, double>> nodeDelays;
     for (auto it : intervalEdcaHolSample)
@@ -936,11 +935,11 @@ MeasureIntervalThroughputHolDelay()
         CreateObject<TgaxResidentialPropagationLossModel>();
     GetRxPower(propModel);
 
-    m_ns3ai_mod.cpp_send_begin();
+    msgInterface->cpp_send_begin();
     for (size_t i = 0; i < wifiNodes.GetN(); i++)
     {
         uint32_t txNodeId = wifiNodes.Get(i)->GetId();
-        auto &env_struct = m_ns3ai_mod.m_cpp2py_msg->at(txNodeId);
+        auto &env_struct = msgInterface->m_cpp2py_msg->at(txNodeId);
         env_struct.txNode = txNodeId;
         env_struct.mcs = nodeMcs[txNodeId];
         env_struct.holDelay = std::get<0>(nodeDelays[txNodeId]);
@@ -968,11 +967,11 @@ MeasureIntervalThroughputHolDelay()
             }
         }
     }
-    m_ns3ai_mod.cpp_send_end();
+    msgInterface->cpp_send_end();
 
-    m_ns3ai_mod.cpp_recv_begin();
-    double nextCca = m_ns3ai_mod.m_py2cpp_msg->at(0).newCcaSensitivity;
-    m_ns3ai_mod.cpp_recv_end();
+    msgInterface->cpp_recv_begin();
+    double nextCca = msgInterface->m_py2cpp_msg->at(0).newCcaSensitivity;
+    msgInterface->cpp_recv_end();
 
     std::cout << "At " << Simulator::Now().GetMilliSeconds() << "ms:" << std::endl;
 
@@ -1752,6 +1751,9 @@ std::unordered_map<uint64_t, int> bssNode;
 int
 main(int argc, char* argv[])
 {
+    Ns3AiMsgInterface::Get()->SetIsMemoryCreator(false);
+    Ns3AiMsgInterface::Get()->SetUseVector(true);
+    Ns3AiMsgInterface::Get()->SetHandleFinish(true);
     duration = 100;    ///< duration (in seconds)
     bool pcap = false; ///< Flag to enable/disable PCAP files generation
     uint32_t seedNumber = 1;

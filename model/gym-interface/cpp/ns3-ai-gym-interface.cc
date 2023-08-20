@@ -70,11 +70,13 @@ OpenGymInterface::Get()
 OpenGymInterface::OpenGymInterface()
     : m_simEnd(false),
       m_stopEnvRequested(false),
-      m_initSimMsgSent(false),
-      m_msgInterface(false, false, false)
+      m_initSimMsgSent(false)
 //      m_prev_cpp_send_env_cpu_cycle(0),
 //      m_prev_cpp_recv_act_cpu_cycle(0)
 {
+    Ns3AiMsgInterface::Get()->SetIsMemoryCreator(false);
+    Ns3AiMsgInterface::Get()->SetUseVector(false);
+    Ns3AiMsgInterface::Get()->SetHandleFinish(false);
 }
 
 OpenGymInterface::~OpenGymInterface()
@@ -118,18 +120,22 @@ OpenGymInterface::Init()
         simInitMsg.mutable_actspace()->CopyFrom(spaceDesc);
     }
 
+    // get the interface
+    Ns3AiMsgInterfaceImpl<Ns3AiGymMsg, Ns3AiGymMsg> *msgInterface = 
+        Ns3AiMsgInterface::Get()->GetInterface<Ns3AiGymMsg, Ns3AiGymMsg>();
+
     // send init msg to python
-    m_msgInterface.cpp_send_begin();
-    m_msgInterface.m_single_cpp2py_msg->size = simInitMsg.ByteSizeLong();
-    assert(m_msgInterface.m_single_cpp2py_msg->size <= MSG_BUFFER_SIZE);
-    simInitMsg.SerializeToArray(m_msgInterface.m_single_cpp2py_msg->buffer, m_msgInterface.m_single_cpp2py_msg->size);
-    m_msgInterface.cpp_send_end();
+    msgInterface->cpp_send_begin();
+    msgInterface->m_single_cpp2py_msg->size = simInitMsg.ByteSizeLong();
+    assert(msgInterface->m_single_cpp2py_msg->size <= MSG_BUFFER_SIZE);
+    simInitMsg.SerializeToArray(msgInterface->m_single_cpp2py_msg->buffer, msgInterface->m_single_cpp2py_msg->size);
+    msgInterface->cpp_send_end();
 
     // receive init ack msg form python
     ns3_ai_gym::SimInitAck simInitAck;
-    m_msgInterface.cpp_recv_begin();
-    simInitAck.ParseFromArray(m_msgInterface.m_single_py2cpp_msg->buffer, m_msgInterface.m_single_py2cpp_msg->size);
-    m_msgInterface.cpp_recv_end();
+    msgInterface->cpp_recv_begin();
+    simInitAck.ParseFromArray(msgInterface->m_single_py2cpp_msg->buffer, msgInterface->m_single_py2cpp_msg->size);
+    msgInterface->cpp_recv_end();
 
     bool done = simInitAck.done();
     NS_LOG_DEBUG("Sim Init Ack: " << done);
@@ -187,22 +193,26 @@ OpenGymInterface::NotifyCurrentState()
     // extra info
     envStateMsg.set_info(extraInfo);
 
+    // get the interface
+    Ns3AiMsgInterfaceImpl<Ns3AiGymMsg, Ns3AiGymMsg> *msgInterface =
+        Ns3AiMsgInterface::Get()->GetInterface<Ns3AiGymMsg, Ns3AiGymMsg>();
+
     // send env state msg to python
-    m_msgInterface.cpp_send_begin();
-    m_msgInterface.m_single_cpp2py_msg->size = envStateMsg.ByteSizeLong();
-    assert(m_msgInterface.m_single_cpp2py_msg->size <= MSG_BUFFER_SIZE);
-    envStateMsg.SerializeToArray(m_msgInterface.m_single_cpp2py_msg->buffer, m_msgInterface.m_single_cpp2py_msg->size);
+    msgInterface->cpp_send_begin();
+    msgInterface->m_single_cpp2py_msg->size = envStateMsg.ByteSizeLong();
+    assert(msgInterface->m_single_cpp2py_msg->size <= MSG_BUFFER_SIZE);
+    envStateMsg.SerializeToArray(msgInterface->m_single_cpp2py_msg->buffer, msgInterface->m_single_cpp2py_msg->size);
 //    // For benchmarking: here get CPU cycle
 //    uint64_t cpp_send_env_cpu_cycle = get_cpu_cycle_x86();
-    m_msgInterface.cpp_send_end();
+    msgInterface->cpp_send_end();
 
     // receive act msg from python
     ns3_ai_gym::EnvActMsg envActMsg;
-    m_msgInterface.cpp_recv_begin();
+    msgInterface->cpp_recv_begin();
 //    // For benchmarking: here get CPU cycle
 //    uint64_t cpp_recv_act_cpu_cycle = get_cpu_cycle_x86();
-    envActMsg.ParseFromArray(m_msgInterface.m_single_py2cpp_msg->buffer, m_msgInterface.m_single_py2cpp_msg->size);
-    m_msgInterface.cpp_recv_end();
+    envActMsg.ParseFromArray(msgInterface->m_single_py2cpp_msg->buffer, msgInterface->m_single_py2cpp_msg->size);
+    msgInterface->cpp_recv_end();
 
 //    // store transmission times
 //    uint64_t py_prev_recv_env_cpu_cycle = envActMsg.pyrecvenvcpucycle();

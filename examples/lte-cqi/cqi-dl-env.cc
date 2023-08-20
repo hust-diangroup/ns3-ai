@@ -23,7 +23,7 @@
 
 /**
  * \brief Link the shared memory with the id and set the operation lock
- * 
+ *
  * \param[in] id  shared memory id, should be the same in python and ns-3
  */
 namespace ns3 {
@@ -31,12 +31,11 @@ NS_LOG_COMPONENT_DEFINE ("cqi-dl-env");
 
 NS_OBJECT_ENSURE_REGISTERED(CQIDL);
 
-Ns3AiMsgInterface<CqiFeature, CqiPredicted> m_msgInterface =
-    Ns3AiMsgInterface<CqiFeature, CqiPredicted>(false, false, true);
-
 CQIDL::CQIDL()
 {
-//  SetCond (2, 0);
+    Ns3AiMsgInterface::Get()->SetIsMemoryCreator(false);
+    Ns3AiMsgInterface::Get()->SetUseVector(false);
+    Ns3AiMsgInterface::Get()->SetHandleFinish(true);
 }
 
 CQIDL::~CQIDL()
@@ -47,39 +46,43 @@ CQIDL::~CQIDL()
 TypeId
 CQIDL::GetTypeId()
 {
-  static TypeId tid = TypeId ("ns3::CQIDL")
-                          .SetParent<Object> ()
-                          .SetGroupName ("Ns3Ai")
-                          .AddConstructor<CQIDL> ()
-      ;
-  return tid;
+    static TypeId tid = TypeId ("ns3::CQIDL")
+                            .SetParent<Object> ()
+                            .SetGroupName ("Ns3Ai")
+                            .AddConstructor<CQIDL> ()
+        ;
+    return tid;
 }
 
 /**
  * \brief Set the value of wbcqi.
- * 
+ *
  * \param[in] cqi  the value of wbcqi to be set
  */
 void
 CQIDL::SetWbCQI (uint8_t cqi)
 {
-    m_msgInterface.cpp_send_begin();
-    m_msgInterface.m_single_cpp2py_msg->wbCqi = cqi;
-    m_msgInterface.cpp_send_end();
+    Ns3AiMsgInterfaceImpl<CqiFeature, CqiPredicted> *msgInterface =
+        Ns3AiMsgInterface::Get()->GetInterface<CqiFeature, CqiPredicted>();
+    msgInterface->cpp_send_begin();
+    msgInterface->m_single_cpp2py_msg->wbCqi = cqi;
+    msgInterface->cpp_send_end();
 }
 
 /**
  * \brief Get the predictive value of wbcqi.
- * 
+ *
  * \returns the predictive value of wbcqi
  */
 uint8_t
 CQIDL::GetWbCQI ()
 {
-  m_msgInterface.cpp_recv_begin();
-  uint8_t ret = m_msgInterface.m_single_py2cpp_msg->new_wbCqi;
-  m_msgInterface.cpp_recv_end();
-  return ret;
+    Ns3AiMsgInterfaceImpl<CqiFeature, CqiPredicted> *msgInterface =
+        Ns3AiMsgInterface::Get()->GetInterface<CqiFeature, CqiPredicted>();
+    msgInterface->cpp_recv_begin();
+    uint8_t ret = msgInterface->m_single_py2cpp_msg->new_wbCqi;
+    msgInterface->cpp_recv_end();
+    return ret;
 }
 
 } // namespace ns3

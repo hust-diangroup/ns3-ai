@@ -90,8 +90,6 @@ class OpenGymInterface : public Object
     Callback<std::string> m_extraInfoCb;
     Callback<bool, Ptr<OpenGymDataContainer>> m_actionCb;
 
-    Ns3AiMsgInterface<Ns3AiGymMsg, Ns3AiGymMsg> m_msgInterface;
-
 //    // cpu cycle count for benchmarking
 //    uint64_t m_prev_cpp_send_env_cpu_cycle;
 //    uint64_t m_prev_cpp_recv_act_cpu_cycle;

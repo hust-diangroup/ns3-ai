@@ -17,25 +17,25 @@ PYBIND11_MODULE(ns3ai_ltecqi_py, m) {
         .def_readwrite("new_wbCqi", &ns3::CqiPredicted::new_wbCqi)
         ;
 
-    py::class_<ns3::Ns3AiMsgInterface<ns3::CqiFeature, ns3::CqiPredicted>>(m, "Ns3AiMsgInterface")
+    py::class_<ns3::Ns3AiMsgInterfaceImpl<ns3::CqiFeature, ns3::CqiPredicted>>(m, "Ns3AiMsgInterfaceImpl")
         .def(py::init<bool, bool, bool, uint32_t, const char*, const char*, const char*, const char*>())
         .def("py_recv_begin",
-             &ns3::Ns3AiMsgInterface<ns3::CqiFeature,
+             &ns3::Ns3AiMsgInterfaceImpl<ns3::CqiFeature,
                                      ns3::CqiPredicted>::py_recv_begin)
         .def("py_recv_end",
-             &ns3::Ns3AiMsgInterface<ns3::CqiFeature,
+             &ns3::Ns3AiMsgInterfaceImpl<ns3::CqiFeature,
                                      ns3::CqiPredicted>::py_recv_end)
         .def("py_send_begin",
-             &ns3::Ns3AiMsgInterface<ns3::CqiFeature,
+             &ns3::Ns3AiMsgInterfaceImpl<ns3::CqiFeature,
                                      ns3::CqiPredicted>::py_send_begin)
         .def("py_send_end",
-             &ns3::Ns3AiMsgInterface<ns3::CqiFeature,
+             &ns3::Ns3AiMsgInterfaceImpl<ns3::CqiFeature,
                                      ns3::CqiPredicted>::py_send_end)
         .def("py_get_finished",
-             &ns3::Ns3AiMsgInterface<ns3::CqiFeature,
+             &ns3::Ns3AiMsgInterfaceImpl<ns3::CqiFeature,
                                      ns3::CqiPredicted>::py_get_finished)
-        .def_readwrite("m_single_cpp2py_msg", &ns3::Ns3AiMsgInterface<ns3::CqiFeature, ns3::CqiPredicted>::m_single_cpp2py_msg)
-        .def_readwrite("m_single_py2cpp_msg", &ns3::Ns3AiMsgInterface<ns3::CqiFeature, ns3::CqiPredicted>::m_single_py2cpp_msg)
+        .def_readwrite("m_single_cpp2py_msg", &ns3::Ns3AiMsgInterfaceImpl<ns3::CqiFeature, ns3::CqiPredicted>::m_single_cpp2py_msg)
+        .def_readwrite("m_single_py2cpp_msg", &ns3::Ns3AiMsgInterfaceImpl<ns3::CqiFeature, ns3::CqiPredicted>::m_single_py2cpp_msg)
         ;
 
 }

@@ -26,22 +26,22 @@ PYBIND11_MODULE(ns3ai_gym_msg_py, m) {
         })
         ;
 
-    py::class_<ns3::Ns3AiMsgInterface<Ns3AiGymMsg, Ns3AiGymMsg>>(m, "Ns3AiMsgInterface")
+    py::class_<ns3::Ns3AiMsgInterfaceImpl<Ns3AiGymMsg, Ns3AiGymMsg>>(m, "Ns3AiMsgInterfaceImpl")
         .def(py::init<bool, bool, bool, uint32_t, const char*, const char*, const char*, const char*>())
         .def("py_recv_begin",
-             &ns3::Ns3AiMsgInterface<Ns3AiGymMsg,
+             &ns3::Ns3AiMsgInterfaceImpl<Ns3AiGymMsg,
                                      Ns3AiGymMsg>::py_recv_begin)
         .def("py_recv_end",
-             &ns3::Ns3AiMsgInterface<Ns3AiGymMsg,
+             &ns3::Ns3AiMsgInterfaceImpl<Ns3AiGymMsg,
                                      Ns3AiGymMsg>::py_recv_end)
         .def("py_send_begin",
-             &ns3::Ns3AiMsgInterface<Ns3AiGymMsg,
+             &ns3::Ns3AiMsgInterfaceImpl<Ns3AiGymMsg,
                                      Ns3AiGymMsg>::py_send_begin)
         .def("py_send_end",
-             &ns3::Ns3AiMsgInterface<Ns3AiGymMsg,
+             &ns3::Ns3AiMsgInterfaceImpl<Ns3AiGymMsg,
                                      Ns3AiGymMsg>::py_send_end)
-        .def_readwrite("m_single_cpp2py_msg", &ns3::Ns3AiMsgInterface<Ns3AiGymMsg, Ns3AiGymMsg>::m_single_cpp2py_msg)
-        .def_readwrite("m_single_py2cpp_msg", &ns3::Ns3AiMsgInterface<Ns3AiGymMsg, Ns3AiGymMsg>::m_single_py2cpp_msg)
+        .def_readwrite("m_single_cpp2py_msg", &ns3::Ns3AiMsgInterfaceImpl<Ns3AiGymMsg, Ns3AiGymMsg>::m_single_cpp2py_msg)
+        .def_readwrite("m_single_py2cpp_msg", &ns3::Ns3AiMsgInterfaceImpl<Ns3AiGymMsg, Ns3AiGymMsg>::m_single_py2cpp_msg)
         ;
 
 }

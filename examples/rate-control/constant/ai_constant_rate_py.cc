@@ -20,25 +20,25 @@ PYBIND11_MODULE(ns3ai_ratecontrol_constant_py, m) {
         .def_readwrite("next_mcs", &ns3::AiConstantRateActStruct::next_mcs)
         ;
 
-    py::class_<ns3::Ns3AiMsgInterface<ns3::AiConstantRateEnvStruct, ns3::AiConstantRateActStruct>>(m, "Ns3AiMsgInterface")
+    py::class_<ns3::Ns3AiMsgInterfaceImpl<ns3::AiConstantRateEnvStruct, ns3::AiConstantRateActStruct>>(m, "Ns3AiMsgInterfaceImpl")
         .def(py::init<bool, bool, bool, uint32_t, const char*, const char*, const char*, const char*>())
         .def("py_recv_begin",
-             &ns3::Ns3AiMsgInterface<ns3::AiConstantRateEnvStruct,
+             &ns3::Ns3AiMsgInterfaceImpl<ns3::AiConstantRateEnvStruct,
                                      ns3::AiConstantRateActStruct>::py_recv_begin)
         .def("py_recv_end",
-             &ns3::Ns3AiMsgInterface<ns3::AiConstantRateEnvStruct,
+             &ns3::Ns3AiMsgInterfaceImpl<ns3::AiConstantRateEnvStruct,
                                      ns3::AiConstantRateActStruct>::py_recv_end)
         .def("py_send_begin",
-             &ns3::Ns3AiMsgInterface<ns3::AiConstantRateEnvStruct,
+             &ns3::Ns3AiMsgInterfaceImpl<ns3::AiConstantRateEnvStruct,
                                      ns3::AiConstantRateActStruct>::py_send_begin)
         .def("py_send_end",
-             &ns3::Ns3AiMsgInterface<ns3::AiConstantRateEnvStruct,
+             &ns3::Ns3AiMsgInterfaceImpl<ns3::AiConstantRateEnvStruct,
                                      ns3::AiConstantRateActStruct>::py_send_end)
         .def("py_get_finished",
-             &ns3::Ns3AiMsgInterface<ns3::AiConstantRateEnvStruct,
+             &ns3::Ns3AiMsgInterfaceImpl<ns3::AiConstantRateEnvStruct,
                                      ns3::AiConstantRateActStruct>::py_get_finished)
-        .def_readwrite("m_single_cpp2py_msg", &ns3::Ns3AiMsgInterface<ns3::AiConstantRateEnvStruct, ns3::AiConstantRateActStruct>::m_single_cpp2py_msg)
-        .def_readwrite("m_single_py2cpp_msg", &ns3::Ns3AiMsgInterface<ns3::AiConstantRateEnvStruct, ns3::AiConstantRateActStruct>::m_single_py2cpp_msg)
+        .def_readwrite("m_single_cpp2py_msg", &ns3::Ns3AiMsgInterfaceImpl<ns3::AiConstantRateEnvStruct, ns3::AiConstantRateActStruct>::m_single_cpp2py_msg)
+        .def_readwrite("m_single_py2cpp_msg", &ns3::Ns3AiMsgInterfaceImpl<ns3::AiConstantRateEnvStruct, ns3::AiConstantRateActStruct>::m_single_py2cpp_msg)
         ;
 
 }

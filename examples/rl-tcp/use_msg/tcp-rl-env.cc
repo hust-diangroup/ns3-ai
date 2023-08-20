@@ -31,12 +31,12 @@ NS_LOG_COMPONENT_DEFINE ("tcp-rl-env-msg");
 
 NS_OBJECT_ENSURE_REGISTERED(TcpTimeStepEnv);
 
-Ns3AiMsgInterface<TcpRlEnv, TcpRlAct> m_msgInterface =
-    Ns3AiMsgInterface<TcpRlEnv, TcpRlAct>(false, false, true);
-
 TcpTimeStepEnv::TcpTimeStepEnv()
 {
 //    std::cerr << "in TcpTimeStepEnv(), this = " << this << std::endl;
+    Ns3AiMsgInterface::Get()->SetIsMemoryCreator(false);
+    Ns3AiMsgInterface::Get()->SetUseVector(false);
+    Ns3AiMsgInterface::Get()->SetHandleFinish(true);
 }
 
 TcpTimeStepEnv::~TcpTimeStepEnv()
@@ -103,9 +103,12 @@ void TcpTimeStepEnv::ScheduleNotify()
 {
 
   Simulator::Schedule(m_timeStep, &TcpTimeStepEnv::ScheduleNotify, this);
+  
+  Ns3AiMsgInterfaceImpl<TcpRlEnv, TcpRlAct> *msgInterface = 
+      Ns3AiMsgInterface::Get()->GetInterface<TcpRlEnv, TcpRlAct>();
 
-  m_msgInterface.cpp_send_begin();
-  auto env = m_msgInterface.m_single_cpp2py_msg;
+  msgInterface->cpp_send_begin();
+  auto env = msgInterface->m_single_cpp2py_msg;
   env->socketUid = m_socketUuid;
   env->envType = 1;
   env->simTime_us = Simulator::Now().GetMicroSeconds();
@@ -129,13 +132,13 @@ void TcpTimeStepEnv::ScheduleNotify()
 //            << " segmentAcked=" << env->segmentsAcked
 //            << " bytesInFlightSum=" << bytesInFlightSum
 //            << std::endl;
-  m_msgInterface.cpp_send_end();
+  msgInterface->cpp_send_end();
 
-  m_msgInterface.cpp_recv_begin();
-  auto act = m_msgInterface.m_single_py2cpp_msg;
+  msgInterface->cpp_recv_begin();
+  auto act = msgInterface->m_single_py2cpp_msg;
   m_new_cWnd = act->new_cWnd;
   m_new_ssThresh = act->new_ssThresh;
-  m_msgInterface.cpp_recv_end();
+  msgInterface->cpp_recv_end();
 
 //  std::cerr << "\taction --"
 //            << " new_cWnd=" << m_new_cWnd
@@ -218,6 +221,9 @@ NS_OBJECT_ENSURE_REGISTERED(TcpEventBasedEnv);
 
 TcpEventBasedEnv::TcpEventBasedEnv()
 {
+  Ns3AiMsgInterface::Get()->SetIsMemoryCreator(false);
+  Ns3AiMsgInterface::Get()->SetUseVector(false);
+  Ns3AiMsgInterface::Get()->SetHandleFinish(true);
 }
 
 TcpEventBasedEnv::~TcpEventBasedEnv()
@@ -276,8 +282,11 @@ void TcpEventBasedEnv::RxPktTrace(Ptr<const Packet>, const TcpHeader &, Ptr<cons
 
 void TcpEventBasedEnv::Notify()
 {
-  m_msgInterface.cpp_send_begin();
-  auto env = m_msgInterface.m_single_cpp2py_msg;
+  Ns3AiMsgInterfaceImpl<TcpRlEnv, TcpRlAct> *msgInterface =
+      Ns3AiMsgInterface::Get()->GetInterface<TcpRlEnv, TcpRlAct>();
+
+  msgInterface->cpp_send_begin();
+  auto env = msgInterface->m_single_cpp2py_msg;
   env->socketUid = m_socketUuid;
   env->envType = 1;
   env->simTime_us = Simulator::Now().GetMicroSeconds();
@@ -301,13 +310,13 @@ void TcpEventBasedEnv::Notify()
             << " segmentAcked=" << env->segmentsAcked
             << " bytesInFlightSum=" << bytesInFlightSum
             << std::endl;
-  m_msgInterface.cpp_send_end();
+  msgInterface->cpp_send_end();
 
-  m_msgInterface.cpp_recv_begin();
-  auto act = m_msgInterface.m_single_py2cpp_msg;
+  msgInterface->cpp_recv_begin();
+  auto act = msgInterface->m_single_py2cpp_msg;
   m_new_cWnd = act->new_cWnd;
   m_new_ssThresh = act->new_ssThresh;
-  m_msgInterface.cpp_recv_end();
+  msgInterface->cpp_recv_end();
 
   std::cerr << "\taction --"
             << " new_cWnd=" << m_new_cWnd
