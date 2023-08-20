@@ -117,21 +117,25 @@ try:
             print("Step:", stepIdx)
             stepIdx += 1
             print("Send act:", act)
+
 except Exception as e:
     print("Exception occurred in experiment:")
     print(e)
-finally:
-    del exp
 
-if args.result:
-    if args.result_dir:
-        if not os.path.exists(args.result_dir):
-            os.mkdir(args.result_dir)
-    for res in res_list:
-        y = globals()[res]
-        x = range(len(y))
-        plt.clf()
-        plt.plot(x, y, label=res[:-2], linewidth=1, color='r')
-        plt.xlabel('Step Number')
-        plt.title('Information of {}'.format(res[:-2]))
-        plt.savefig('{}.png'.format(os.path.join(args.result_dir, res[:-2])))
+else:
+    if args.result:
+        if args.result_dir:
+            if not os.path.exists(args.result_dir):
+                os.mkdir(args.result_dir)
+        for res in res_list:
+            y = globals()[res]
+            x = range(len(y))
+            plt.clf()
+            plt.plot(x, y, label=res[:-2], linewidth=1, color='r')
+            plt.xlabel('Step Number')
+            plt.title('Information of {}'.format(res[:-2]))
+            plt.savefig('{}.png'.format(os.path.join(args.result_dir, res[:-2])))
+
+finally:
+    print("Finally exiting...")
+    del exp

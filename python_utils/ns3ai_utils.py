@@ -21,11 +21,7 @@ import os
 import subprocess
 import psutil
 import time
-
-try:
-    devnull = subprocess.DEVNULL
-except:
-    devnull = open(os.devnull, 'w')
+import signal
 
 
 SIMULATION_EARLY_ENDING = 0.5   # wait and see if the subprocess is running after creation
@@ -50,17 +46,22 @@ def run_single_ns3(path, pname, setting=None, env=None, show_output=False):
     else:
         cmd = '{} run {} --{}'.format(exec_path, pname, get_setting(setting))
     if show_output:
-        proc = subprocess.Popen(
-            cmd, shell=True, universal_newlines=True, env=env)
+        proc = subprocess.Popen(cmd, shell=True, text=True, env=env,
+                                stdin=subprocess.PIPE,
+                                preexec_fn=os.setpgrp)
     else:
-        proc = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE,
-                                stderr=devnull, universal_newlines=True, env=env)
+        proc = subprocess.Popen(cmd, shell=True, text=True, env=env,
+                                stdin=subprocess.PIPE,
+                                stdout=subprocess.PIPE,
+                                stderr=subprocess.PIPE,
+                                preexec_fn=os.setpgrp)
 
     return cmd, proc
 
 
+# used to kill the ns-3 script process and its child processes
 def kill_proc_tree(p, timeout=None, on_terminate=None):
-    print('ns3ai_utils: Killing process tree...')
+    print('ns3ai_utils: Killing subprocesses:')
     if isinstance(p, int):
         p = psutil.Process(p)
     elif not isinstance(p, psutil.Process):
@@ -68,12 +69,19 @@ def kill_proc_tree(p, timeout=None, on_terminate=None):
     ch = [p]+p.children(recursive=True)
     for c in ch:
         try:
+            print("\t-- {}, pid={}, ppid={}".format(psutil.Process(c.pid).name(), c.pid, c.ppid()))
+            print("\t   \"{}\"".format(" ".join(c.cmdline())))
             c.kill()
         except psutil.NoSuchProcess:
             continue
     succ, err = psutil.wait_procs(ch, timeout=timeout,
                                   callback=on_terminate)
     return succ, err
+
+
+def sigint_handler(sig, frame):
+    print("\nns3ai_utils: Ctrl-C detected")
+    exit(1)  # this will execute the `finally` block
 
 
 # This class sets up the shared memory and runs the simulation process.
@@ -139,6 +147,7 @@ class Experiment:
         if not self.isalive():
             print('ns3ai_utils: Subprocess died very early')
             exit(1)
+        signal.signal(signal.SIGINT, sigint_handler)
         return self.msgInterface
 
     def kill(self):
