@@ -2,12 +2,12 @@
 
 This installation works on Ubuntu 22.04 and macOS 13.0 or higher.
 
-## Prerequisites
+## Requirements
 
-- Boost C++ libraries
+1. Boost C++ libraries
     - Ubuntu: `sudo apt install libboost-all-dev`
     - macOS: `brew install boost`
-- Protocol buffers
+2. Protocol buffers
     - Ubuntu:
     ```shell
     # Recommended
@@ -22,7 +22,7 @@ This installation works on Ubuntu 22.04 and macOS 13.0 or higher.
     sudo cmake --install build
     ```
     - macOS: `brew install protobuf`
-- pybind11
+3. pybind11
     - Ubuntu:
     ```shell
     # Recommended
@@ -39,31 +39,37 @@ This installation works on Ubuntu 22.04 and macOS 13.0 or higher.
 
 ## General Setup
 
-1. Clone this repository and configure
+1. Clone this repository
 
 ```shell
 cd contrib
 git clone https://github.com/ShenMuyuan/ns3-ai.git ./ai
 cd ai
 git checkout -b improvements origin/improvements
-cd ../../
-./ns3 configure --enable-examples
 ```
 
-2. Build the `ai` library
+2. Configure and build the `ai` library
 
 ```shell
+./ns3 configure --enable-examples
 ./ns3 build ai
 ```
 
-3. Setup Gym interface
+3. Setup ns3-ai utils
 
 ```shell
-cd contrib/ns3-ai/model/gym-interface/py
+cd contrib/ai/python_utils
 pip install -e .
 ```
 
-4. Build the examples (optional)
+4. Setup Gym interface
+
+```shell
+cd contrib/ai/model/gym-interface/py
+pip install -e .
+```
+
+5. Build the examples (optional)
 
 All targets named `ns3ai_*` can be built separately.
 
