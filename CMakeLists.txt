@@ -11,7 +11,7 @@ include_directories(${pybind11_INCLUDE_DIRS})
 find_package(Protobuf CONFIG REQUIRED)
 include_directories(${Protobuf_INCLUDE_DIRS})
 
-set(msg_interface_srcs model/msg-interface/ns3-ai-msg-interface.cc)
+set(msg_interface_srcs)     # Message interface is header-only
 set(msg_interface_hdrs model/msg-interface/ns3-ai-msg-interface.h)
 set(gym_interface_srcs
         model/gym-interface/cpp/ns3-ai-gym-interface.cc
