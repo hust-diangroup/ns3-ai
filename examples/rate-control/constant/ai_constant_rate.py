@@ -53,8 +53,14 @@ try:
             get_action(msgInterface.m_single_cpp2py_msg))
         msgInterface.py_recv_end()
         msgInterface.py_send_end()
+
 except Exception as e:
     print("Exception occurred in experiment:")
     print(e)
+
+else:
+    pass
+
 finally:
+    print("Finally exiting...")
     del exp

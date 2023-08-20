@@ -93,6 +93,7 @@ delay_queue = []
 
 exp = Experiment("ns3ai_ltecqi", "../../../../", py_binding, handleFinish=True)
 msgInterface = exp.run(show_output=True)
+
 try:
     while True:
         msgInterface.py_recv_begin()
@@ -178,19 +179,21 @@ try:
         msgInterface.m_single_py2cpp_msg.new_wbCqi = CQI
         msgInterface.py_send_end()
         print("set: %d" % corrected_predict[-1])
+
 except Exception as e:
     print("Exception occurred in experiment:")
     print(e)
+
+else:
+    with open("log_" + str(delta), "a+") as f:
+        f.write("\n")
+        if len(right):
+            f.write("rate = %f %%\n" % (sum(right) / len(right)))
+        f.write("MSE_T = %f %%\n" %
+                (simple_MSE(np.array(target[delta:]), np.array(target[:-delta]))))
+        f.write("MSE_p = %f %%\n" % (simple_MSE(
+            np.array(corrected_predict[delta:]), np.array(target[:delta]))))
+
 finally:
+    print("Finally exiting...")
     del exp
-
-
-print('Finish')
-with open("log_" + str(delta), "a+") as f:
-    f.write("\n")
-    if len(right):
-        f.write("rate = %f %%\n" % (sum(right) / len(right)))
-    f.write("MSE_T = %f %%\n" %
-            (simple_MSE(np.array(target[delta:]), np.array(target[:-delta]))))
-    f.write("MSE_p = %f %%\n" % (simple_MSE(
-        np.array(corrected_predict[delta:]), np.array(target[:delta]))))

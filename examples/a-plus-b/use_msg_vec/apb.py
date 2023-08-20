@@ -21,8 +21,14 @@ try:
             msgInterface.m_py2cpp_msg[i].c = msgInterface.m_cpp2py_msg[i].a + msgInterface.m_cpp2py_msg[i].b
         msgInterface.py_recv_end()
         msgInterface.py_send_end()
+
 except Exception as e:
     print("Exception occurred in experiment:")
     print(e)
+
+else:
+    pass
+
 finally:
+    print("Finally exiting...")
     del exp

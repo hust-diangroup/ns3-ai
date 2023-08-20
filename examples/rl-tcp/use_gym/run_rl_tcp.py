@@ -75,7 +75,7 @@ stepIdx = 0
 
 ns3Settings = {
     'transport_prot': 'TcpRlTimeBased',
-    'duration': 100}
+    'duration': 1000}
 env = gym.make("ns3ai_gym_env/Ns3-v0", targetName="ns3ai_rltcp_gym",
                ns3Path="../../../../../", ns3Settings=ns3Settings)
 ob_space = env.observation_space

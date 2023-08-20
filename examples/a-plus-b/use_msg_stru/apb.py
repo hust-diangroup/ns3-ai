@@ -19,8 +19,14 @@ try:
         msgInterface.py_send_begin()
         msgInterface.m_single_py2cpp_msg.c = temp
         msgInterface.py_send_end()
+
 except Exception as e:
     print("Exception occurred in experiment:")
     print(e)
+
+else:
+    pass
+
 finally:
+    print("Finally exiting...")
     del exp

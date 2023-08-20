@@ -79,8 +79,15 @@ def kill_proc_tree(p, timeout=None, on_terminate=None):
     return succ, err
 
 
+# According to Python signal docs, after a signal is received, the
+# low-level signal handler sets a flag which tells the virtual machine
+# to execute the corresponding Python signal handler at a later point.
+#
+# As a result, a long ns-3 simulation, during which no C++-Python
+# interaction occurs (such as the beginning part of Multi-BSS example),
+# may run uninterrupted regardless of any signals received.
 def sigint_handler(sig, frame):
-    print("\nns3ai_utils: Ctrl-C detected")
+    print("\nns3ai_utils: SIGINT detected")
     exit(1)  # this will execute the `finally` block
 
 

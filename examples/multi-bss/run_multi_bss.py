@@ -259,16 +259,20 @@ try:
         msgInterface.py_send_end()
         print("new CCA: {}".format(msgInterface.m_py2cpp_msg[0].newCcaSensitivity))
         times += 1
+
 except Exception as e:
     print("Exception occurred in experiment:")
     print(e)
-finally:
-    del exp
 
-plt.figure(2)
-plt.title('Rewards')
-plt.xlabel('Episode')
-plt.ylabel('Reward')
-plt.plot(rewards)
-plt.savefig('rewards.png')
-plt.show()
+else:
+    plt.figure(2)
+    plt.title('Rewards')
+    plt.xlabel('Episode')
+    plt.ylabel('Reward')
+    plt.plot(rewards)
+    plt.savefig('rewards.png')
+    plt.show()
+
+finally:
+    print("Finally exiting...")
+    del exp

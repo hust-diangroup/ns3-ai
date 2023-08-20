@@ -45,5 +45,10 @@ try:
 except Exception as e:
     print("Exception occurred in experiment:")
     print(e)
+
+else:
+    pass
+
 finally:
+    print("Finally exiting...")
     env.close()
