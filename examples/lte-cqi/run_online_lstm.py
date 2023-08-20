@@ -167,11 +167,11 @@ try:
 
                     lstm_model_mse.fit(x=np.array(
                         train_data[-delta - batch_size:-delta]).reshape(
-                            batch_size, input_len, 1) / 10,
-                        y=np.array(target[-batch_size:]),
-                        batch_size=batch_size,
-                        epochs=1,
-                        verbose=0)
+                        batch_size, input_len, 1) / 10,
+                                       y=np.array(target[-batch_size:]),
+                                       batch_size=batch_size,
+                                       epochs=1,
+                                       verbose=0)
         else:
             corrected_predict[-1] = last[-1]
         # sm.Set(corrected_predict[-1])
