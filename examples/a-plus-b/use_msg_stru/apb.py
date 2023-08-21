@@ -8,17 +8,17 @@ msgInterface = exp.run(show_output=True)
 try:
     while True:
         # receive from C++ side
-        msgInterface.py_recv_begin()
-        if msgInterface.py_get_finished():
+        msgInterface.PyRecvBegin()
+        if msgInterface.PyGetFinished():
             break
         # calculate the sum
-        temp = msgInterface.m_single_cpp2py_msg.a + msgInterface.m_single_cpp2py_msg.b
-        msgInterface.py_recv_end()
+        temp = msgInterface.GetCpp2PyStruct().a + msgInterface.GetCpp2PyStruct().b
+        msgInterface.PyRecvEnd()
 
         # send to C++ side
-        msgInterface.py_send_begin()
-        msgInterface.m_single_py2cpp_msg.c = temp
-        msgInterface.py_send_end()
+        msgInterface.PySendBegin()
+        msgInterface.GetPy2CppStruct().c = temp
+        msgInterface.PySendEnd()
 
 except Exception as e:
     print("Exception occurred in experiment:")

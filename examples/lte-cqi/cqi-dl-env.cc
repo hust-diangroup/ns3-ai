@@ -64,9 +64,9 @@ CQIDL::SetWbCQI (uint8_t cqi)
 {
     Ns3AiMsgInterfaceImpl<CqiFeature, CqiPredicted> *msgInterface =
         Ns3AiMsgInterface::Get()->GetInterface<CqiFeature, CqiPredicted>();
-    msgInterface->cpp_send_begin();
-    msgInterface->m_single_cpp2py_msg->wbCqi = cqi;
-    msgInterface->cpp_send_end();
+    msgInterface->CppSendBegin();
+    msgInterface->GetCpp2PyStruct()->wbCqi = cqi;
+    msgInterface->CppSendEnd();
 }
 
 /**
@@ -79,9 +79,9 @@ CQIDL::GetWbCQI ()
 {
     Ns3AiMsgInterfaceImpl<CqiFeature, CqiPredicted> *msgInterface =
         Ns3AiMsgInterface::Get()->GetInterface<CqiFeature, CqiPredicted>();
-    msgInterface->cpp_recv_begin();
-    uint8_t ret = msgInterface->m_single_py2cpp_msg->new_wbCqi;
-    msgInterface->cpp_recv_end();
+    msgInterface->CppRecvBegin();
+    uint8_t ret = msgInterface->GetPy2CppStruct()->new_wbCqi;
+    msgInterface->CppRecvEnd();
     return ret;
 }
 

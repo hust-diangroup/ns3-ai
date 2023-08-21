@@ -112,10 +112,10 @@ class Ns3Env(gym.Env):
 
     def initialize_env(self):
         simInitMsg = pb.SimInitMsg()
-        self.msgInterface.py_recv_begin()
-        request = self.msgInterface.m_single_cpp2py_msg.get_buffer()
+        self.msgInterface.PyRecvBegin()
+        request = self.msgInterface.GetCpp2PyStruct().get_buffer()
         simInitMsg.ParseFromString(request)
-        self.msgInterface.py_recv_end()
+        self.msgInterface.PyRecvEnd()
 
         self.action_space = self._create_space(simInitMsg.actSpace)
         self.observation_space = self._create_space(simInitMsg.obsSpace)
@@ -126,10 +126,10 @@ class Ns3Env(gym.Env):
         reply_str = reply.SerializeToString()
         assert len(reply_str) <= py_binding.msg_buffer_size
 
-        self.msgInterface.py_send_begin()
-        self.msgInterface.m_single_py2cpp_msg.size = len(reply_str)
-        self.msgInterface.m_single_py2cpp_msg.get_buffer_full()[:len(reply_str)] = reply_str
-        self.msgInterface.py_send_end()
+        self.msgInterface.PySendBegin()
+        self.msgInterface.GetPy2CppStruct().size = len(reply_str)
+        self.msgInterface.GetPy2CppStruct().get_buffer_full()[:len(reply_str)] = reply_str
+        self.msgInterface.PySendEnd()
         return True
 
     def send_close_command(self):
@@ -142,10 +142,10 @@ class Ns3Env(gym.Env):
 
         replyMsg = reply.SerializeToString()
         assert len(replyMsg) <= py_binding.msg_buffer_size
-        self.msgInterface.py_send_begin()
-        self.msgInterface.m_single_py2cpp_msg.size = len(replyMsg)
-        self.msgInterface.m_single_py2cpp_msg.get_buffer_full()[:len(replyMsg)] = replyMsg
-        self.msgInterface.py_send_end()
+        self.msgInterface.PySendBegin()
+        self.msgInterface.GetPy2CppStruct().size = len(replyMsg)
+        self.msgInterface.GetPy2CppStruct().get_buffer_full()[:len(replyMsg)] = replyMsg
+        self.msgInterface.PySendEnd()
 
         self.newStateRx = False
         return True
@@ -155,13 +155,13 @@ class Ns3Env(gym.Env):
             return
 
         envStateMsg = pb.EnvStateMsg()
-        self.msgInterface.py_recv_begin()
+        self.msgInterface.PyRecvBegin()
         # # For benchmarking: here get CPU cycle
         # self.prev_recv_env_cycle = self.recv_env_cycle
         # self.recv_env_cycle = py_cycle.getCycle()
-        request = self.msgInterface.m_single_cpp2py_msg.get_buffer()
+        request = self.msgInterface.GetCpp2PyStruct().get_buffer()
         envStateMsg.ParseFromString(request)
-        self.msgInterface.py_recv_end()
+        self.msgInterface.PyRecvEnd()
 
         self.obsData = self._create_data(envStateMsg.obsData)
         self.reward = envStateMsg.reward
@@ -269,12 +269,12 @@ class Ns3Env(gym.Env):
 
         replyMsg = reply.SerializeToString()
         assert len(replyMsg) <= py_binding.msg_buffer_size
-        self.msgInterface.py_send_begin()
-        self.msgInterface.m_single_py2cpp_msg.size = len(replyMsg)
-        self.msgInterface.m_single_py2cpp_msg.get_buffer_full()[:len(replyMsg)] = replyMsg
+        self.msgInterface.PySendBegin()
+        self.msgInterface.GetPy2CppStruct().size = len(replyMsg)
+        self.msgInterface.GetPy2CppStruct().get_buffer_full()[:len(replyMsg)] = replyMsg
         # # For benchmarking: here get CPU cycle
         # self.prev_send_act_cycle = py_cycle.getCycle()
-        self.msgInterface.py_send_end()
+        self.msgInterface.PySendEnd()
         self.newStateRx = False
         return True
 

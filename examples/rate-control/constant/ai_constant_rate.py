@@ -45,14 +45,14 @@ msgInterface = exp.run(setting=ns3Settings, show_output=True)
 
 try:
     while True:
-        msgInterface.py_recv_begin()
-        msgInterface.py_send_begin()
-        if msgInterface.py_get_finished():
+        msgInterface.PyRecvBegin()
+        msgInterface.PySendBegin()
+        if msgInterface.PyGetFinished():
             break
-        msgInterface.m_single_py2cpp_msg.nss, msgInterface.m_single_py2cpp_msg.next_mcs = (
-            get_action(msgInterface.m_single_cpp2py_msg))
-        msgInterface.py_recv_end()
-        msgInterface.py_send_end()
+        msgInterface.GetPy2CppStruct().nss, msgInterface.GetPy2CppStruct().next_mcs = (
+            get_action(msgInterface.GetCpp2PyStruct()))
+        msgInterface.PyRecvEnd()
+        msgInterface.PySendEnd()
 
 except Exception as e:
     print("Exception occurred in experiment:")

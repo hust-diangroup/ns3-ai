@@ -96,13 +96,13 @@ msgInterface = exp.run(show_output=True)
 
 try:
     while True:
-        msgInterface.py_recv_begin()
-        if msgInterface.py_get_finished():
+        msgInterface.PyRecvBegin()
+        if msgInterface.PyGetFinished():
             break
         gc.collect()
         # Get CQI
-        CQI = msgInterface.m_single_cpp2py_msg.wbCqi
-        msgInterface.py_recv_end()
+        CQI = msgInterface.GetCpp2PyStruct().wbCqi
+        msgInterface.PyRecvEnd()
 
         if CQI > 15:
             break
@@ -114,9 +114,9 @@ try:
         else:
             CQI = delay_queue[-delta]
         if not_train:
-            msgInterface.py_send_begin()
-            msgInterface.m_single_py2cpp_msg.new_wbCqi = CQI
-            msgInterface.py_send_end()
+            msgInterface.PySendBegin()
+            msgInterface.GetPy2CppStruct().new_wbCqi = CQI
+            msgInterface.PySendEnd()
             continue
         cqi_queue.append(CQI)
         if len(cqi_queue) >= input_len + delta:
@@ -125,9 +125,9 @@ try:
             one_data = cqi_queue[-input_len:]
             train_data.append(one_data)
         else:
-            msgInterface.py_send_begin()
-            msgInterface.m_single_py2cpp_msg.new_wbCqi = CQI
-            msgInterface.py_send_end()
+            msgInterface.PySendBegin()
+            msgInterface.GetPy2CppStruct().new_wbCqi = CQI
+            msgInterface.PySendEnd()
             old_print("set: %d" % CQI)
             continue
 
@@ -156,9 +156,9 @@ try:
             else:
                 corrected_predict[-1] = last[-1]
                 if err_t <= 1e-6:
-                    msgInterface.py_send_begin()
-                    msgInterface.m_single_py2cpp_msg.new_wbCqi = CQI
-                    msgInterface.py_send_end()
+                    msgInterface.PySendBegin()
+                    msgInterface.GetPy2CppStruct().new_wbCqi = CQI
+                    msgInterface.PySendEnd()
                     print("set: %d" % CQI)
                     continue
                 else:
@@ -175,9 +175,9 @@ try:
         else:
             corrected_predict[-1] = last[-1]
         # sm.Set(corrected_predict[-1])
-        msgInterface.py_send_begin()
-        msgInterface.m_single_py2cpp_msg.new_wbCqi = CQI
-        msgInterface.py_send_end()
+        msgInterface.PySendBegin()
+        msgInterface.GetPy2CppStruct().new_wbCqi = CQI
+        msgInterface.PySendEnd()
         print("set: %d" % corrected_predict[-1])
 
 except Exception as e:

@@ -83,7 +83,7 @@ get: 13;13;19;
 ......
 ```
 
-## Quickstart on ns3-ai
+## Quickstart
 
 
 ### 2. Message interface (struct version)
@@ -133,7 +133,7 @@ into shared memory, just write them into `m_single_cpp2py_msg`. To get the sum, 
 
 ```c++
 for (int i = 0; i < NUM_ENV; ++i) {
-    cpp_side.cpp_send_begin();
+    cpp_side.CppSendBegin();
     std::cout << "set: ";
     uint32_t temp_a = distrib(gen);
     uint32_t temp_b = distrib(gen);
@@ -141,18 +141,18 @@ for (int i = 0; i < NUM_ENV; ++i) {
     cpp_side.m_single_cpp2py_msg->env_a = temp_a;
     cpp_side.m_single_cpp2py_msg->env_b = temp_b;
     std::cout << "\n";
-    cpp_side.cpp_send_end();
+    cpp_side.CppSendEnd();
 
-    cpp_side.cpp_recv_begin();
+    cpp_side.CppRecvBegin();
     std::cout << "get: ";
     std::cout << cpp_side.m_single_py2cpp_msg->act_c;
     std::cout << "\n";
-    cpp_side.cpp_recv_end();
+    cpp_side.CppRecvEnd();
 }
 ```
 
-Note that before and after read or write, several **synchronization** functions are needed. `cpp_send_begin` and `cpp_send_end` 
-are for sending to Python, and `cpp_recv_begin` and `cpp_recv_end` are for receiving from Python. There are similar 
+Note that before and after read or write, several **synchronization** functions are needed. `CppSendBegin` and `CppSendEnd` 
+are for sending to Python, and `CppRecvBegin` and `CppRecvEnd` are for receiving from Python. There are similar 
 functions for Python side. These functions are based on semaphore, which requires strict sequence. If C++ side is receiving 
 at the beginning, then Python side must be sending at the beginning. 
 [The OSTEP book](https://pages.cs.wisc.edu/~remzi/OSTEP/threads-sema.pdf) has a good introduction of semaphores.
@@ -223,16 +223,16 @@ py::class_<ActStruct>(m, "PyActStruct")
 ```
 
 3. Bind the C++ class. Every function or member that Python may use (not necessarily all) need to be mentioned in the binding code. 
-In this binding, C++-only methods such as `cpp_send_begin` is excluded because Python side never use it.
+In this binding, C++-only methods such as `CppSendBegin` is excluded because Python side never use it.
 
 ```c++
 py::class_<ns3::Ns3AiMsgInterface<EnvStruct, ActStruct>>(m, "Ns3AiMsgInterface")
     .def(py::init<bool, bool, bool, uint32_t, const char*, const char*, const char*, const char*>())
-    .def("py_recv_begin", &ns3::Ns3AiMsgInterface<EnvStruct, ActStruct>::py_recv_begin)
-    .def("py_recv_end", &ns3::Ns3AiMsgInterface<EnvStruct, ActStruct>::py_recv_end)
-    .def("py_send_begin", &ns3::Ns3AiMsgInterface<EnvStruct, ActStruct>::py_send_begin)
-    .def("py_send_end", &ns3::Ns3AiMsgInterface<EnvStruct, ActStruct>::py_send_end)
-    .def("py_get_finished", &ns3::Ns3AiMsgInterface<EnvStruct, ActStruct>::py_get_finished)
+    .def("PyRecvBegin", &ns3::Ns3AiMsgInterface<EnvStruct, ActStruct>::PyRecvBegin)
+    .def("PyRecvEnd", &ns3::Ns3AiMsgInterface<EnvStruct, ActStruct>::PyRecvEnd)
+    .def("PySendBegin", &ns3::Ns3AiMsgInterface<EnvStruct, ActStruct>::PySendBegin)
+    .def("PySendEnd", &ns3::Ns3AiMsgInterface<EnvStruct, ActStruct>::PySendEnd)
+    .def("PyGetFinished", &ns3::Ns3AiMsgInterface<EnvStruct, ActStruct>::PyGetFinished)
     .def_readwrite("m_single_cpp2py_msg", &ns3::Ns3AiMsgInterface<EnvStruct, ActStruct>::m_single_cpp2py_msg)
     .def_readwrite("m_single_py2cpp_msg", &ns3::Ns3AiMsgInterface<EnvStruct, ActStruct>::m_single_py2cpp_msg)
     ;
@@ -253,15 +253,15 @@ Interaction with C++:
 
 ```python
 while True:
-    rl.py_recv_begin()
-    if rl.py_get_finished():
+    rl.PyRecvBegin()
+    if rl.PyGetFinished():
         break
     temp = rl.m_single_cpp2py_msg.a + rl.m_single_cpp2py_msg.b
-    rl.py_recv_end()
+    rl.PyRecvEnd()
 
-    rl.py_send_begin()
+    rl.PySendBegin()
     rl.m_single_py2cpp_msg.c = temp
-    rl.py_send_end()
+    rl.PySendEnd()
 ```
 
 Remember to destroy the interface before exit:
@@ -311,7 +311,7 @@ vector's size is `APB_SIZE`, and writes random numbers to the whole vector in th
 
 ```c++
 for (int i = 0; i < NUM_ENV; ++i) {
-    cpp_side.cpp_send_begin();
+    cpp_side.CppSendBegin();
     std::cout << "set: ";
     for (int j = 0; j < APB_SIZE; ++j) {
         uint32_t temp_a = distrib(gen);
@@ -321,15 +321,15 @@ for (int i = 0; i < NUM_ENV; ++i) {
         cpp_side.m_cpp2py_msg->at(j).env_b = temp_b;
     }
     std::cout << "\n";
-    cpp_side.cpp_send_end();
+    cpp_side.CppSendEnd();
 
-    cpp_side.cpp_recv_begin();
+    cpp_side.CppRecvBegin();
     std::cout << "get: ";
     for (ActStruct j: *cpp_side.m_py2cpp_msg) {
         std::cout << j.act_c << ";";
     }
     std::cout << "\n";
-    cpp_side.cpp_recv_end();
+    cpp_side.CppRecvEnd();
 }
 ```
 
@@ -390,18 +390,18 @@ Interact with C++:
 
 ```python
 while True:
-    rl.py_recv_begin()
-    rl.py_send_begin()
-    if rl.py_get_finished():
+    rl.PyRecvBegin()
+    rl.PySendBegin()
+    if rl.PyGetFinished():
         break
     for i in range(len(rl.m_cpp2py_msg)):
         rl.m_py2cpp_msg[i].c = rl.m_cpp2py_msg[i].a + rl.m_cpp2py_msg[i].b
-    rl.py_recv_end()
-    rl.py_send_end()
+    rl.PyRecvEnd()
+    rl.PySendEnd()
 ```
 
-In the above code, `py_send_begin` is called before `py_recv_end`. This won't cause errors because C++ is not posting on 
-the semaphore `m_py2cpp_empty_count` which `py_send_begin` is waiting until `py_send_end` completes.
+In the above code, `PySendBegin` is called before `PyRecvEnd`. This won't cause errors because C++ is not posting on 
+the semaphore `m_py2cpp_empty_count` which `PySendBegin` is waiting until `PySendEnd` completes.
 
 #### Running the example
 

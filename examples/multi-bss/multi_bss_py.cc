@@ -73,13 +73,22 @@ PYBIND11_MODULE(ns3ai_multibss_py, m) {
 
     py::class_<ns3::Ns3AiMsgInterfaceImpl<Env, Act>>(m, "Ns3AiMsgInterfaceImpl")
         .def(py::init<bool, bool, bool, uint32_t, const char*, const char*, const char*, const char*>())
-        .def("py_recv_begin", &ns3::Ns3AiMsgInterfaceImpl<Env, Act>::py_recv_begin)
-        .def("py_recv_end", &ns3::Ns3AiMsgInterfaceImpl<Env, Act>::py_recv_end)
-        .def("py_send_begin", &ns3::Ns3AiMsgInterfaceImpl<Env, Act>::py_send_begin)
-        .def("py_send_end", &ns3::Ns3AiMsgInterfaceImpl<Env, Act>::py_send_end)
-        .def("py_get_finished", &ns3::Ns3AiMsgInterfaceImpl<Env, Act>::py_get_finished)
-        .def_readwrite("m_cpp2py_msg", &ns3::Ns3AiMsgInterfaceImpl<Env, Act>::m_cpp2py_msg)
-        .def_readwrite("m_py2cpp_msg", &ns3::Ns3AiMsgInterfaceImpl<Env, Act>::m_py2cpp_msg)
+        .def("PyRecvBegin",
+             &ns3::Ns3AiMsgInterfaceImpl<Env, Act>::PyRecvBegin)
+        .def("PyRecvEnd",
+             &ns3::Ns3AiMsgInterfaceImpl<Env, Act>::PyRecvEnd)
+        .def("PySendBegin",
+             &ns3::Ns3AiMsgInterfaceImpl<Env, Act>::PySendBegin)
+        .def("PySendEnd",
+             &ns3::Ns3AiMsgInterfaceImpl<Env, Act>::PySendEnd)
+        .def("PyGetFinished",
+             &ns3::Ns3AiMsgInterfaceImpl<Env, Act>::PyGetFinished)
+        .def("GetCpp2PyVector",
+             &ns3::Ns3AiMsgInterfaceImpl<Env, Act>::GetCpp2PyVector,
+             py::return_value_policy::reference)
+        .def("GetPy2CppVector",
+             &ns3::Ns3AiMsgInterfaceImpl<Env, Act>::GetPy2CppVector,
+             py::return_value_policy::reference)
         ;
 
 }

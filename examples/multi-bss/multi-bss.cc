@@ -935,11 +935,11 @@ MeasureIntervalThroughputHolDelay()
         CreateObject<TgaxResidentialPropagationLossModel>();
     GetRxPower(propModel);
 
-    msgInterface->cpp_send_begin();
+    msgInterface->CppSendBegin();
     for (size_t i = 0; i < wifiNodes.GetN(); i++)
     {
         uint32_t txNodeId = wifiNodes.Get(i)->GetId();
-        auto &env_struct = msgInterface->m_cpp2py_msg->at(txNodeId);
+        auto &env_struct = msgInterface->GetCpp2PyVector()->at(txNodeId);
         env_struct.txNode = txNodeId;
         env_struct.mcs = nodeMcs[txNodeId];
         env_struct.holDelay = std::get<0>(nodeDelays[txNodeId]);
@@ -967,11 +967,11 @@ MeasureIntervalThroughputHolDelay()
             }
         }
     }
-    msgInterface->cpp_send_end();
+    msgInterface->CppSendEnd();
 
-    msgInterface->cpp_recv_begin();
-    double nextCca = msgInterface->m_py2cpp_msg->at(0).newCcaSensitivity;
-    msgInterface->cpp_recv_end();
+    msgInterface->CppRecvBegin();
+    double nextCca = msgInterface->GetPy2CppVector()->at(0).newCcaSensitivity;
+    msgInterface->CppRecvEnd();
 
     std::cout << "At " << Simulator::Now().GetMilliSeconds() << "ms:" << std::endl;
 

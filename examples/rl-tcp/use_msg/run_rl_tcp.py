@@ -82,17 +82,17 @@ msgInterface = exp.run(setting=ns3Settings, show_output=True)
 try:
     while True:
         # receive observation from C++
-        msgInterface.py_recv_begin()
-        if msgInterface.py_get_finished():
+        msgInterface.PyRecvBegin()
+        if msgInterface.PyGetFinished():
             print("Simulation ended")
             break
-        ssThresh = msgInterface.m_single_cpp2py_msg.ssThresh
-        cWnd = msgInterface.m_single_cpp2py_msg.cWnd
-        segmentsAcked = msgInterface.m_single_cpp2py_msg.segmentsAcked
-        segmentSize = msgInterface.m_single_cpp2py_msg.segmentSize
-        bytesInFlight = msgInterface.m_single_cpp2py_msg.bytesInFlight
-        socketId = msgInterface.m_single_cpp2py_msg.socketUid
-        msgInterface.py_recv_end()
+        ssThresh = msgInterface.GetCpp2PyStruct().ssThresh
+        cWnd = msgInterface.GetCpp2PyStruct().cWnd
+        segmentsAcked = msgInterface.GetCpp2PyStruct().segmentsAcked
+        segmentSize = msgInterface.GetCpp2PyStruct().segmentSize
+        bytesInFlight = msgInterface.GetCpp2PyStruct().bytesInFlight
+        socketId = msgInterface.GetCpp2PyStruct().socketUid
+        msgInterface.PyRecvEnd()
 
         obs = [ssThresh, cWnd, segmentsAcked, segmentSize, bytesInFlight]
         if args.show_log:
@@ -108,10 +108,10 @@ try:
         new_ssThresh = act[1]
 
         # send action to C++
-        msgInterface.py_send_begin()
-        msgInterface.m_single_py2cpp_msg.new_cWnd = new_cWnd
-        msgInterface.m_single_py2cpp_msg.new_ssThresh = new_ssThresh
-        msgInterface.py_send_end()
+        msgInterface.PySendBegin()
+        msgInterface.GetPy2CppStruct().new_cWnd = new_cWnd
+        msgInterface.GetPy2CppStruct().new_ssThresh = new_ssThresh
+        msgInterface.PySendEnd()
 
         if args.show_log:
             print("Step:", stepIdx)

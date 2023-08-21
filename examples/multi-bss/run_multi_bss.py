@@ -210,25 +210,25 @@ msgInterface = exp.run(setting=ns3Settings, show_output=True)
 try:
     while True:
         # Get current state from C++
-        msgInterface.py_recv_begin()
-        if msgInterface.py_get_finished():
+        msgInterface.PyRecvBegin()
+        if msgInterface.PyGetFinished():
             print("Finished")
             break
         throughput = 0
         for i in range(n_total):
-            txNode = msgInterface.m_cpp2py_msg[i].txNode
+            txNode = msgInterface.GetCpp2PyVector()[i].txNode
             # print("processing i {} txNode {}".format(i, txNode))
             for j in range(n_sta+1):
-                state[j, txNode] = msgInterface.m_cpp2py_msg[i].rxPower[j]
-            # state[:, txNode] = msgInterface.m_cpp2py_msg[i].rxPower
+                state[j, txNode] = msgInterface.GetCpp2PyVector()[i].rxPower[j]
+            # state[:, txNode] = msgInterface.GetCpp2PyVector()[i].rxPower
             if txNode % n_ap == 0:  # record mcs in BSS-0
-                state[int(txNode/n_ap)][-1] = msgInterface.m_cpp2py_msg[i].mcs
+                state[int(txNode/n_ap)][-1] = msgInterface.GetCpp2PyVector()[i].mcs
             if txNode == n_ap:     # record delay and tpt of the VR node
-                vrDelay = msgInterface.m_cpp2py_msg[i].holDelay
-                vrThroughput = msgInterface.m_cpp2py_msg[i].throughput
+                vrDelay = msgInterface.GetCpp2PyVector()[i].holDelay
+                vrThroughput = msgInterface.GetCpp2PyVector()[i].throughput
             # Sum all nodes' throughput
-            throughput += msgInterface.m_cpp2py_msg[i].throughput
-        msgInterface.py_recv_end()
+            throughput += msgInterface.GetCpp2PyVector()[i].throughput
+        msgInterface.PyRecvEnd()
 
         print("step = {}, VR avg delay = {} ms, VR UL tpt = {} Mbps, total UL tpt = {} Mbps".format(
             times, vrDelay, vrThroughput, throughput
@@ -254,10 +254,10 @@ try:
             target_net.load_state_dict(target_net_state_dict)
 
         # put the action back to C++
-        msgInterface.py_send_begin()
-        msgInterface.m_py2cpp_msg[0].newCcaSensitivity = -82 + action
-        msgInterface.py_send_end()
-        print("new CCA: {}".format(msgInterface.m_py2cpp_msg[0].newCcaSensitivity))
+        msgInterface.PySendBegin()
+        msgInterface.GetPy2CppVector()[0].newCcaSensitivity = -82 + action
+        msgInterface.PySendEnd()
+        print("new CCA: {}".format(msgInterface.GetPy2CppVector()[0].newCcaSensitivity))
         times += 1
 
 except Exception as e:

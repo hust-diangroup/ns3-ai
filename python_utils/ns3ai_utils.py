@@ -72,7 +72,7 @@ def kill_proc_tree(p, timeout=None, on_terminate=None):
             print("\t-- {}, pid={}, ppid={}".format(psutil.Process(c.pid).name(), c.pid, c.ppid()))
             print("\t   \"{}\"".format(" ".join(c.cmdline())))
             c.kill()
-        except psutil.NoSuchProcess:
+        except Exception as e:
             continue
     succ, err = psutil.wait_procs(ch, timeout=timeout,
                                   callback=on_terminate)
@@ -84,8 +84,8 @@ def kill_proc_tree(p, timeout=None, on_terminate=None):
 # to execute the corresponding Python signal handler at a later point.
 #
 # As a result, a long ns-3 simulation, during which no C++-Python
-# interaction occurs (such as the beginning part of Multi-BSS example),
-# may run uninterrupted regardless of any signals received.
+# interaction occurs (such as the Multi-BSS example), may run uninterrupted
+# for a long time regardless of any signals received.
 def sigint_handler(sig, frame):
     print("\nns3ai_utils: SIGINT detected")
     exit(1)  # this will execute the `finally` block
@@ -129,8 +129,8 @@ class Experiment:
         if self.useVector:
             if self.vectorSize is None:
                 raise Exception('ns3ai_utils: Error: Using vector but size is unknown')
-            self.msgInterface.m_py2cpp_msg.resize(self.vectorSize)
-            self.msgInterface.m_cpp2py_msg.resize(self.vectorSize)
+            self.msgInterface.GetCpp2PyVector().resize(self.vectorSize)
+            self.msgInterface.GetPy2CppVector().resize(self.vectorSize)
 
         self.proc = None
         self.simCmd = None

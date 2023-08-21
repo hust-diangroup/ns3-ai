@@ -28,20 +28,20 @@ PYBIND11_MODULE(ns3ai_gym_msg_py, m) {
 
     py::class_<ns3::Ns3AiMsgInterfaceImpl<Ns3AiGymMsg, Ns3AiGymMsg>>(m, "Ns3AiMsgInterfaceImpl")
         .def(py::init<bool, bool, bool, uint32_t, const char*, const char*, const char*, const char*>())
-        .def("py_recv_begin",
-             &ns3::Ns3AiMsgInterfaceImpl<Ns3AiGymMsg,
-                                     Ns3AiGymMsg>::py_recv_begin)
-        .def("py_recv_end",
-             &ns3::Ns3AiMsgInterfaceImpl<Ns3AiGymMsg,
-                                     Ns3AiGymMsg>::py_recv_end)
-        .def("py_send_begin",
-             &ns3::Ns3AiMsgInterfaceImpl<Ns3AiGymMsg,
-                                     Ns3AiGymMsg>::py_send_begin)
-        .def("py_send_end",
-             &ns3::Ns3AiMsgInterfaceImpl<Ns3AiGymMsg,
-                                     Ns3AiGymMsg>::py_send_end)
-        .def_readwrite("m_single_cpp2py_msg", &ns3::Ns3AiMsgInterfaceImpl<Ns3AiGymMsg, Ns3AiGymMsg>::m_single_cpp2py_msg)
-        .def_readwrite("m_single_py2cpp_msg", &ns3::Ns3AiMsgInterfaceImpl<Ns3AiGymMsg, Ns3AiGymMsg>::m_single_py2cpp_msg)
+        .def("PyRecvBegin",
+             &ns3::Ns3AiMsgInterfaceImpl<Ns3AiGymMsg, Ns3AiGymMsg>::PyRecvBegin)
+        .def("PyRecvEnd",
+             &ns3::Ns3AiMsgInterfaceImpl<Ns3AiGymMsg, Ns3AiGymMsg>::PyRecvEnd)
+        .def("PySendBegin",
+             &ns3::Ns3AiMsgInterfaceImpl<Ns3AiGymMsg, Ns3AiGymMsg>::PySendBegin)
+        .def("PySendEnd",
+             &ns3::Ns3AiMsgInterfaceImpl<Ns3AiGymMsg, Ns3AiGymMsg>::PySendEnd)
+        .def("GetCpp2PyStruct",
+             &ns3::Ns3AiMsgInterfaceImpl<Ns3AiGymMsg, Ns3AiGymMsg>::GetCpp2PyStruct,
+             py::return_value_policy::reference)
+        .def("GetPy2CppStruct",
+             &ns3::Ns3AiMsgInterfaceImpl<Ns3AiGymMsg, Ns3AiGymMsg>::GetPy2CppStruct,
+             py::return_value_policy::reference)
         ;
 
 }

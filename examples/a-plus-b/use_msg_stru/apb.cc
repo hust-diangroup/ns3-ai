@@ -21,21 +21,21 @@ int main() {
     std::uniform_int_distribution<int> distrib(1, 10);
 
     for (int i = 0; i < NUM_ENV; ++i) {
-        msgInterface->cpp_send_begin();
+        msgInterface->CppSendBegin();
         std::cout << "set: ";
         uint32_t temp_a = distrib(gen);
         uint32_t temp_b = distrib(gen);
         std::cout << temp_a << "," << temp_b << ";";
-        msgInterface->m_single_cpp2py_msg->env_a = temp_a;
-        msgInterface->m_single_cpp2py_msg->env_b = temp_b;
+        msgInterface->GetCpp2PyStruct()->env_a = temp_a;
+        msgInterface->GetCpp2PyStruct()->env_b = temp_b;
         std::cout << "\n";
-        msgInterface->cpp_send_end();
+        msgInterface->CppSendEnd();
 
-        msgInterface->cpp_recv_begin();
+        msgInterface->CppRecvBegin();
         std::cout << "get: ";
-        std::cout << msgInterface->m_single_py2cpp_msg->act_c;
+        std::cout << msgInterface->GetPy2CppStruct()->act_c;
         std::cout << "\n";
-        msgInterface->cpp_recv_end();
+        msgInterface->CppRecvEnd();
     }
 
 }

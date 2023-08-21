@@ -136,21 +136,21 @@ AiConstantRateWifiManager::DoGetDataTxVector(WifiRemoteStation* st, uint16_t all
     Ns3AiMsgInterfaceImpl<AiConstantRateEnvStruct, AiConstantRateActStruct> *msgInterface = 
         Ns3AiMsgInterface::Get()->GetInterface<AiConstantRateEnvStruct, AiConstantRateActStruct>();
 
-    msgInterface->cpp_send_begin();
-    msgInterface->m_single_cpp2py_msg->transmitStreams = GetMaxNumberOfTransmitStreams();
-    msgInterface->m_single_cpp2py_msg->supportedStreams = GetNumberOfSupportedStreams(st);
+    msgInterface->CppSendBegin();
+    msgInterface->GetCpp2PyStruct()->transmitStreams = GetMaxNumberOfTransmitStreams();
+    msgInterface->GetCpp2PyStruct()->supportedStreams = GetNumberOfSupportedStreams(st);
     if (m_dataMode.GetModulationClass() == WIFI_MOD_CLASS_HT) {
-        msgInterface->m_single_cpp2py_msg->mcs = m_dataMode.GetMcsValue();
+        msgInterface->GetCpp2PyStruct()->mcs = m_dataMode.GetMcsValue();
     } else {
-        msgInterface->m_single_cpp2py_msg->mcs = 0xffU;
+        msgInterface->GetCpp2PyStruct()->mcs = 0xffU;
     }
-    msgInterface->cpp_send_end();
+    msgInterface->CppSendEnd();
 
-    msgInterface->cpp_recv_begin();
-    uint8_t nss = msgInterface->m_single_py2cpp_msg->nss;
-    uint8_t next_mcs = msgInterface->m_single_py2cpp_msg->next_mcs;
+    msgInterface->CppRecvBegin();
+    uint8_t nss = msgInterface->GetPy2CppStruct()->nss;
+    uint8_t next_mcs = msgInterface->GetPy2CppStruct()->next_mcs;
     NS_LOG_FUNCTION(next_mcs);
-    msgInterface->cpp_recv_end();
+    msgInterface->CppRecvEnd();
 
     // uncomment to specify arbitrary MCS
     // m_dataMode = GetMcsSupported (st, next_mcs);

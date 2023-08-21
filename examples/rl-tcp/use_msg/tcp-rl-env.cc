@@ -107,8 +107,8 @@ void TcpTimeStepEnv::ScheduleNotify()
   Ns3AiMsgInterfaceImpl<TcpRlEnv, TcpRlAct> *msgInterface = 
       Ns3AiMsgInterface::Get()->GetInterface<TcpRlEnv, TcpRlAct>();
 
-  msgInterface->cpp_send_begin();
-  auto env = msgInterface->m_single_cpp2py_msg;
+  msgInterface->CppSendBegin();
+  auto env = msgInterface->GetCpp2PyStruct();
   env->socketUid = m_socketUuid;
   env->envType = 1;
   env->simTime_us = Simulator::Now().GetMicroSeconds();
@@ -132,13 +132,13 @@ void TcpTimeStepEnv::ScheduleNotify()
 //            << " segmentAcked=" << env->segmentsAcked
 //            << " bytesInFlightSum=" << bytesInFlightSum
 //            << std::endl;
-  msgInterface->cpp_send_end();
+  msgInterface->CppSendEnd();
 
-  msgInterface->cpp_recv_begin();
-  auto act = msgInterface->m_single_py2cpp_msg;
+  msgInterface->CppRecvBegin();
+  auto act = msgInterface->GetPy2CppStruct();
   m_new_cWnd = act->new_cWnd;
   m_new_ssThresh = act->new_ssThresh;
-  msgInterface->cpp_recv_end();
+  msgInterface->CppRecvEnd();
 
 //  std::cerr << "\taction --"
 //            << " new_cWnd=" << m_new_cWnd
@@ -285,8 +285,8 @@ void TcpEventBasedEnv::Notify()
   Ns3AiMsgInterfaceImpl<TcpRlEnv, TcpRlAct> *msgInterface =
       Ns3AiMsgInterface::Get()->GetInterface<TcpRlEnv, TcpRlAct>();
 
-  msgInterface->cpp_send_begin();
-  auto env = msgInterface->m_single_cpp2py_msg;
+  msgInterface->CppSendBegin();
+  auto env = msgInterface->GetCpp2PyStruct();
   env->socketUid = m_socketUuid;
   env->envType = 1;
   env->simTime_us = Simulator::Now().GetMicroSeconds();
@@ -310,13 +310,13 @@ void TcpEventBasedEnv::Notify()
             << " segmentAcked=" << env->segmentsAcked
             << " bytesInFlightSum=" << bytesInFlightSum
             << std::endl;
-  msgInterface->cpp_send_end();
+  msgInterface->CppSendEnd();
 
-  msgInterface->cpp_recv_begin();
-  auto act = msgInterface->m_single_py2cpp_msg;
+  msgInterface->CppRecvBegin();
+  auto act = msgInterface->GetPy2CppStruct();
   m_new_cWnd = act->new_cWnd;
   m_new_ssThresh = act->new_ssThresh;
-  msgInterface->cpp_recv_end();
+  msgInterface->CppRecvEnd();
 
   std::cerr << "\taction --"
             << " new_cWnd=" << m_new_cWnd

@@ -125,17 +125,17 @@ OpenGymInterface::Init()
         Ns3AiMsgInterface::Get()->GetInterface<Ns3AiGymMsg, Ns3AiGymMsg>();
 
     // send init msg to python
-    msgInterface->cpp_send_begin();
-    msgInterface->m_single_cpp2py_msg->size = simInitMsg.ByteSizeLong();
-    assert(msgInterface->m_single_cpp2py_msg->size <= MSG_BUFFER_SIZE);
-    simInitMsg.SerializeToArray(msgInterface->m_single_cpp2py_msg->buffer, msgInterface->m_single_cpp2py_msg->size);
-    msgInterface->cpp_send_end();
+    msgInterface->CppSendBegin();
+    msgInterface->GetCpp2PyStruct()->size = simInitMsg.ByteSizeLong();
+    assert(msgInterface->GetCpp2PyStruct()->size <= MSG_BUFFER_SIZE);
+    simInitMsg.SerializeToArray(msgInterface->GetCpp2PyStruct()->buffer, msgInterface->GetCpp2PyStruct()->size);
+    msgInterface->CppSendEnd();
 
-    // receive init ack msg form python
+    // receive init ack msg from python
     ns3_ai_gym::SimInitAck simInitAck;
-    msgInterface->cpp_recv_begin();
-    simInitAck.ParseFromArray(msgInterface->m_single_py2cpp_msg->buffer, msgInterface->m_single_py2cpp_msg->size);
-    msgInterface->cpp_recv_end();
+    msgInterface->CppRecvBegin();
+    simInitAck.ParseFromArray(msgInterface->GetPy2CppStruct()->buffer, msgInterface->GetPy2CppStruct()->size);
+    msgInterface->CppRecvEnd();
 
     bool done = simInitAck.done();
     NS_LOG_DEBUG("Sim Init Ack: " << done);
@@ -198,21 +198,21 @@ OpenGymInterface::NotifyCurrentState()
         Ns3AiMsgInterface::Get()->GetInterface<Ns3AiGymMsg, Ns3AiGymMsg>();
 
     // send env state msg to python
-    msgInterface->cpp_send_begin();
-    msgInterface->m_single_cpp2py_msg->size = envStateMsg.ByteSizeLong();
-    assert(msgInterface->m_single_cpp2py_msg->size <= MSG_BUFFER_SIZE);
-    envStateMsg.SerializeToArray(msgInterface->m_single_cpp2py_msg->buffer, msgInterface->m_single_cpp2py_msg->size);
+    msgInterface->CppSendBegin();
+    msgInterface->GetCpp2PyStruct()->size = envStateMsg.ByteSizeLong();
+    assert(msgInterface->GetCpp2PyStruct()->size <= MSG_BUFFER_SIZE);
+    envStateMsg.SerializeToArray(msgInterface->GetCpp2PyStruct()->buffer, msgInterface->GetCpp2PyStruct()->size);
 //    // For benchmarking: here get CPU cycle
 //    uint64_t cpp_send_env_cpu_cycle = get_cpu_cycle_x86();
-    msgInterface->cpp_send_end();
+    msgInterface->CppSendEnd();
 
     // receive act msg from python
     ns3_ai_gym::EnvActMsg envActMsg;
-    msgInterface->cpp_recv_begin();
+    msgInterface->CppRecvBegin();
 //    // For benchmarking: here get CPU cycle
 //    uint64_t cpp_recv_act_cpu_cycle = get_cpu_cycle_x86();
-    envActMsg.ParseFromArray(msgInterface->m_single_py2cpp_msg->buffer, msgInterface->m_single_py2cpp_msg->size);
-    msgInterface->cpp_recv_end();
+    envActMsg.ParseFromArray(msgInterface->GetPy2CppStruct()->buffer, msgInterface->GetPy2CppStruct()->size);
+    msgInterface->CppRecvEnd();
 
 //    // store transmission times
 //    uint64_t py_prev_recv_env_cpu_cycle = envActMsg.pyrecvenvcpucycle();
@@ -441,18 +441,7 @@ Ptr<OpenGymInterface>*
 OpenGymInterface::DoGet()
 {
     static Ptr<OpenGymInterface> ptr = CreateObject<OpenGymInterface>();
-//    Config::RegisterRootNamespaceObject(ptr);
-//    Simulator::ScheduleDestroy(&OpenGymInterface::Delete);
     return &ptr;
 }
-
-//void
-//OpenGymInterface::Delete()
-//{
-//    NS_LOG_FUNCTION_NOARGS();
-//    Config::UnregisterRootNamespaceObject(Get());
-//    (*DoGet()) = nullptr;
-//}
-
 
 } // namespace ns3

@@ -192,13 +192,13 @@ c = AiThompsonSamplingContainer(msgInterface=msgInterface, stream=random_stream)
 
 try:
     while True:
-        c.msgInterface.py_recv_begin()
-        c.msgInterface.py_send_begin()
-        if c.msgInterface.py_get_finished():
+        c.msgInterface.PyRecvBegin()
+        c.msgInterface.PySendBegin()
+        if c.msgInterface.PyGetFinished():
             break
-        c.do(c.msgInterface.m_single_cpp2py_msg, c.msgInterface.m_single_py2cpp_msg)
-        c.msgInterface.py_recv_end()
-        c.msgInterface.py_send_end()
+        c.do(c.msgInterface.GetCpp2PyStruct(), c.msgInterface.GetPy2CppStruct())
+        c.msgInterface.PyRecvEnd()
+        c.msgInterface.PySendEnd()
 
 except Exception as e:
     print("Exception occurred in experiment:")
