@@ -20,23 +20,31 @@ more flexible.
 ### Features
 
 - High-performance data interaction module in both C++ and Python side.
-- A low-level interface ([msg interface](model/msg-interface)) for customizing the shared data, and a high-level
-  interface ([gym interface](model/gym-interface)) for using Gymnasium APIs.
+- A low-level interface ([message interface](model/msg-interface)) for customizing the shared data, and a high-level
+  interface ([Gym interface](model/gym-interface)) for using Gymnasium APIs.
 - Easy to integrate with AI frameworks on Python side.
 
 ## Installation
 
-Check out [install.md](./install.md) for how to install ns3-ai.
+Check out [install.md](./install.md) for how to install and setup ns3-ai.
 
-## Quick start guide
+## Quickstart on ns3-ai
 
-To start using ns3-ai, check out the [A-Plus-B](examples/a-plus-b) example. This example shows how
-C++ passes two numbers to Python and their sum is passed back to C++, with the demonstration of three interfaces: 
-Gym interface, message interface (struct-based) and message interface (vector-based).
+### Demo
+
+To get started on ns3-ai, check out the [A-Plus-B](examples/a-plus-b) example. This example shows how
+C++ passes two numbers to Python and their sum is passed back to C++, with the implementation using 
+three interfaces: Gym interface, message interface (struct-based) and message interface (vector-based).
+
+### Documentation
+
+Ready to deploy ns3-ai in your own research? Before you code, please go over the detailed manuals on 
+[message interface](model/msg-interface) and [Gym interface](model/gym-interface). They provide 
+step-by-step guidance on writing C++-Python interfaces, with some useful code snippets.
 
 ## Examples
 
-Please check the README.md in corresponding directories for build & run instruction.
+Please refer to the README.md in corresponding directories for more information.
 
 ### [A-Plus-B](examples/a-plus-b)
 
@@ -44,6 +52,8 @@ This example show how you can use ns3-ai by a very simple case that you transfer
 and calculate `a + b` in Python to put back the results.
 
 ### [Multi-BSS](examples/multi-bss)
+
+In progress...
 
 ### [RL-TCP](examples/rl-tcp/)
 
@@ -62,18 +72,18 @@ This original work is done based on [5G NR](https://5g-lena.cttc.es/) branch in 
 also run in LTE codebase in ns-3 mainline. We didn't reproduce all the experiments on LTE, and the results in our paper
 are based on NR work.
 
-## About the new interface proposed in GSoC 2023
+## GSoC 2023
 
-Wiki page: [GSOC2023ns3-ai](https://www.nsnam.org/wiki/GSOC2023ns3-ai)
+- Wiki page: [GSOC2023ns3-ai](https://www.nsnam.org/wiki/GSOC2023ns3-ai)
 
 The new interface utilizes Boost C++ Library and pybind11 to support fast data interaction in C++-Python shared memory.
 It is still in development. Two interfaces are introduced before midterm evaluation:
 
-1. [Message Interface](https://github.com/ShenMuyuan/ns3-ai/tree/improvements/model/msg-interface): Based on
-   Boost.Interprocess shared memory, providing APIs to define message structures and perform
-   low level synchronization. STL container `std::vector` is supported for this interface.
-2. [Gym Interface](https://github.com/ShenMuyuan/ns3-ai/tree/improvements/model/gym-interface): Base on message
-   interface, providing Gym APIs for Python side and environment APIs for C++ side.
+1. Message Interface: Based on Boost.Interprocess shared memory, providing APIs to define 
+   message structures and perform low level synchronization. STL container `std::vector` 
+   is supported for this interface.
+2. Gym Interface: Base on message interface, providing Gym APIs for Python side and environment 
+   APIs for C++ side.
 
 ## Online Tutorial
 
@@ -82,7 +92,7 @@ This section describes the original design and is not up to date with the newer 
 Join us in this [online recording](https://vimeo.com/566296651) to get better knowledge about ns3-ai! The slides
 introduce the ns3-ai model could also be found [here](https://www.nsnam.org/wp-content/uploads/2021/tutorials/ns3-ai-tutorial-June-2021.pdf)!
 
-## Cite our work
+## Cite Our Work
 
 Please use the following bibtex:
 
