@@ -88,6 +88,7 @@ template <typename Cpp2PyMsgType, typename Py2CppMsgType>
 Cpp2PyMsgType*
 Ns3AiMsgInterfaceImpl<Cpp2PyMsgType, Py2CppMsgType>::GetCpp2PyStruct()
 {
+    assert(!m_useVector);
     return m_single_cpp2py_msg;
 }
 
@@ -95,6 +96,7 @@ template <typename Cpp2PyMsgType, typename Py2CppMsgType>
 Py2CppMsgType*
 Ns3AiMsgInterfaceImpl<Cpp2PyMsgType, Py2CppMsgType>::GetPy2CppStruct()
 {
+    assert(!m_useVector);
     return m_single_py2cpp_msg;
 }
 
@@ -102,6 +104,7 @@ template <typename Cpp2PyMsgType, typename Py2CppMsgType>
 typename Ns3AiMsgInterfaceImpl<Cpp2PyMsgType, Py2CppMsgType>::Cpp2PyMsgVector*
 Ns3AiMsgInterfaceImpl<Cpp2PyMsgType, Py2CppMsgType>::GetCpp2PyVector()
 {
+    assert(m_useVector);
     return m_cpp2py_msg;
 }
 
@@ -109,6 +112,7 @@ template <typename Cpp2PyMsgType, typename Py2CppMsgType>
 typename Ns3AiMsgInterfaceImpl<Cpp2PyMsgType, Py2CppMsgType>::Py2CppMsgVector*
 Ns3AiMsgInterfaceImpl<Cpp2PyMsgType, Py2CppMsgType>::GetPy2CppVector()
 {
+    assert(m_useVector);
     return m_py2cpp_msg;
 }
 
