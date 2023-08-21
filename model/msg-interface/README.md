@@ -56,7 +56,7 @@ Ns3AiMsgInterfaceImpl<EnvStruct, ActStruct> *msgInterface =
     Ns3AiMsgInterface::Get()->GetInterface<EnvStruct, ActStruct>();
 ```
 
-The above code sets some attributes for the message interface:
+The above lines sets some attributes for the message interface:
 - `SetIsMemoryCreator`: Controls whether or not this side initializes the interface. 
 Because the shared memory is a named region, after the creator initializes the 
 segment with a unique name, the other side can access the segment with that name.
@@ -68,9 +68,9 @@ because Python side is always unaware of simulation ending. For Gym interface on
 top of msg interface, this function should not be enabled because Gym interface 
 has its own protocol dealing with simulation ending.
 
-In this example, shared memory segment is created by Python side, so the C++ side 
+Because shared memory segment is created by Python side, the C++ side 
 interface won't create it. We use struct rather than vector, and the message interface
-requires the protocol dealing with simulation ending. Therefore, the setting 
+requires the protocol dealing with simulation ending. Therefore, the settings 
 should be `false`, `false` and `true`.
 
 After settings, the message interface instance is obtained with `GetInterface` 
@@ -340,9 +340,9 @@ msgInterface.PyRecvEnd()
 msgInterface.PySendEnd()
 ```
 
-In the above code, `PySendBegin` is called before `PyRecvEnd`. This won't cause 
-errors because C++ is not posting on the semaphore `m_py2cpp_empty_count` which 
-`PySendBegin` is waiting until `PySendEnd` completes.
+`PySendBegin` is called before `PyRecvEnd` for the convenience of saving a temp 
+variable. This won't cause errors because C++ is not posting on the semaphore 
+`m_py2cpp_empty_count` which `PySendBegin` is waiting until `PySendEnd` completes.
 
 Remember to destroy the interface:
 

@@ -46,7 +46,7 @@ class ApbEnv : public OpenGymEnv
 };
 ```
 
-As mentioned, C++ side sets the numbers and gets their sum from Python. This is done by `GetAPlusB()`:
+C++ side sets the numbers and gets their sum from Python. This is done by `GetAPlusB()`:
 
 ```c++
 uint32_t
@@ -229,7 +229,7 @@ while True:
 
 When C++ side calls `NotifySimulationEnd`, `done` becomes true and Python exits the loop.
 
-Remember to close the environment:
+Remember to close the environment before exit:
 
 ```python
 env.close()
