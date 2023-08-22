@@ -254,7 +254,7 @@ class Experiment:
     # \param[in] programName : program name of ns3
     # \param[in] path : current working directory
     # \param[in] no_build : if specified, start out with self.dirty = False (i.e. don't build at startup)
-    def __init__(self, shmKey, memSize, programName, path, no_build=False):
+    def __init__(self, shmKey, memSize, programName, path, build_ns3=True):
         if self._created:
             raise Exception('Experiment is singleton')
         self._created = True
@@ -263,7 +263,7 @@ class Experiment:
         self.programName = programName
         self.path = path
         self.proc = None
-        self.dirty = not no_build
+        self.dirty = build_ns3
         Init(shmKey, memSize)
 
     def __del__(self):
