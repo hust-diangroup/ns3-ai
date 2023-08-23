@@ -43,6 +43,8 @@ unuseful actions, and finally converge at the optimal one.
 2. Run Python script
 
 ```shell
+pip install -r contrib/ai/examples/rate-control/requirements.txt
+
 # Constant rate
 cd contrib/ai/examples/rate-control/constant
 python ai_constant_rate.py

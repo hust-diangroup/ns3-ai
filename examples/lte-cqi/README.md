@@ -42,6 +42,8 @@ We mainly concern the total throughput as the performance metric.
 2. Run Python script
 
 ```shell
+pip install -r contrib/ai/examples/lte-cqi/requirements.txt
+
 cd contrib/ai/examples/lte-cqi
 python run_online_lstm.py 1
 ```

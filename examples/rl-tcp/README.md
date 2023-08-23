@@ -52,6 +52,8 @@ the nodes in the simulation so that the router is aware of all the nodes.
 2. Run Python script
 
 ```shell
+pip install -r contrib/ai/examples/rl-tcp/requirements.txt
+
 # Gym interface
 cd contrib/ai/examples/rl-tcp/use_gym
 python run_rl_tcp.py --use_rl --result --show_log --seed=10
