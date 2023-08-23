@@ -39,11 +39,17 @@ We mainly concern the total throughput as the performance metric.
 ## Running the example
 
 1. [Setup ns3-ai](../../install.md)
-2. Run Python script
+2. Build C++ side
+
+```shell
+cd YOUR_NS3_DIRECTORY
+./ns3 build ns3ai_ltecqi
+```
+
+3. Run Python script
 
 ```shell
 pip install -r contrib/ai/examples/lte-cqi/requirements.txt
-
 cd contrib/ai/examples/lte-cqi
 python run_online_lstm.py 1
 ```

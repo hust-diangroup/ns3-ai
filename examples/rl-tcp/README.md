@@ -48,17 +48,38 @@ the nodes in the simulation so that the router is aware of all the nodes.
 
 ## Running the example
 
+### Gym interface
+
 1. [Setup ns3-ai](../../install.md)
-2. Run Python script
+2. Build C++ side
+
+```shell
+cd YOUR_NS3_DIRECTORY
+./ns3 build ns3ai_rltcp_gym
+```
+
+3. Run Python script
 
 ```shell
 pip install -r contrib/ai/examples/rl-tcp/requirements.txt
-
-# Gym interface
 cd contrib/ai/examples/rl-tcp/use_gym
 python run_rl_tcp.py --use_rl --result --show_log --seed=10
+```
 
-# message interface, vector-based
+### Message interface (vector-based)
+
+1. [Setup ns3-ai](../../install.md)
+2. Build C++ side
+
+```shell
+cd YOUR_NS3_DIRECTORY
+./ns3 build ns3ai_rltcp_msg
+```
+
+3. Run Python script
+
+```shell
+pip install -r contrib/ai/examples/rl-tcp/requirements.txt
 cd contrib/ai/examples/rl-tcp/use_msg
 python run_rl_tcp.py --use_rl --result --show_log --seed=10
 ```

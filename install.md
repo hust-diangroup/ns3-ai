@@ -39,13 +39,11 @@ This installation works on Ubuntu 22.04 and macOS 13.0 or higher.
 
 ## General Setup
 
-1. Clone this repository
+1. Clone this repository at `contrib/ai`
 
 ```shell
-cd contrib
-git clone https://github.com/ShenMuyuan/ns3-ai.git ./ai
-cd ai
-git checkout -b improvements origin/improvements
+cd YOUR_NS3_DIRECTORY
+git clone https://github.com/ShenMuyuan/ns3-ai.git contrib/ai
 ```
 
 2. Configure and build the `ai` library
@@ -55,21 +53,14 @@ git checkout -b improvements origin/improvements
 ./ns3 build ai
 ```
 
-3. Setup ns3-ai utils
+3. Setup Python interfaces. It's recommended to use a separate Conda environment 
+for ns3-ai.
 
 ```shell
-cd contrib/ai/python_utils
-pip install -e .
+pip install -e contrib/ai/python_utils contrib/ai/model/gym-interface/py
 ```
 
-4. Setup Gym interface
-
-```shell
-cd contrib/ai/model/gym-interface/py
-pip install -e .
-```
-
-5. Build the examples (optional)
+4. Build the examples (optional)
 
 All targets named `ns3ai_*` can be built separately.
 

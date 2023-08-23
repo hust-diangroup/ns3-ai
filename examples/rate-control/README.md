@@ -38,18 +38,38 @@ unuseful actions, and finally converge at the optimal one.
 
 ## Running the example
 
-1. [Setup ns3-ai](../../install.md)
+### Constant rate
 
-2. Run Python script
+1. [Setup ns3-ai](../../install.md)
+2. Build C++ side
+
+```shell
+cd YOUR_NS3_DIRECTORY
+./ns3 build ns3ai_ratecontrol_constant
+```
+
+3. Run Python script
 
 ```shell
 pip install -r contrib/ai/examples/rate-control/requirements.txt
-
-# Constant rate
 cd contrib/ai/examples/rate-control/constant
 python ai_constant_rate.py
+```
 
-# Thompson Sampling
+### Thompson Sampling
+
+1. [Setup ns3-ai](../../install.md)
+2. Build C++ side
+
+```shell
+cd YOUR_NS3_DIRECTORY
+./ns3 build ns3ai_ratecontrol_ts
+```
+
+3. Run Python script
+
+```shell
+pip install -r contrib/ai/examples/rate-control/requirements.txt
 cd contrib/ai/examples/rate-control/thompson-sampling
 python ai_thompson_sampling.py
 ```

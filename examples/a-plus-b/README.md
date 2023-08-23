@@ -22,7 +22,14 @@ This example can be run using the following interfaces:
 ### Gym interface
 
 1. [Setup ns3-ai](../../install.md)
-2. Run Python script
+2. Build C++ side
+
+```shell
+cd YOUR_NS3_DIRECTORY
+./ns3 build ns3ai_apb_gym
+```
+
+3. Run Python script
 
 ```bash
 cd contrib/ai/examples/a_plus_b/use_gym
@@ -32,7 +39,14 @@ python apb.py
 ### Message interface (struct-based)
 
 1. [Setup ns3-ai](../../install.md)
-2. Run Python script
+2. Build C++ side
+
+```shell
+cd YOUR_NS3_DIRECTORY
+./ns3 build ns3ai_apb_msg_stru
+```
+
+3. Run Python script
 
 ```bash
 cd contrib/ai/examples/a_plus_b/use_msg_stru
@@ -42,10 +56,17 @@ python apb.py
 ### Message interface (vector-based)
 
 1. [Setup ns3-ai](../../install.md)
-2. Run Python script
+2. Build C++ side
+
+```shell
+cd YOUR_NS3_DIRECTORY
+./ns3 build ns3ai_apb_msg_vec
+```
+
+3. Run Python script
 
 ```bash
-cd contrib/ai/examples/a_plus_b/use_msg_stru
+cd contrib/ai/examples/a_plus_b/use_msg_vec
 python apb.py
 ```
 
