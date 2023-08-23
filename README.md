@@ -20,8 +20,8 @@ more flexible.
 ### Features
 
 - High-performance data interaction module in both C++ and Python side.
-- A low-level interface ([message interface](model/msg-interface)) for customizing the shared data, and a high-level
-  interface ([Gym interface](model/gym-interface)) for using Gymnasium APIs.
+- A high-level [Gym interface](model/gym-interface) for using Gymnasium APIs, and a low-level 
+[message interface](model/msg-interface) for customizing the shared data.
 - Easy to integrate with AI frameworks on Python side.
 
 ## Installation
@@ -34,12 +34,13 @@ Check out [install.md](./install.md) for how to install and setup ns3-ai.
 
 To get started on ns3-ai, check out the [A-Plus-B](examples/a-plus-b) example. This example shows how
 C++ passes two numbers to Python and their sum is passed back to C++, with the implementation using 
-three interfaces: Gym interface, message interface (struct-based) and message interface (vector-based).
+all available interfaces: Gym interface, message interface (struct-based) and message 
+interface (vector-based).
 
 ### Documentation
 
-Ready to deploy ns3-ai in your own research? Before you code, please go over the detailed manuals on 
-[message interface](model/msg-interface) and [Gym interface](model/gym-interface). They provide 
+Ready to deploy ns3-ai in your own research? Before you code, please go over the tutorials on
+[Gym interface](model/gym-interface) and [message interface](model/msg-interface). They provide 
 step-by-step guidance on writing C++-Python interfaces, with some useful code snippets.
 
 ## Examples
@@ -60,6 +61,10 @@ In progress...
 This example is inspired by [ns3-gym example](https://github.com/tkn-tub/ns3-gym#rl-tcp). We build this example for the
 [benchmarking](https://github.com/ShenMuyuan/urban-pancake/tree/50ad463ee06377342ff83c9954a13cc66792b4d1/ns3ai_benchmark)
 and to compare with their module.
+
+### [Q-TCP](examples/q-tcp)
+
+In progress...
 
 ### [Rate-Control](examples/rate-control)
 
