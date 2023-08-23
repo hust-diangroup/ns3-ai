@@ -61,11 +61,11 @@ The above lines sets some attributes for the message interface:
 Because the shared memory is a named region, after the creator initializes the 
 segment with a unique name, the other side can access the segment with that name.
 - `SetUseVector`: Controls whether to use `std::vector` or not.
-- `SetHandleFinish`: Controls whether or not a simple protocol is enables, which 
+- `SetHandleFinish`: Controls whether or not a simple protocol is enabled, which 
 notifies Python side when C++ side interface is destroyed (possibly due to ns-3 
 program exit). This is useful for all applications using the message interface, 
 because Python side is always unaware of simulation ending. For Gym interface on 
-top of msg interface, this function should not be enabled because Gym interface 
+top of message interface, this function should not be enabled because Gym interface 
 has its own protocol dealing with simulation ending.
 
 Because shared memory segment is created by Python side, the C++ side 
