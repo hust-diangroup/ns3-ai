@@ -57,7 +57,8 @@ git clone https://github.com/ShenMuyuan/ns3-ai.git contrib/ai
 for ns3-ai.
 
 ```shell
-pip install -e contrib/ai/python_utils contrib/ai/model/gym-interface/py
+pip install -e contrib/ai/python_utils
+pip install -e contrib/ai/model/gym-interface/py
 ```
 
 4. Build the examples (optional)
