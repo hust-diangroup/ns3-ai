@@ -43,7 +43,7 @@ This installation works on Ubuntu 22.04 and macOS 13.0 or higher.
 
 ```shell
 cd YOUR_NS3_DIRECTORY
-git clone https://github.com/ShenMuyuan/ns3-ai.git contrib/ai
+git clone https://github.com/hust-diangroup/ns3-ai.git contrib/ai
 ```
 
 2. Configure and build the `ai` library
