@@ -43,22 +43,37 @@ else()
     include(${CMAKE_CURRENT_SOURCE_DIR}/protobuf-generate.cmake)
 endif()
 
+# Compile proto files
 add_library(proto-objects OBJECT "${CMAKE_CURRENT_SOURCE_DIR}/model/gym-interface/messages.proto")
-
 protobuf_generate(
         TARGET proto-objects
         IMPORT_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/model/gym-interface"
         LANGUAGE cpp
         PROTOC_OUT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/model/gym-interface/cpp"
 )
-
 protobuf_generate(
         TARGET proto-objects
         IMPORT_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/model/gym-interface"
         LANGUAGE python
         PROTOC_OUT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/model/gym-interface/py"
 )
-
 add_dependencies(${libai} proto-objects)
 
+# Build Gym msg binding module
 add_subdirectory(model/gym-interface/py)
+
+# Check if C++-based ML frameworks are available
+if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/model/libtensorflow)
+    message(STATUS "TensorFlow C library found, examples using libtensorflow are enabled")
+    set(NS3AI_LIBTENSORFLOW_EXAMPLES ON)
+else()
+    message(STATUS "TensorFlow C library not found, examples using libtensorflow are disabled")
+    set(NS3AI_LIBTENSORFLOW_EXAMPLES OFF)
+endif()
+if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/model/libtorch)
+    message(STATUS "PyTorch C++ library found, examples using libtorch are enabled")
+    set(NS3AI_LIBTORCH_EXAMPLES ON)
+else()
+    message(STATUS "PyTorch C++ library not found, examples using libtorch are disabled")
+    set(NS3AI_LIBTORCH_EXAMPLES OFF)
+endif()
