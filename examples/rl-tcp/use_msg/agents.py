@@ -1,6 +1,9 @@
+import random
+
 import torch
 import numpy as np
 import torch.nn as nn
+import math
 
 
 class net(nn.Module):
@@ -101,7 +104,7 @@ class TcpNewRenoAgent:
         return [self.new_cWnd, self.new_ssThresh]
 
 
-class TcpRlAgent:
+class TcpDeepQAgent:
 
     def __init__(self):
         self.dqn = DQN()
@@ -136,6 +139,75 @@ class TcpRlAgent:
             if cWnd > 0:
                 self.new_cWnd = cWnd + int(max(1, (segmentSize * segmentSize) / cWnd))
         if self.a < 3:
+            self.new_ssThresh = 2 * segmentSize
+        else:
+            self.new_ssThresh = int(bytesInFlight / 2)
+
+        return [self.new_cWnd, self.new_ssThresh]
+
+
+class TcpQAgent:
+
+    def discretize(self, metric, minval, maxval):
+        metric = max(metric, minval)
+        metric = min(metric, maxval)
+        return int((metric - minval) * (self.discrete_level - 1) / (maxval - minval))
+
+    def __init__(self):
+        self.update_times = 0
+        self.learning_rate = None
+        self.discount_rate = 0.5
+        self.discrete_level = 15
+        self.epsilon = 0.1  # exploration rate
+        self.state_size = 3
+        self.action_size = 1
+        self.action_num = 4
+        self.actions = np.arange(self.action_num, dtype=int)
+        self.q_table = np.zeros((*((self.discrete_level, ) * self.state_size), self.action_num))
+        # print(self.q_table.shape)
+        self.new_cWnd = None
+        self.new_ssThresh = None
+        self.s = None
+        self.a = np.zeros(self.action_size, dtype=int)
+        self.r = None
+        self.s_ = None  # next state
+
+    def get_action(self, obs):
+        # ssThresh = obs[0]
+        cWnd = obs[1]
+        segmentsAcked = obs[2]
+        segmentSize = obs[3]
+        bytesInFlight = obs[4]
+
+        cWnd_d = self.discretize(cWnd, 0., 50000.)
+        segmentsAcked_d = self.discretize(segmentsAcked, 0., 64.)
+        bytesInFlight_d = self.discretize(bytesInFlight, 0., 1000000.)
+
+        self.s = self.s_
+        self.s_ = [cWnd_d, segmentsAcked_d, bytesInFlight_d]
+        if self.s:  # not first time
+            # update Q-table
+            self.learning_rate = 0.3 * (0.995 ** (self.update_times // 10))
+            self.r = segmentsAcked - bytesInFlight - cWnd
+            self.q_table[tuple(self.s)][tuple(self.a)] = (
+                (1 - self.learning_rate) * self.q_table[tuple(self.s)][tuple(self.a)] +
+                self.learning_rate * (self.r + self.discount_rate * np.max(self.q_table[tuple(self.s_)]))
+            )
+            self.update_times += 1
+
+        # epsilon-greedy
+        if random.uniform(0, 1) < 0.1:
+            self.a[0] = np.random.choice(self.actions)
+        else:
+            self.a[0] = np.argmax(self.q_table[tuple(self.s_)])
+
+        # map action to cwnd and ssthresh
+        if self.a[0] & 1:
+            self.new_cWnd = cWnd + segmentSize
+        else:
+            if cWnd > 0:
+                self.new_cWnd = cWnd + int(max(1, (segmentSize * segmentSize) / cWnd))
+        if self.a[0] < 3:
             self.new_ssThresh = 2 * segmentSize
         else:
             self.new_ssThresh = int(bytesInFlight / 2)

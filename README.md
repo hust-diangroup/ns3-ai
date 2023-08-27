@@ -62,10 +62,6 @@ This example is inspired by [ns3-gym example](https://github.com/tkn-tub/ns3-gym
 [benchmarking](https://github.com/ShenMuyuan/urban-pancake/tree/50ad463ee06377342ff83c9954a13cc66792b4d1/ns3ai_benchmark)
 and to compare with their module.
 
-### [Q-TCP](examples/q-tcp)
-
-In progress...
-
 ### [Rate-Control](examples/rate-control)
 
 This is an example that shows how to develop a new rate control algorithm for the ns-3 Wi-Fi module using ns3-ai.

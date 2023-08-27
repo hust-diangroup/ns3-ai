@@ -19,11 +19,13 @@
 # Modify: Muyuan Shen
 
 import os
+import sys
+import traceback
 import torch
 import argparse
 import numpy as np
 import matplotlib.pyplot as plt
-from agents import TcpNewRenoAgent, TcpRlAgent
+from agents import TcpNewRenoAgent, TcpDeepQAgent, TcpQAgent
 import ns3ai_rltcp_msg_py as py_binding
 from ns3ai_utils import Experiment
 
@@ -32,8 +34,12 @@ def get_agent(socketUuid, useRl):
     agent = get_agent.tcpAgents.get(socketUuid)
     if agent is None:
         if useRl:
-            agent = TcpRlAgent()
-            print("new RL agent, uuid = {}".format(socketUuid))
+            if args.rl_algo == 'DeepQ':
+                agent = TcpDeepQAgent()
+                print("new Deep Q-learning agent, uuid = {}".format(socketUuid))
+            else:
+                agent = TcpQAgent()
+                print("new Q-learning agent, uuid = {}".format(socketUuid))
         else:
             agent = TcpNewRenoAgent()
             print("new New Reno agent, uuid = {}".format(socketUuid))
@@ -56,6 +62,8 @@ parser.add_argument('--result_dir', type=str,
                     default='./rl_tcp_results', help='output figures path')
 parser.add_argument('--use_rl', action='store_true',
                     help='whether use rl algorithm')
+parser.add_argument('--rl_algo', type=str,
+                    default='DeepQ', help='RL Algorithm, Q or DeepQ')
 
 args = parser.parse_args()
 my_seed = 42
@@ -64,6 +72,11 @@ if args.seed:
 print("Python side random seed {}".format(my_seed))
 np.random.seed(my_seed)
 torch.manual_seed(my_seed)
+
+if args.use_rl:
+    if (args.rl_algo != 'Q') and (args.rl_algo != 'DeepQ'):
+        print("Invalid RL Algorithm {}".format(args.rl_algo))
+        exit(1)
 
 res_list = ['ssThresh_l', 'cWnd_l', 'segmentsAcked_l',
             'segmentSize_l', 'bytesInFlight_l']
@@ -119,8 +132,11 @@ try:
             print("Send act:", act)
 
 except Exception as e:
-    print("Exception occurred in experiment:")
-    print(e)
+    exc_type, exc_value, exc_traceback = sys.exc_info()
+    print("Exception occurred: {}".format(e))
+    print("Traceback:")
+    traceback.print_tb(exc_traceback)
+    exit(1)
 
 else:
     if args.result:

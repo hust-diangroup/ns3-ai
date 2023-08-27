@@ -23,6 +23,8 @@ from typing import List
 import numpy as np
 import ns3ai_ratecontrol_ts_py as py_binding
 from ns3ai_utils import Experiment
+import sys
+import traceback
 
 
 class AiThompsonSamplingStation:
@@ -201,8 +203,11 @@ try:
         c.msgInterface.PySendEnd()
 
 except Exception as e:
-    print("Exception occurred in experiment:")
-    print(e)
+    exc_type, exc_value, exc_traceback = sys.exc_info()
+    print("Exception occurred: {}".format(e))
+    print("Traceback:")
+    traceback.print_tb(exc_traceback)
+    exit(1)
 
 else:
     pass

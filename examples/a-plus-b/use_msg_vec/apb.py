@@ -1,5 +1,7 @@
 import ns3ai_apb_py_vec as py_binding
 from ns3ai_utils import Experiment
+import sys
+import traceback
 
 APB_SIZE = 3
 
@@ -23,8 +25,11 @@ try:
         msgInterface.PySendEnd()
 
 except Exception as e:
-    print("Exception occurred in experiment:")
-    print(e)
+    exc_type, exc_value, exc_traceback = sys.exc_info()
+    print("Exception occurred: {}".format(e))
+    print("Traceback:")
+    traceback.print_tb(exc_traceback)
+    exit(1)
 
 else:
     pass

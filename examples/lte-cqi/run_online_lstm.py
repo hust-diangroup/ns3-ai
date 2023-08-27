@@ -28,6 +28,7 @@ import gc
 import keras.backend as K
 import ns3ai_ltecqi_py as py_binding
 from ns3ai_utils import Experiment
+import traceback
 
 # delta for prediction
 delta = int(sys.argv[1])
@@ -181,8 +182,11 @@ try:
         print("set: %d" % corrected_predict[-1])
 
 except Exception as e:
-    print("Exception occurred in experiment:")
-    print(e)
+    exc_type, exc_value, exc_traceback = sys.exc_info()
+    print("Exception occurred: {}".format(e))
+    print("Traceback:")
+    traceback.print_tb(exc_traceback)
+    exit(1)
 
 else:
     with open("log_" + str(delta), "a+") as f:

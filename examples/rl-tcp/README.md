@@ -2,7 +2,7 @@
 
 ## Introduction
 
-This example applies deep Q-learning algorithm to TCP congestion control for real-time 
+This example applies Q-learning algorithms to TCP congestion control for real-time 
 changes in the environment of network transmission. By strengthening the learning 
 management sliding window and threshold size, the network can get better throughput 
 and smaller delay.
@@ -11,6 +11,27 @@ and smaller delay.
 
 - `ns3ai_rltcp_gym`: RL-TCP example using Gym interface.
 - `ns3ai_rltcp_msg`: RL-TCP example using vector-based message interface.
+
+## Algorithms
+
+### RL: Q-learning and Deep Q-learning
+
+Q-learning is based on estimating the values of state-action pairs 
+in a Markov decision process, by iteratively updating an action-value 
+function. In this example's implementation, the Q-table is updated 
+each time ns-3 interacts with Python side, and the agent chooses 
+cWnd and ssThresh according to epsilon-greedy algorithm.
+
+Deep Q-learning, on the other hand, is a variant of Q-learning that 
+utilizes a deep neural network to approximate the Q-values. Here the 
+DQN is also updated at every C++-Python interaction.
+
+### Non-RL: TcpNewReno
+
+TcpNewReno is a TCP layer congestion control algorithm which employs 
+a "fast recovery" mechanism, which allows it to detect lost packets 
+more quickly compared to the standard Reno algorithm. In this example, 
+if RL algorithm is not selected, the algorithm will be TcpNewReno.
 
 ## Simulation scenario
 
@@ -78,15 +99,18 @@ cd YOUR_NS3_DIRECTORY
 
 3. Run Python script
 
+The following code selects deep Q-learning to TCP congestion control.
+
 ```shell
 pip install -r contrib/ai/examples/rl-tcp/requirements.txt
 cd contrib/ai/examples/rl-tcp/use_msg
-python run_rl_tcp.py --use_rl --result --show_log --seed=10
+python run_rl_tcp.py --use_rl --rl_algo=DeepQ --result --show_log --seed=10
 ```
 
 ### Arguments
 
-- `--use_rl`: Use Reinforcement Learning.
+- `--use_rl`: Use Reinforcement Learning. If not specified, program will use `TcpNewReno`.
+- `--rl_algo`: RL algorithm to apply, can be `DeepQ` for deep Q-learning or `Q` for Q-learning. Defaults to `DeepQ`.
 - `--result`: Draw figures for the following parameters vs time step:
     - bytesInFlight
     - cWnd
@@ -94,7 +118,7 @@ python run_rl_tcp.py --use_rl --result --show_log --seed=10
     - segmentSize
     - ssThresh
 - `--show_log`: Output step number, observation received and action sent.
-- `--output_dir`: Directory of figures, default to `./result`.
+- `--output_dir`: Directory of figures relative from `YOUR_NS3_DIRECTORY`, defaults to `./rl_tcp_results`.
 - `--seed`: Python side seed for numpy and torch.
 
 ## Results

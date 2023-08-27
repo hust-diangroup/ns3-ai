@@ -1,5 +1,7 @@
 import ns3ai_gym_env
 import gymnasium as gym
+import sys
+import traceback
 
 APB_SIZE = 3
 
@@ -43,8 +45,11 @@ try:
             break
 
 except Exception as e:
-    print("Exception occurred in experiment:")
-    print(e)
+    exc_type, exc_value, exc_traceback = sys.exc_info()
+    print("Exception occurred: {}".format(e))
+    print("Traceback:")
+    traceback.print_tb(exc_traceback)
+    exit(1)
 
 else:
     pass
