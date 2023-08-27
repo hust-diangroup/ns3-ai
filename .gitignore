@@ -42,6 +42,8 @@ result/
 dist/
 *.egg
 log_*
+libtensorflow/
+libtorch/
 
 # Protobuf files
 *.pb.cc
