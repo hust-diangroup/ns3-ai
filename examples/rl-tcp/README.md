@@ -81,6 +81,8 @@ cd YOUR_NS3_DIRECTORY
 
 3. Run Python script
 
+The following code selects deep Q-learning to TCP congestion control.
+
 ```shell
 pip install -r contrib/ai/examples/rl-tcp/requirements.txt
 cd contrib/ai/examples/rl-tcp/use_gym

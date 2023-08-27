@@ -212,7 +212,7 @@ done = False
 agent = ApbAgent()
 ```
 
-Interact with Python:
+Interact with C++ side:
 
 ```python
 while True:

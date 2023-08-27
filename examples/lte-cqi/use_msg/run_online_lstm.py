@@ -92,7 +92,7 @@ is_train = True
 CQI = 0
 delay_queue = []
 
-exp = Experiment("ns3ai_ltecqi", "../../../../", py_binding, handleFinish=True)
+exp = Experiment("ns3ai_ltecqi_msg", "../../../../../", py_binding, handleFinish=True)
 msgInterface = exp.run(show_output=True)
 
 try:

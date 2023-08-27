@@ -8,7 +8,7 @@ document are based on NR work.
 
 ### Cmake targets
 
-- `ns3ai_ltecqi`: The LTE-CQI example using struct-based message interface.
+- `ns3ai_ltecqi_msg`: The LTE-CQI example using struct-based message interface.
 
 ## Motivation
 
@@ -43,14 +43,14 @@ We mainly concern the total throughput as the performance metric.
 
 ```shell
 cd YOUR_NS3_DIRECTORY
-./ns3 build ns3ai_ltecqi
+./ns3 build ns3ai_ltecqi_msg
 ```
 
 3. Run Python script
 
 ```shell
 pip install -r contrib/ai/examples/lte-cqi/requirements.txt
-cd contrib/ai/examples/lte-cqi
+cd contrib/ai/examples/lte-cqi/use_msg
 python run_online_lstm.py 1
 ```
 

@@ -95,5 +95,5 @@ All targets named `ns3ai_*` can be built separately.
 
 # build LTE-CQI example
 # with Message interface - struct based
-./ns3 build ns3ai_ltecqi
+./ns3 build ns3ai_ltecqi_msg
 ```
