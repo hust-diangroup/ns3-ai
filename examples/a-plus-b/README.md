@@ -32,7 +32,7 @@ cd YOUR_NS3_DIRECTORY
 3. Run Python script
 
 ```bash
-cd contrib/ai/examples/a_plus_b/use_gym
+cd contrib/ai/examples/a-plus-b/use_gym
 python apb.py
 ```
 

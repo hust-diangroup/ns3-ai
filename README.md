@@ -43,6 +43,10 @@ Ready to deploy ns3-ai in your own research? Before you code, please go over the
 [Gym interface](model/gym-interface) and [message interface](model/msg-interface). They provide 
 step-by-step guidance on writing C++-Python interfaces, with some useful code snippets.
 
+We also created some **pure C++** examples, which uses C++-based ML frameworks to train 
+models. They don't rely on interprocess communication, so there is no overhead in serialization 
+and interprocess communication. See [using-pure-cpp](docs/using-pure-cpp.md) for details.
+
 ## Examples
 
 Please refer to the README.md in corresponding directories for more information.

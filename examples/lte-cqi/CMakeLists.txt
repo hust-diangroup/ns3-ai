@@ -28,7 +28,6 @@ add_dependencies(ns3ai_ltecqi_msg ns3ai_ltecqi_py)
 # Check if libtensorflow exists, if true, enable the pure C++ example
 if(NS3AI_LIBTENSORFLOW_EXAMPLES)
     message(STATUS "LTE-CQI pure C++ example enabled")
-    message(STATUS "TensorFlow_LIBRARIES is ${TensorFlow_LIBRARIES}")
     build_lib_example(
             NAME ns3ai_ltecqi_purecpp
             SOURCE_FILES pure_cpp/main.cc
