@@ -7,7 +7,7 @@
 If `model/libtensorflow` directory exists, targets using TensorFlow C API 
 are automatically enabled.
 
-#### For Linux and Intel-based macOS
+#### For x86-64-based operating systems
 
 1. Download prebuilt library from [TensorFlow official website](https://www.tensorflow.org/install/lang_c).
 2. Extract tarball under `model`.
@@ -18,7 +18,7 @@ mkdir contrib/ai/model/libtensorflow
 tar -xf PATH_TO_TARBALL -C contrib/ai/model/libtensorflow
 ```
 
-#### For M1/M2-based macOS
+#### For arm64-based macOS
 
 1. The website does not provide arm64 prebuilt library. You need to 
 build it, or get prebuilt library with `brew`. You can install 
@@ -45,7 +45,7 @@ The following variables are available if `libtensorflow` is installed correctly:
 
 These variables are helpful for adding libtensorflow-based examples (targets).
 
-### Examples
+### Example
 
 - Cmake target: `ns3ai_ltecqi_purecpp`
 
@@ -66,9 +66,9 @@ available when TensorFlow offers sufficient C API to developers.
 If `model/libtorch` directory exists, targets using PyTorch C++ API are 
 automatically enabled.
 
-#### For Linux and Intel-based macOS
+#### For x86-64-based operating systems
 
-1. Download prebuilt library from [PyTorch official website](https://pytorch.org/cppdocs/installing.html).
+1. Download prebuilt library from [PyTorch official website](https://pytorch.org).
 2. Unzip under `model`.
 
 ```shell
@@ -76,7 +76,7 @@ cd YOUR_NS3_DIRECTORY
 unzip PATH_TO_ZIP -d contrib/ai/model/
 ```
 
-#### For M1/M2-based macOS
+#### For arm64-based macOS
 
 1. The website does not provide arm64 prebuilt library. You need to
    build it, or get prebuilt library with `brew`. You can install
@@ -105,13 +105,18 @@ These variables are helpful for adding libtorch-based examples (targets).
 Additionally, you may need to link with Python (`Python_LIBRARIES`) in case 
 symbols like `_PyBaseObject_Type` are missing.
 
-### Examples
+### Example
 
 - Cmake target: `ns3ai_rltcp_purecpp`
 
 The [message-interface version of the RL-TCP example](../examples/rl-tcp/use_msg) 
 has been [modified](../examples/rl-tcp/pure_cpp) to run in pure C++, utilizing PyTorch C++ APIs. All RL 
 functionalities are same with original, except for random seed settings that can 
-lead to different results. Running `./ns3 run ns3ai_rltcp_purecpp` should by 
+lead to different results. Running `ns3ai_rltcp_purecpp` should by 
 default apply deep Q-learning algorithm (DQN) to choose TCP parameters, with states 
 and actions printing in the console.
+
+```shell
+pip install -r contrib/ai/examples/rl-tcp/requirements.txt
+./ns3 run ns3ai_rltcp_purecpp
+```
