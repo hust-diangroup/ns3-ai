@@ -45,3 +45,30 @@ target_link_libraries(ns3ai_rltcp_msg_py PRIVATE ${libai})
 
 # Build Python interface along with C++ lib
 add_dependencies(ns3ai_rltcp_msg ns3ai_rltcp_msg_py)
+
+# Check if libtorch exists, if true, enable the pure C++ example
+if(NS3AI_LIBTORCH_EXAMPLES)
+    message(STATUS "RL-TCP pure C++ example enabled")
+    build_lib_example(
+            NAME ns3ai_rltcp_purecpp
+            SOURCE_FILES pure_cpp/rl-tcp.cc
+                         pure_cpp/tcp-rl.cc
+                         pure_cpp/tcp-rl-env.cc
+            LIBRARIES_TO_LINK   # Need not link with ns3-ai because there is no IPC between Python and C++
+            ${libcore}
+            ${Torch_LIBRARIES}
+            ${Python_LIBRARIES}  # need to link with Python, otherwise symbol _PyBaseObject_Type will be missing
+            ${libpoint-to-point}
+            ${libpoint-to-point-layout}
+            ${libnetwork}
+            ${libapplications}
+            ${libmobility}
+            ${libcsma}
+            ${libinternet}
+            ${libwifi}
+            ${libflow-monitor}
+    )
+    target_include_directories(ns3ai_rltcp_purecpp PRIVATE ${Libtorch_INCLUDE_DIRS})
+else()
+    message(STATUS "RL-TCP pure C++ example disabled")
+endif()

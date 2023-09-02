@@ -65,10 +65,9 @@ class DQN(object):
         s_ = torch.Tensor(sample[:, self.observer_shape + 2:])
         q_eval = self.eval_net(s).gather(1, a)
         q_next = self.target_net(s_).detach()
-        q_target = r + 0.8 * q_next.max(1, True)[0].data
+        q_target = r + 0.8 * q_next.max(1, True)[0]
 
         loss = self.loss_func(q_eval, q_target)
-
         self.optimizer.zero_grad()
         loss.backward()
         self.optimizer.step()

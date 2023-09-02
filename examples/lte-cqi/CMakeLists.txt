@@ -31,8 +31,7 @@ if(NS3AI_LIBTENSORFLOW_EXAMPLES)
     build_lib_example(
             NAME ns3ai_ltecqi_purecpp
             SOURCE_FILES pure_cpp/main.cc
-            LIBRARIES_TO_LINK
-                ${libai}
+            LIBRARIES_TO_LINK   # Need not link with ns3-ai because there is no IPC between Python and C++
                 ${libcore}
                 ${TensorFlow_LIBRARIES}
     )
