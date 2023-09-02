@@ -8,7 +8,12 @@ include_directories(${Boost_INCLUDE_DIRS})
 find_package(Python REQUIRED COMPONENTS Interpreter Development)
 find_package(pybind11 CONFIG REQUIRED)
 include_directories(${pybind11_INCLUDE_DIRS})
-find_package(Protobuf REQUIRED)
+
+# we need CONFIG for debug mode in macOS
+find_package(Protobuf CONFIG)
+if(NOT Protobuf_FOUND)
+    find_package(Protobuf REQUIRED)
+endif()
 include_directories(${Protobuf_INCLUDE_DIRS})
 
 # Check if C++-based ML frameworks are available
