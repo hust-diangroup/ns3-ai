@@ -52,15 +52,15 @@
 //extern std::vector<uint64_t> cpp2py_durations;
 //extern std::vector<uint64_t> py2cpp_durations;
 
-uint64_t average(std::vector<uint64_t> const& v){
-    if(v.empty()){
-        return 0;
-    }
-
-    auto count = v.size();
-
-    return std::reduce(v.begin(), v.end()) / count;
-}
+//uint64_t average(std::vector<uint64_t> const& v){
+//    if(v.empty()){
+//        return 0;
+//    }
+//
+//    auto count = v.size();
+//
+//    return std::reduce(v.begin(), v.end()) / count;
+//}
 
 using namespace ns3;
 
