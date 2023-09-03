@@ -41,7 +41,7 @@ TODO
 
 The benchmark is based on the [pure C++ (libtorch)](../../examples/rl-tcp/pure_cpp) and 
 [message interface (PyTorch)](../../examples/rl-tcp/use_msg) version of RL-TCP example. 
-We compare the action-waiting time (i.e. transmission time + DRL algorithm time 
+We compare the processing time (i.e. transmission time + DRL algorithm time 
 for message interface, DRL algorithm time for pure C++) for the two interfaces, 
 including the mean and the standard deviation. The difference can be considered 
 as the CPU cycles saved, due to:
@@ -61,11 +61,16 @@ seeding).**
 
 Both sides of the benchmarking code can be found at [benchmark_purecpp branch](https://github.com/ShenMuyuan/ns3-ai/tree/benchmark_purecpp). 
 
-The results are collected from console output and stored in [a .m file](./gym-interface-data.m)
+The results are collected from console output and stored in [a .m file](./pure-cpp-data.m)
 to draw figures with Matlab.
 
 ### Results
 
+Results show that the processing time of pure C++ implementation 
+is more than twice shorter than that of message interface implementation.
 
+<p align="center">
+    <img src="./pure-cpp-figure.png" alt="processing" width="600"/>
+</p>
 
 
