@@ -147,7 +147,7 @@ csv_split(std::string source, char delimeter)
     //    int start = 0;
 
     bool inQuote = false;
-    for (int i = 0; i < source.size(); ++i)
+    for (uint32_t i = 0; i < source.size(); ++i)
     {
         if (!inQuote && source[i] == '"')
         {
