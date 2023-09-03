@@ -38,7 +38,7 @@ We mainly concern the total throughput as the performance metric.
 
 ## Running the example
 
-1. [Setup ns3-ai](../../install.md)
+1. [Setup ns3-ai](../../docs/install.md)
 2. Build C++ side
 
 ```shell

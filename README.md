@@ -26,7 +26,7 @@ more flexible.
 
 ## Installation
 
-Check out [install.md](./install.md) for how to install and setup ns3-ai.
+Check out [install.md](./docs/install.md) for how to install and setup ns3-ai.
 
 ## Quickstart on ns3-ai
 

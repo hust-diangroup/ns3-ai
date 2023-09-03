@@ -21,7 +21,7 @@ This example can be run using the following interfaces:
 
 ### Gym interface
 
-1. [Setup ns3-ai](../../install.md)
+1. [Setup ns3-ai](../../docs/install.md)
 2. Build C++ side
 
 ```shell
@@ -38,7 +38,7 @@ python apb.py
 
 ### Message interface (struct-based)
 
-1. [Setup ns3-ai](../../install.md)
+1. [Setup ns3-ai](../../docs/install.md)
 2. Build C++ side
 
 ```shell
@@ -55,7 +55,7 @@ python apb.py
 
 ### Message interface (vector-based)
 
-1. [Setup ns3-ai](../../install.md)
+1. [Setup ns3-ai](../../docs/install.md)
 2. Build C++ side
 
 ```shell

@@ -40,7 +40,7 @@ unuseful actions, and finally converge at the optimal one.
 
 ### Constant rate
 
-1. [Setup ns3-ai](../../install.md)
+1. [Setup ns3-ai](../../docs/install.md)
 2. Build C++ side
 
 ```shell
@@ -58,7 +58,7 @@ python ai_constant_rate.py
 
 ### Thompson Sampling
 
-1. [Setup ns3-ai](../../install.md)
+1. [Setup ns3-ai](../../docs/install.md)
 2. Build C++ side
 
 ```shell

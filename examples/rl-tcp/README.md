@@ -71,7 +71,7 @@ the nodes in the simulation so that the router is aware of all the nodes.
 
 ### Gym interface
 
-1. [Setup ns3-ai](../../install.md)
+1. [Setup ns3-ai](../../docs/install.md)
 2. Build C++ side
 
 ```shell
@@ -91,7 +91,7 @@ python run_rl_tcp.py --use_rl --result --show_log --seed=10
 
 ### Message interface (vector-based)
 
-1. [Setup ns3-ai](../../install.md)
+1. [Setup ns3-ai](../../docs/install.md)
 2. Build C++ side
 
 ```shell
