@@ -63,8 +63,7 @@ In progress...
 ### [RL-TCP](examples/rl-tcp/)
 
 This example is inspired by [ns3-gym example](https://github.com/tkn-tub/ns3-gym#rl-tcp). We build this example for the
-[benchmarking](https://github.com/ShenMuyuan/urban-pancake/tree/50ad463ee06377342ff83c9954a13cc66792b4d1/ns3ai_benchmark)
-and to compare with their module.
+[benchmarking](./model/benchmarking) and to compare with their module.
 
 ### [Rate-Control](examples/rate-control)
 

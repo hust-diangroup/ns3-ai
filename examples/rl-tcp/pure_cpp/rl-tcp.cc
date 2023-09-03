@@ -95,7 +95,7 @@ main (int argc, char *argv[])
 
   CommandLine cmd;
   // seed related
-  cmd.AddValue ("simSeed", "Seed for random generator. Default: 1", run);
+  cmd.AddValue ("simSeed", "Seed for random generator. Default: 0", run);
   // other
   cmd.AddValue ("envTimeStep", "Time step interval for TcpRlTimeBased. Default: 0.1s", tcpEnvTimeStep);
   cmd.AddValue ("nLeaf", "Number of left and right side leaf nodes", nLeaf);

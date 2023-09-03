@@ -54,6 +54,8 @@ get_agent.tcpAgents = {}
 parser = argparse.ArgumentParser()
 parser.add_argument('--seed', type=int,
                     help='set seed for reproducibility')
+parser.add_argument('--sim_seed', type=int,
+                    help='set simulation run number')
 parser.add_argument('--duration', type=float,
                     help='set simulation duration (seconds)')
 parser.add_argument('--show_log', action='store_true',
@@ -75,6 +77,10 @@ print("Python side random seed {}".format(my_seed))
 np.random.seed(my_seed)
 torch.manual_seed(my_seed)
 
+my_sim_seed = 0
+if args.sim_seed:
+    my_sim_seed = args.sim_seed
+
 my_duration = 1000
 if args.duration:
     my_duration = args.duration
@@ -94,7 +100,8 @@ stepIdx = 0
 
 ns3Settings = {
     'transport_prot': 'TcpRlTimeBased',
-    'duration': my_duration}
+    'duration': my_duration,
+    'simSeed': my_sim_seed}
 exp = Experiment("ns3ai_rltcp_msg", "../../../../../", py_binding, handleFinish=True)
 msgInterface = exp.run(setting=ns3Settings, show_output=True)
 
