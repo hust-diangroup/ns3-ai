@@ -88,7 +88,7 @@ class ReplayMemory {
         std::get<3>(sample) = torch::from_blob(rewards.data(), {BATCH_SIZE, 1}, at::kLong);
     }
 
-    const int capacity;
+    const uint32_t capacity;
 
   private:
     std::vector<Transition> memory;
