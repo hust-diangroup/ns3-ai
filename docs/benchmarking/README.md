@@ -1,6 +1,6 @@
 # ns3-ai Benchmarking
 
-## Gym interface vs. ns3-gym
+## 1. Gym interface vs. ns3-gym
 
 This benchmark is based on the [RL-TCP](../../examples/rl-tcp) example, 
 in which we record the CPU cycle count during C++ to Python and Python to 
@@ -33,11 +33,27 @@ interface is more than 15 times shorter than that of ns3-gym.
     <img src="./gym-interface-figure-py2cpp.png" alt="gym py2cpp" width="600"/>
 </p>
 
-## Vector-based vs. struct-based
+## 2. Vector-based vs. struct-based
 
-TODO
+The benchmark is based on [Multi-BSS](../../examples/multi-bss) example, on 
+[benchmark_vector](https://github.com/ShenMuyuan/ns3-ai/tree/benchmark_vector) branch. 
 
-## Pure C++ vs. C++-Python interface
+Unfortunately, in terms of action transmission time (from C++'s beginning of 
+write to Python's complete read), the vector-based is 1.2 times slower 
+than the struct-based. The extra time is caused by Python's slow reading of vectors. 
+Measurements show that in reading `rxPower` (received power in nodes in first BSS) 
+at Python side, vector interface spent 20% to 50% more time than struct interface.
+
+To deal with the slow vector access on Python side, one possible solution is to 
+integrate [Eigen](https://eigen.tuxfamily.org/index.php?title=Main_Page) on C++ side 
+and use existing Eigen-Python bindings like [pybind11's Eigen support](https://pybind11.readthedocs.io/en/stable/advanced/cast/eigen.html) 
+or [eigenpy](https://github.com/stack-of-tasks/eigenpy) to convert linear algebra 
+types into numpy or scipy types. This leads to another issue which is the decoupling 
+of current vector and struct interface. Vector interface is currently based on struct 
+interface for dealing with 'vector of struct'. If vector is becoming 'purely linear algebra', 
+this dependency no longer exists and the code needs substantial changes.
+
+## 3. Pure C++ vs. C++-Python interface
 
 The benchmark is based on the [pure C++ (libtorch)](../../examples/rl-tcp/pure_cpp) and 
 [message interface (PyTorch)](../../examples/rl-tcp/use_msg) version of RL-TCP example. 
