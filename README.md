@@ -58,7 +58,8 @@ and calculate `a + b` in Python to put back the results.
 
 ### [Multi-BSS](examples/multi-bss)
 
-In progress...
+This example simulates a VR gaming scenario. We change the CCA threshold using DQN 
+to meet VR delay and throughput requirements. Model optimization is in progress.
 
 ### [RL-TCP](examples/rl-tcp/)
 

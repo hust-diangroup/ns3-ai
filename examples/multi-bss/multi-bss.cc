@@ -2590,9 +2590,9 @@ main(int argc, char* argv[])
                     burstyHelper.SetBurstGenerator(
                         "ns3::SimpleBurstGenerator",
                         "PeriodRv",
-                        StringValue("ns3::ConstantRandomVariable[Constant=17e-3]"),
+                        StringValue("ns3::ConstantRandomVariable[Constant=5e-3]"),
                         "BurstSizeRv",
-                        StringValue("ns3::ConstantRandomVariable[Constant=30e3]"));
+                        StringValue("ns3::ConstantRandomVariable[Constant=25e3]"));
 
                     // Install bursty application
                     ApplicationContainer staApps = burstyHelper.Install(staNodes.Get(i + x));
