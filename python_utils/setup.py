@@ -20,15 +20,6 @@ import setuptools
 
 name = "ns3ai_python_utils"
 
-# # extension used for benchmarking
-# extension = setuptools.Extension("py_cycle",
-#                                  ["py_cycle.c"],
-#                                  depends=[
-#                                      "py_cycle.c",
-#                                      "setup.py",
-#                                  ],
-#                                  )
-
 setuptools.setup(name=name,
                  version="1.0.0",
                  description="ns-3 AI Message Interface Utils for Python",
@@ -42,5 +33,4 @@ setuptools.setup(name=name,
                      "Operating System :: POSIX :: Linux",
                  ],
                  py_modules=["ns3ai_utils"],
-                 # ext_modules=[extension]
                  )

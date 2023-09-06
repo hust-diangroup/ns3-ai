@@ -3,7 +3,6 @@ import gymnasium as gym
 from gymnasium import spaces
 import messages_pb2 as pb
 import ns3ai_gym_msg_py as py_binding
-# import py_cycle
 from ns3ai_utils import Experiment
 
 
@@ -136,10 +135,6 @@ class Ns3Env(gym.Env):
         reply = pb.EnvActMsg()
         reply.stopSimReq = True
 
-        # # last cycle information
-        # reply.pyRecvEnvCpuCycle = self.prev_recv_env_cycle
-        # reply.pySendActCpuCycle = self.prev_send_act_cycle
-
         replyMsg = reply.SerializeToString()
         assert len(replyMsg) <= py_binding.msg_buffer_size
         self.msgInterface.PySendBegin()
@@ -156,9 +151,6 @@ class Ns3Env(gym.Env):
 
         envStateMsg = pb.EnvStateMsg()
         self.msgInterface.PyRecvBegin()
-        # # For benchmarking: here get CPU cycle
-        # self.prev_recv_env_cycle = self.recv_env_cycle
-        # self.recv_env_cycle = py_cycle.getCycle()
         request = self.msgInterface.GetCpp2PyStruct().get_buffer()
         envStateMsg.ParseFromString(request)
         self.msgInterface.PyRecvEnd()
@@ -263,17 +255,11 @@ class Ns3Env(gym.Env):
         actionMsg = self._pack_data(actions, self.action_space)
         reply.actData.CopyFrom(actionMsg)
 
-        # # the values will be passed to C++ next time
-        # reply.pyRecvEnvCpuCycle = self.prev_recv_env_cycle
-        # reply.pySendActCpuCycle = self.prev_send_act_cycle
-
         replyMsg = reply.SerializeToString()
         assert len(replyMsg) <= py_binding.msg_buffer_size
         self.msgInterface.PySendBegin()
         self.msgInterface.GetPy2CppStruct().size = len(replyMsg)
         self.msgInterface.GetPy2CppStruct().get_buffer_full()[:len(replyMsg)] = replyMsg
-        # # For benchmarking: here get CPU cycle
-        # self.prev_send_act_cycle = py_cycle.getCycle()
         self.msgInterface.PySendEnd()
         self.newStateRx = False
         return True
