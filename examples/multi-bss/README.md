@@ -2,32 +2,32 @@
 
 ## Introduction
 
-The example is based on and modified from [juanvleonr's clean-tgax branch](https://gitlab.com/juanvleonr/ns-3-dev/-/tree/clean-tgax?ref_type=heads). 
-The C++ side simulates a VR gaming scenario showed below, in which 4 BSSs operate in 
-separate apartments in a 2 by 2 grid. Each BSS contains 1 AP and 4 STAs. One of the STA 
-in the first BSS is a VR device generating burst UL traffic, while other devices have normal 
-UL traffic. 
+The example is based on and modified from [juanvleonr's clean-tgax branch](https://gitlab.com/juanvleonr/ns-3-dev/-/tree/clean-tgax?ref_type=heads).
+The C++ side simulates a VR gaming scenario showed below, in which 4 BSSs operate in
+separate apartments in a 2 by 2 grid. Each BSS contains 1 AP and 4 STAs. One of the STA
+in the first BSS is a VR device generating burst UL traffic, while other devices have normal
+UL traffic.
 
 <p align="center">
     <img src="./docs/vr-scenario.png" alt="vr scenario" width="400"/>
 </p>
 
-Python side dynamically adjusts clear channel assessment (CCA) threshold for BSS1. CCA 
-is a function in Wi-Fi that enables devices to listen to the PHY channel before sending 
-data. Signal from another device is considered valid if their SNR is higher than a minimum 
+Python side dynamically adjusts clear channel assessment (CCA) threshold for BSS1. CCA
+is a function in Wi-Fi that enables devices to listen to the PHY channel before sending
+data. Signal from another device is considered valid if their SNR is higher than a minimum
 level, called the CCA threshold.
 
-An optimal CCA threshold is not achieved by having an extremely high or extremely 
-low CCA threshold. If the CCA threshold is set too high, the device may be unaware of 
-the presence of another sending device, leading to hidden terminal problem. On the other hand, 
-if the CCA threshold is set too low, the device may not attempt to transmit data even if 
+An optimal CCA threshold is not achieved by having an extremely high or extremely
+low CCA threshold. If the CCA threshold is set too high, the device may be unaware of
+the presence of another sending device, leading to hidden terminal problem. On the other hand,
+if the CCA threshold is set too low, the device may not attempt to transmit data even if
 the channel is clear, reducing the efficiency of network.
 
-In order to achieve the low delay and high bandwidth requirements for VR, DQN is used 
+In order to achieve the low delay and high bandwidth requirements for VR, DQN is used
 to learn from past experiences and choose the best CCA threshold for BSS1.
 
-The burst traffic generator is under [vr-app](./vr-app) directory. It is intended as a 
-module providing ns-3 applications including `BurstyApplication` and `BurstSink`. See 
+The burst traffic generator is under [vr-app](./vr-app) directory. It is intended as a
+module providing ns-3 applications including `BurstyApplication` and `BurstSink`. See
 its documents for details.
 
 ### Scenario
@@ -116,10 +116,10 @@ python run_multi_bss.py
 
 ## Results
 
-The VR delay, VR throughput, total throughput and CCA threshold values 
+The VR delay, VR throughput, total throughput and CCA threshold values
 are shown in the terminal every time step.
 
-The optimization of the model is in progress. We are trying to make the 
-VR node meet the VR requirements by adjusting both simulation & algorithm 
+The optimization of the model is in progress. We are trying to make the
+VR node meet the VR requirements by adjusting both simulation & algorithm
 parameters.
 

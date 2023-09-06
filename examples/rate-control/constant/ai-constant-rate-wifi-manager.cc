@@ -133,15 +133,18 @@ WifiTxVector
 AiConstantRateWifiManager::DoGetDataTxVector(WifiRemoteStation* st, uint16_t allowedWidth)
 {
     NS_LOG_FUNCTION(this << st);
-    Ns3AiMsgInterfaceImpl<AiConstantRateEnvStruct, AiConstantRateActStruct> *msgInterface = 
+    Ns3AiMsgInterfaceImpl<AiConstantRateEnvStruct, AiConstantRateActStruct>* msgInterface =
         Ns3AiMsgInterface::Get()->GetInterface<AiConstantRateEnvStruct, AiConstantRateActStruct>();
 
     msgInterface->CppSendBegin();
     msgInterface->GetCpp2PyStruct()->transmitStreams = GetMaxNumberOfTransmitStreams();
     msgInterface->GetCpp2PyStruct()->supportedStreams = GetNumberOfSupportedStreams(st);
-    if (m_dataMode.GetModulationClass() == WIFI_MOD_CLASS_HT) {
+    if (m_dataMode.GetModulationClass() == WIFI_MOD_CLASS_HT)
+    {
         msgInterface->GetCpp2PyStruct()->mcs = m_dataMode.GetMcsValue();
-    } else {
+    }
+    else
+    {
         msgInterface->GetCpp2PyStruct()->mcs = 0xffU;
     }
     msgInterface->CppSendEnd();

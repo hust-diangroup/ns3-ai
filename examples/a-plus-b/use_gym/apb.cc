@@ -1,8 +1,9 @@
+#include <ns3/ai-module.h>
+#include <ns3/core-module.h>
+
+#include <chrono>
 #include <iostream>
 #include <random>
-#include <chrono>
-#include <ns3/core-module.h>
-#include <ns3/ai-module.h>
 
 #define NUM_ENV 10000
 
@@ -30,6 +31,7 @@ class ApbEnv : public OpenGymEnv
 
     uint32_t m_a;
     uint32_t m_b;
+
   private:
     uint32_t m_sum;
 };
@@ -118,9 +120,10 @@ ApbEnv::ExecuteActions(Ptr<OpenGymDataContainer> action)
     return true;
 }
 
-}
+} // namespace ns3
 
-int main(int argc, char *argv[])
+int
+main(int argc, char* argv[])
 {
     using namespace ns3;
 
@@ -132,8 +135,8 @@ int main(int argc, char *argv[])
 
     uint32_t sum;
 
-    for (int i = 0; i < NUM_ENV; ++i) {
-
+    for (int i = 0; i < NUM_ENV; ++i)
+    {
         apb->m_a = distrib(gen);
         apb->m_b = distrib(gen);
         std::cout << "set: " << apb->m_a << "," << apb->m_b << ";";
@@ -143,7 +146,6 @@ int main(int argc, char *argv[])
 
         std::cout << "get: " << sum << ";";
         std::cout << "\n";
-
     }
 
     apb->NotifySimulationEnd();

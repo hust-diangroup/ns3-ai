@@ -23,11 +23,12 @@
 #ifndef TCP_RL_ENV_H_MSG
 #define TCP_RL_ENV_H_MSG
 
+#include "agent.h"
+
 #include "ns3/core-module.h"
 #include "ns3/network-module.h"
 #include "ns3/tcp-header.h"
 #include "ns3/tcp-socket-base.h"
-#include "agent.h"
 
 namespace ns3
 {
@@ -57,18 +58,17 @@ class TcpTimeStepEnv : public Object
     ~TcpTimeStepEnv() override;
     static TypeId GetTypeId();
 
-  void SetNodeId (uint32_t id);
-  void SetSocketUuid (uint32_t id);
-  void TxPktTrace (Ptr<const Packet>, const TcpHeader &, Ptr<const TcpSocketBase>);
-  void RxPktTrace (Ptr<const Packet>, const TcpHeader &, Ptr<const TcpSocketBase>);
+    void SetNodeId(uint32_t id);
+    void SetSocketUuid(uint32_t id);
+    void TxPktTrace(Ptr<const Packet>, const TcpHeader&, Ptr<const TcpSocketBase>);
+    void RxPktTrace(Ptr<const Packet>, const TcpHeader&, Ptr<const TcpSocketBase>);
 
     // TCP congestion control interface
     uint32_t GetSsThresh(Ptr<const TcpSocketState> tcb, uint32_t bytesInFlight);
     void IncreaseWindow(Ptr<TcpSocketState> tcb, uint32_t segmentsAcked);
     // optional functions used to collect obs
     void PktsAcked(Ptr<TcpSocketState> tcb, uint32_t segmentsAcked, const Time& rtt);
-    void CongestionStateSet(Ptr<TcpSocketState> tcb,
-                            const TcpSocketState::TcpCongState_t newState);
+    void CongestionStateSet(Ptr<TcpSocketState> tcb, const TcpSocketState::TcpCongState_t newState);
     void CwndEvent(Ptr<TcpSocketState> tcb, const TcpSocketState::TcpCAEvent_t event);
 
   private:
@@ -106,18 +106,17 @@ class TcpEventBasedEnv : public Object
     ~TcpEventBasedEnv() override;
     static TypeId GetTypeId();
 
-    void SetNodeId (uint32_t id);
-    void SetSocketUuid (uint32_t id);
-    void TxPktTrace (Ptr<const Packet>, const TcpHeader &, Ptr<const TcpSocketBase>);
-    void RxPktTrace (Ptr<const Packet>, const TcpHeader &, Ptr<const TcpSocketBase>);
+    void SetNodeId(uint32_t id);
+    void SetSocketUuid(uint32_t id);
+    void TxPktTrace(Ptr<const Packet>, const TcpHeader&, Ptr<const TcpSocketBase>);
+    void RxPktTrace(Ptr<const Packet>, const TcpHeader&, Ptr<const TcpSocketBase>);
 
     // TCP congestion control interface
     uint32_t GetSsThresh(Ptr<const TcpSocketState> tcb, uint32_t bytesInFlight);
     void IncreaseWindow(Ptr<TcpSocketState> tcb, uint32_t segmentsAcked);
     // optional functions used to collect obs
     void PktsAcked(Ptr<TcpSocketState> tcb, uint32_t segmentsAcked, const Time& rtt);
-    void CongestionStateSet(Ptr<TcpSocketState> tcb,
-                            const TcpSocketState::TcpCongState_t newState);
+    void CongestionStateSet(Ptr<TcpSocketState> tcb, const TcpSocketState::TcpCongState_t newState);
     void CwndEvent(Ptr<TcpSocketState> tcb, const TcpSocketState::TcpCAEvent_t event);
 
   private:

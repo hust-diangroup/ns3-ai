@@ -182,9 +182,9 @@ class AiThompsonSamplingContainer:
 
 
 ns3Settings = {
-    'raa': 'AiThompsonSampling', 
-    'nWifi': 3, 
-    'standard': '11ac', 
+    'raa': 'AiThompsonSampling',
+    'nWifi': 3,
+    'standard': '11ac',
     'duration': 5}
 
 exp = Experiment("ns3ai_ratecontrol_ts", "../../../../../", py_binding, handleFinish=True)

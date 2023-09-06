@@ -22,12 +22,13 @@
 
 #include <ns3/burst-generator.h>
 #include <ns3/core-module.h>
+
 #include <queue>
 
 namespace ns3
 {
 
-//class Time;
+// class Time;
 
 /**
  * \ingroup applications

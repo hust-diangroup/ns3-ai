@@ -12,7 +12,7 @@ This installation works on Ubuntu 22.04 and macOS 13.0 or higher.
     ```shell
     # Recommended
     sudo apt install libprotobuf-dev protobuf-compiler
-    
+
     # Try building from source if the above installation causes cmake error
     git clone https://github.com/protocolbuffers/protobuf.git
     cd protobuf
@@ -27,7 +27,7 @@ This installation works on Ubuntu 22.04 and macOS 13.0 or higher.
     ```shell
     # Recommended
     sudo apt install pybind11-dev
-    
+
     # Try building from source if the above installation causes cmake error
     git clone https://github.com/pybind/pybind11.git
     cd pybind11
@@ -53,7 +53,7 @@ git clone https://github.com/hust-diangroup/ns3-ai.git contrib/ai
 ./ns3 build ai
 ```
 
-3. Setup Python interfaces. It's recommended to use a separate Conda environment 
+3. Setup Python interfaces. It's recommended to use a separate Conda environment
 for ns3-ai.
 
 ```shell

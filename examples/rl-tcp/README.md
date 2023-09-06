@@ -2,9 +2,9 @@
 
 ## Introduction
 
-This example applies Q-learning algorithms to TCP congestion control for real-time 
-changes in the environment of network transmission. By strengthening the learning 
-management sliding window and threshold size, the network can get better throughput 
+This example applies Q-learning algorithms to TCP congestion control for real-time
+changes in the environment of network transmission. By strengthening the learning
+management sliding window and threshold size, the network can get better throughput
 and smaller delay.
 
 ### Cmake targets
@@ -16,21 +16,21 @@ and smaller delay.
 
 ### RL: Q-learning and Deep Q-learning
 
-Q-learning is based on estimating the values of state-action pairs 
-in a Markov decision process, by iteratively updating an action-value 
-function. In this example's implementation, the Q-table is updated 
-each time ns-3 interacts with Python side, and the agent chooses 
+Q-learning is based on estimating the values of state-action pairs
+in a Markov decision process, by iteratively updating an action-value
+function. In this example's implementation, the Q-table is updated
+each time ns-3 interacts with Python side, and the agent chooses
 cWnd and ssThresh according to epsilon-greedy algorithm.
 
-Deep Q-learning, on the other hand, is a variant of Q-learning that 
-utilizes a deep neural network to approximate the Q-values. Here the 
+Deep Q-learning, on the other hand, is a variant of Q-learning that
+utilizes a deep neural network to approximate the Q-values. Here the
 DQN is also updated at every C++-Python interaction.
 
 ### Non-RL: TcpNewReno
 
-TcpNewReno is a TCP layer congestion control algorithm which employs 
-a "fast recovery" mechanism, which allows it to detect lost packets 
-more quickly compared to the standard Reno algorithm. In this example, 
+TcpNewReno is a TCP layer congestion control algorithm which employs
+a "fast recovery" mechanism, which allows it to detect lost packets
+more quickly compared to the standard Reno algorithm. In this example,
 if RL algorithm is not selected, the algorithm will be TcpNewReno.
 
 ## Simulation scenario
@@ -44,10 +44,10 @@ if RL algorithm is not selected, the algorithm will be TcpNewReno.
             |             /                  \         |
             |   access   /                    \ access |
             N -----------                      --------N
-            
+
 ```
 
-We construct a dumbbell-type topology simulation scenario in NS3, with only one 
+We construct a dumbbell-type topology simulation scenario in NS3, with only one
 leaf node on the left and right, and two routers R0, R1 on the intermediate link.
 
 ### Parameters
@@ -61,9 +61,9 @@ leaf node on the left and right, and two routers R0, R1 on the intermediate link
 
 ### Simulation process
 
-- TCP buffer is 4MB, receive and transmit are 2MB respectively; allow sack; DelAckCount 
+- TCP buffer is 4MB, receive and transmit are 2MB respectively; allow sack; DelAckCount
 (Number of packets to wait before sending a TCP ack) is 2.
-- The left leaf node sends packets to the right node; initialize a routing table about 
+- The left leaf node sends packets to the right node; initialize a routing table about
 the nodes in the simulation so that the router is aware of all the nodes.
 - Output the number of packets received by the right node.
 
@@ -133,5 +133,5 @@ Send act: [new_cWnd, new_ssThresh]
 Recv obs: [ssThresh, cWnd, segmentsAcked, segmentSize, bytesInFlight]
 ```
 
-C++ side always prints the number of packets received by the sink. If the seed and duration are the same, the result of 
+C++ side always prints the number of packets received by the sink. If the seed and duration are the same, the result of
 two interfaces should have no difference.

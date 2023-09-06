@@ -23,24 +23,25 @@
 #define NS3_TCP_RL_ENV_H
 
 #include "ns3/tcp-socket-base.h"
-#include <vector>
 #include <ns3/ai-module.h>
 
-namespace ns3 {
+#include <vector>
+
+namespace ns3
+{
 
 class Packet;
 class TcpHeader;
 class TcpSocketBase;
 class Time;
 
-
 class TcpEnvBase : public OpenGymEnv
 {
   public:
-    TcpEnvBase ();
-    ~TcpEnvBase () override;
-    static TypeId GetTypeId ();
-    void DoDispose () override;
+    TcpEnvBase();
+    ~TcpEnvBase() override;
+    static TypeId GetTypeId();
+    void DoDispose() override;
 
     void SetNodeId(uint32_t id);
     void SetSocketUuid(uint32_t id);
@@ -63,12 +64,13 @@ class TcpEnvBase : public OpenGymEnv
     virtual void RxPktTrace(Ptr<const Packet>, const TcpHeader&, Ptr<const TcpSocketBase>) = 0;
 
     // TCP congestion control interface
-    virtual uint32_t GetSsThresh (Ptr<const TcpSocketState> tcb, uint32_t bytesInFlight) = 0;
-    virtual void IncreaseWindow (Ptr<TcpSocketState> tcb, uint32_t segmentsAcked) = 0;
+    virtual uint32_t GetSsThresh(Ptr<const TcpSocketState> tcb, uint32_t bytesInFlight) = 0;
+    virtual void IncreaseWindow(Ptr<TcpSocketState> tcb, uint32_t segmentsAcked) = 0;
     // optional functions used to collect obs
-    virtual void PktsAcked (Ptr<TcpSocketState> tcb, uint32_t segmentsAcked, const Time& rtt) = 0;
-    virtual void CongestionStateSet (Ptr<TcpSocketState> tcb, const TcpSocketState::TcpCongState_t newState) = 0;
-    virtual void CwndEvent (Ptr<TcpSocketState> tcb, const TcpSocketState::TcpCAEvent_t event) = 0;
+    virtual void PktsAcked(Ptr<TcpSocketState> tcb, uint32_t segmentsAcked, const Time& rtt) = 0;
+    virtual void CongestionStateSet(Ptr<TcpSocketState> tcb,
+                                    const TcpSocketState::TcpCongState_t newState) = 0;
+    virtual void CwndEvent(Ptr<TcpSocketState> tcb, const TcpSocketState::TcpCAEvent_t event) = 0;
 
     typedef enum
     {
@@ -100,10 +102,10 @@ class TcpEnvBase : public OpenGymEnv
 class TcpTimeStepEnv : public TcpEnvBase
 {
   public:
-    TcpTimeStepEnv ();
-    ~TcpTimeStepEnv () override;
-    static TypeId GetTypeId ();
-    void DoDispose () override;
+    TcpTimeStepEnv();
+    ~TcpTimeStepEnv() override;
+    static TypeId GetTypeId();
+    void DoDispose() override;
 
     // OpenGym interface
     Ptr<OpenGymSpace> GetObservationSpace() override;
@@ -114,41 +116,41 @@ class TcpTimeStepEnv : public TcpEnvBase
     void RxPktTrace(Ptr<const Packet>, const TcpHeader&, Ptr<const TcpSocketBase>) override;
 
     // TCP congestion control interface
-    uint32_t GetSsThresh (Ptr<const TcpSocketState> tcb, uint32_t bytesInFlight) override;
-    void IncreaseWindow (Ptr<TcpSocketState> tcb, uint32_t segmentsAcked) override;
+    uint32_t GetSsThresh(Ptr<const TcpSocketState> tcb, uint32_t bytesInFlight) override;
+    void IncreaseWindow(Ptr<TcpSocketState> tcb, uint32_t segmentsAcked) override;
     // optional functions used to collect obs
-    void PktsAcked (Ptr<TcpSocketState> tcb, uint32_t segmentsAcked, const Time& rtt) override;
-    void CongestionStateSet (Ptr<TcpSocketState> tcb, const TcpSocketState::TcpCongState_t newState) override;
-    void CwndEvent (Ptr<TcpSocketState> tcb, const TcpSocketState::TcpCAEvent_t event) override;
+    void PktsAcked(Ptr<TcpSocketState> tcb, uint32_t segmentsAcked, const Time& rtt) override;
+    void CongestionStateSet(Ptr<TcpSocketState> tcb,
+                            const TcpSocketState::TcpCongState_t newState) override;
+    void CwndEvent(Ptr<TcpSocketState> tcb, const TcpSocketState::TcpCAEvent_t event) override;
 
   private:
     void ScheduleNextStateRead();
-    bool m_started {false};
+    bool m_started{false};
     Time m_timeStep;
     // state
     Ptr<const TcpSocketState> m_tcb;
     std::vector<uint32_t> m_bytesInFlight;
     std::vector<uint32_t> m_segmentsAcked;
 
-    uint64_t m_rttSampleNum {0};
-    Time m_rttSum {MicroSeconds (0.0)};
+    uint64_t m_rttSampleNum{0};
+    Time m_rttSum{MicroSeconds(0.0)};
 
-    Time m_lastPktTxTime {MicroSeconds(0.0)};
-    Time m_lastPktRxTime {MicroSeconds(0.0)};
-    uint64_t m_interTxTimeNum {0};
-    Time m_interTxTimeSum {MicroSeconds (0.0)};
-    uint64_t m_interRxTimeNum {0};
-    Time m_interRxTimeSum {MicroSeconds (0.0)};
-
+    Time m_lastPktTxTime{MicroSeconds(0.0)};
+    Time m_lastPktRxTime{MicroSeconds(0.0)};
+    uint64_t m_interTxTimeNum{0};
+    Time m_interTxTimeSum{MicroSeconds(0.0)};
+    uint64_t m_interRxTimeNum{0};
+    Time m_interRxTimeSum{MicroSeconds(0.0)};
 };
 
 class TcpEventBasedEnv : public TcpEnvBase
 {
   public:
-    TcpEventBasedEnv ();
-    ~TcpEventBasedEnv () override;
-    static TypeId GetTypeId ();
-    void DoDispose () override;
+    TcpEventBasedEnv();
+    ~TcpEventBasedEnv() override;
+    static TypeId GetTypeId();
+    void DoDispose() override;
 
     void SetReward(float value);
     void SetPenalty(float value);
@@ -162,12 +164,13 @@ class TcpEventBasedEnv : public TcpEnvBase
     void RxPktTrace(Ptr<const Packet>, const TcpHeader&, Ptr<const TcpSocketBase>) override;
 
     // TCP congestion control interface
-    uint32_t GetSsThresh (Ptr<const TcpSocketState> tcb, uint32_t bytesInFlight) override;
-    void IncreaseWindow (Ptr<TcpSocketState> tcb, uint32_t segmentsAcked) override;
+    uint32_t GetSsThresh(Ptr<const TcpSocketState> tcb, uint32_t bytesInFlight) override;
+    void IncreaseWindow(Ptr<TcpSocketState> tcb, uint32_t segmentsAcked) override;
     // optional functions used to collect obs
-    void PktsAcked (Ptr<TcpSocketState> tcb, uint32_t segmentsAcked, const Time& rtt) override;
-    void CongestionStateSet (Ptr<TcpSocketState> tcb, const TcpSocketState::TcpCongState_t newState) override;
-    void CwndEvent (Ptr<TcpSocketState> tcb, const TcpSocketState::TcpCAEvent_t event) override;
+    void PktsAcked(Ptr<TcpSocketState> tcb, uint32_t segmentsAcked, const Time& rtt) override;
+    void CongestionStateSet(Ptr<TcpSocketState> tcb,
+                            const TcpSocketState::TcpCongState_t newState) override;
+    void CwndEvent(Ptr<TcpSocketState> tcb, const TcpSocketState::TcpCAEvent_t event) override;
 
   private:
     // state

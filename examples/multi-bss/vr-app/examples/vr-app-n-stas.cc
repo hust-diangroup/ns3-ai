@@ -291,8 +291,8 @@ main(int argc, char* argv[])
         }
 
         std::ostringstream filenameSs;
-        filenameSs << GetInputPath() << "./BurstGeneratorTraces/" << appAbbrev
-                   << "_" << dataRateMbps << "mbps_" << uint32_t(frameRate) << "fps.csv";
+        filenameSs << GetInputPath() << "./BurstGeneratorTraces/" << appAbbrev << "_"
+                   << dataRateMbps << "mbps_" << uint32_t(frameRate) << "fps.csv";
 
         NS_LOG_DEBUG("Trace file generator with filename=" << filenameSs.str());
 

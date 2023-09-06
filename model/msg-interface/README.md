@@ -2,19 +2,19 @@
 
 ## Introduction
 
-Message interface is lower-level compared to Gym interface. In fact, Gym interface is 
-based on message interface for interprocess communication. The message interface has 
+Message interface is lower-level compared to Gym interface. In fact, Gym interface is
+based on message interface for interprocess communication. The message interface has
 send and receive functions just like a typical message queue.
 
-When there is existing `struct` or `std::vector` to be shared with Python, it's easier 
-to employ message interface than Gym interface because you don't need to convert the 
-data to Gym spaces. Also, both C++ and Python side access the data directly, which 
+When there is existing `struct` or `std::vector` to be shared with Python, it's easier
+to employ message interface than Gym interface because you don't need to convert the
+data to Gym spaces. Also, both C++ and Python side access the data directly, which
 saves the serialization/deserialization time especially for frequent interaction.
 
-There are two versions of the message interface: **struct-based** and **vector-based**. 
-- The struct-based version allows for the transfer of structures between C++ and Python, 
-making it ideal for handling small amounts of data. 
-- The vector-based version enables the transfer of vectors between C++ and Python, 
+There are two versions of the message interface: **struct-based** and **vector-based**.
+- The struct-based version allows for the transfer of structures between C++ and Python,
+making it ideal for handling small amounts of data.
+- The vector-based version enables the transfer of vectors between C++ and Python,
 making it more suitable for dealing with large amounts of data.
 
 ## Tutorial
@@ -30,7 +30,7 @@ with a vector of sums.
 
 #### C++ side
 
-We have defined two structs, `EnvStruct` for the two numbers `env_a` and `env_b`, 
+We have defined two structs, `EnvStruct` for the two numbers `env_a` and `env_b`,
 and `ActStruct` for their sum `act_c` that needs to be calculated:
 
 ```c++
@@ -52,35 +52,35 @@ Start by acquiring a message interface:
 Ns3AiMsgInterface::Get()->SetIsMemoryCreator(false);
 Ns3AiMsgInterface::Get()->SetUseVector(false);
 Ns3AiMsgInterface::Get()->SetHandleFinish(true);
-Ns3AiMsgInterfaceImpl<EnvStruct, ActStruct> *msgInterface = 
+Ns3AiMsgInterfaceImpl<EnvStruct, ActStruct> *msgInterface =
     Ns3AiMsgInterface::Get()->GetInterface<EnvStruct, ActStruct>();
 ```
 
 The above lines sets some attributes for the message interface:
-- `SetIsMemoryCreator`: Controls whether or not this side initializes the interface. 
-Because the shared memory is a named region, after the creator initializes the 
+- `SetIsMemoryCreator`: Controls whether or not this side initializes the interface.
+Because the shared memory is a named region, after the creator initializes the
 segment with a unique name, the other side can access the segment with that name.
 - `SetUseVector`: Controls whether to use `std::vector` or not.
-- `SetHandleFinish`: Controls whether or not a simple protocol is enabled, which 
-notifies Python side when C++ side interface is destroyed (possibly due to ns-3 
-program exit). This is useful for all applications using the message interface, 
-because Python side is always unaware of simulation ending. For Gym interface on 
-top of message interface, this function should not be enabled because Gym interface 
+- `SetHandleFinish`: Controls whether or not a simple protocol is enabled, which
+notifies Python side when C++ side interface is destroyed (possibly due to ns-3
+program exit). This is useful for all applications using the message interface,
+because Python side is always unaware of simulation ending. For Gym interface on
+top of message interface, this function should not be enabled because Gym interface
 has its own protocol dealing with simulation ending.
 
-Because shared memory segment is created by Python side, the C++ side 
+Because shared memory segment is created by Python side, the C++ side
 interface won't create it. We use struct rather than vector, and the message interface
-requires the protocol dealing with simulation ending. Therefore, the settings 
+requires the protocol dealing with simulation ending. Therefore, the settings
 should be `false`, `false` and `true`.
 
-After settings, the message interface instance is obtained with `GetInterface` 
-template function, with `EnvStruct` and `ActStruct` as template arguments. It 
-is singleton-based, so changing the settings and getting another interface in one 
+After settings, the message interface instance is obtained with `GetInterface`
+template function, with `EnvStruct` and `ActStruct` as template arguments. It
+is singleton-based, so changing the settings and getting another interface in one
 process is not possible.
 
-Then, interact with Python (some initialization code is skipped). The interface 
-is simple and intuitive. To set `temp_a` and `temp_b` into shared memory, just write 
-them into the structure obtained by `GetCpp2PyStruct`. To get the sum, just read 
+Then, interact with Python (some initialization code is skipped). The interface
+is simple and intuitive. To set `temp_a` and `temp_b` into shared memory, just write
+them into the structure obtained by `GetCpp2PyStruct`. To get the sum, just read
 from the structure obtained by `GetPy2CppStruct`.
 
 ```c++
@@ -101,29 +101,29 @@ std::cout << "\n";
 msgInterface->CppRecvEnd();
 ```
 
-Note that before and after read or write, several **synchronization** functions 
-are needed. `CppSendBegin` and `CppSendEnd` are for sending to Python, and `CppRecvBegin` 
-and `CppRecvEnd` are for receiving from Python. There are similar functions for 
-Python side. These functions are based on semaphore, which requires strict sequence. 
-If C++ side is receiving at the beginning, then Python side must be sending at the 
-beginning. The [OSTEP](https://pages.cs.wisc.edu/~remzi/OSTEP/threads-sema.pdf) book 
+Note that before and after read or write, several **synchronization** functions
+are needed. `CppSendBegin` and `CppSendEnd` are for sending to Python, and `CppRecvBegin`
+and `CppRecvEnd` are for receiving from Python. There are similar functions for
+Python side. These functions are based on semaphore, which requires strict sequence.
+If C++ side is receiving at the beginning, then Python side must be sending at the
+beginning. The [OSTEP](https://pages.cs.wisc.edu/~remzi/OSTEP/threads-sema.pdf) book
 has a good introduction of semaphores.
 
 #### Python side
 
-Python side interface is a **binding** of the C++ side interface. Python binding means 
-the Python side reuses the C++ code to have the same capabilities as C++. Because the C++ 
-code is template-based, Python binding varies with the data structure that is being 
+Python side interface is a **binding** of the C++ side interface. Python binding means
+the Python side reuses the C++ code to have the same capabilities as C++. Because the C++
+code is template-based, Python binding varies with the data structure that is being
 shared, and every example is unique.
 
-The bindings in ns3-ai is created with pybind11. For detailed instructions on writing 
+The bindings in ns3-ai is created with pybind11. For detailed instructions on writing
 Python bindings, check out [pybind11 documentation](https://pybind11.readthedocs.io/en/stable/index.html).
-However, most bindings have similar style and fixed components. A Plus B's binding code 
+However, most bindings have similar style and fixed components. A Plus B's binding code
 is a good boilerplate, you can just modify a few lines and apply to another program.
 
 Basically, you can follow these steps:
 
-1. Declare the Python module to create. In this example, `ns3ai_apb_py_stru` will be the 
+1. Declare the Python module to create. In this example, `ns3ai_apb_py_stru` will be the
 import name of the binding module.
 
 ```c++
@@ -132,8 +132,8 @@ PYBIND11_MODULE(ns3ai_apb_py_stru, m) {
 }
 ```
 
-2. Bind the structures. Every item that Python may access (not necessarily all items) 
-need to be mentioned in the code. The names in Python can be different from that in 
+2. Bind the structures. Every item that Python may access (not necessarily all items)
+need to be mentioned in the code. The names in Python can be different from that in
 C++. For instance, `a` in Python is `env_a` in C++.
 
 ```c++
@@ -147,8 +147,8 @@ py::class_<ActStruct>(m, "PyActStruct")
     .def_readwrite("c", &ActStruct::act_c);
 ```
 
-3. Bind the C++ class. Every function or member that Python may use (not necessarily 
-all) need to be mentioned in the binding code. In this binding, C++-only methods such 
+3. Bind the C++ class. Every function or member that Python may use (not necessarily
+all) need to be mentioned in the binding code. In this binding, C++-only methods such
 as `CppSendBegin` is excluded because Python side never use it.
 
 ```c++
@@ -173,14 +173,14 @@ py::class_<ns3::Ns3AiMsgInterfaceImpl<EnvStruct, ActStruct>>(m, "Ns3AiMsgInterfa
     ;
 ```
 
-To reuse this binding code on another example using struct-based message interface, 
+To reuse this binding code on another example using struct-based message interface,
 you only need to change the module name, structure content and the template parameters.
 
-**Note: The binding module is configured by CMake to generate Python-compatible shared 
-library at the source directory, rather than adding a Python module. Therefore, the 
+**Note: The binding module is configured by CMake to generate Python-compatible shared
+library at the source directory, rather than adding a Python module. Therefore, the
 Python script importing the binding should be also located in the source directory.**
 
-In the A-Plus-B Python script, import the binding module and `Experiment` object from 
+In the A-Plus-B Python script, import the binding module and `Experiment` object from
 `ns3ai_utils` module, and acquire the message interface:
 
 ```python
@@ -192,17 +192,17 @@ exp = Experiment("ns3ai_apb_msg_stru", "../../../../../", py_binding,
 msgInterface = exp.run(show_output=True)
 ```
 
-The initialization of `Experiment` creates a region of shared memory according to the 
+The initialization of `Experiment` creates a region of shared memory according to the
 options given. The first three parameters are:
 - `targetName`: Cmake target name of the executable.
 - `ns3Path`: Relative path to get to the `ns3` script.
 - `msgModule`: Alias of the Python binding module.
 
-In the keyword option part, `handleFinish=True` is given, like C++ side. By default, 
+In the keyword option part, `handleFinish=True` is given, like C++ side. By default,
 using vector is turned off.
 
-The `exp.run` starts the `ns3` script subprocess and its C++ subprocess which do the 
-simulation. The message interface is returned for data transfer and synchronization, 
+The `exp.run` starts the `ns3` script subprocess and its C++ subprocess which do the
+simulation. The message interface is returned for data transfer and synchronization,
 and the APIs are very similar to C++ side:
 
 ```python
@@ -220,8 +220,8 @@ msgInterface.GetPy2CppStruct().c = temp
 msgInterface.PySendEnd()
 ```
 
-Most Python scripts in ns3-ai examples adopts the `try ... except ... else ... finally ...` 
-syntax, in order for better exception handling and proper cleaning before exit. 
+Most Python scripts in ns3-ai examples adopts the `try ... except ... else ... finally ...`
+syntax, in order for better exception handling and proper cleaning before exit.
 To clean `Experiment` instances, just explicitly call `del`:
 
 ```python
@@ -232,7 +232,7 @@ finally:
 
 ### Vector-based message interface
 
-Unlike the other two versions, this vector-based version of A-Plus-B example 
+Unlike the other two versions, this vector-based version of A-Plus-B example
 demonstrates the sharing of numbers and their sums using `std::vector`.
 
 #### C++ side
@@ -243,7 +243,7 @@ Start with this setting, which turns on the vector usage.
 Ns3AiMsgInterface::Get()->SetIsMemoryCreator(false);
 Ns3AiMsgInterface::Get()->SetUseVector(true);
 Ns3AiMsgInterface::Get()->SetHandleFinish(true);
-Ns3AiMsgInterfaceImpl<EnvStruct, ActStruct> *msgInterface = 
+Ns3AiMsgInterfaceImpl<EnvStruct, ActStruct> *msgInterface =
     Ns3AiMsgInterface::Get()->GetInterface<EnvStruct, ActStruct>();
 ```
 
@@ -274,23 +274,23 @@ std::cout << "\n";
 msgInterface->CppRecvEnd();
 ```
 
-The synchronization method of the vector version is the same as that of struct-based 
+The synchronization method of the vector version is the same as that of struct-based
 version.
 
 #### Python side
 
-Binding vectors is different from binding structs, but the binding code is 
+Binding vectors is different from binding structs, but the binding code is
 again a boilerplate and can be easily reused in other projects.
 
 There are two major additions compared to the previous struct-based binding:
-1. Opaque vectors: use the macro `PYBIND11_MAKE_OPAQUE` to treat vectors as 
+1. Opaque vectors: use the macro `PYBIND11_MAKE_OPAQUE` to treat vectors as
 references instead of copying them to Python side, making Python module faster.
 
 ```c++
 PYBIND11_MAKE_OPAQUE(ns3::Ns3AiMsgInterfaceImpl<EnvStruct, ActStruct>::Cpp2PyMsgVector);
 ```
 
-2. Vector binding: essential methods such as `resize`, `__len__` and 
+2. Vector binding: essential methods such as `resize`, `__len__` and
 `__getitem__` needs to be implemented.
 
 ```c++
@@ -319,8 +319,8 @@ exp = Experiment("ns3ai_apb_msg_vec", "../../../../../", py_binding,
 msgInterface = exp.run(show_output=True)
 ```
 
-This time the `useVector=True` option must be specified, because `useVector` defaults 
-to `False`. The `vectorSize=APB_SIZE` option sets the length that the vector will be 
+This time the `useVector=True` option must be specified, because `useVector` defaults
+to `False`. The `vectorSize=APB_SIZE` option sets the length that the vector will be
 resized to.
 
 Interact with C++ side:
@@ -340,8 +340,8 @@ msgInterface.PyRecvEnd()
 msgInterface.PySendEnd()
 ```
 
-`PySendBegin` is called before `PyRecvEnd` for the convenience of saving a temp 
-variable. This won't cause errors because C++ is not posting on the semaphore 
+`PySendBegin` is called before `PyRecvEnd` for the convenience of saving a temp
+variable. This won't cause errors because C++ is not posting on the semaphore
 `m_py2cpp_empty_count` which `PySendBegin` is waiting until `PySendEnd` completes.
 
 Remember to destroy the interface:

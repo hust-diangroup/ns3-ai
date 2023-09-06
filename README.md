@@ -20,7 +20,7 @@ more flexible.
 ### Features
 
 - High-performance data interaction module in both C++ and Python side.
-- A high-level [Gym interface](model/gym-interface) for using Gymnasium APIs, and a low-level 
+- A high-level [Gym interface](model/gym-interface) for using Gymnasium APIs, and a low-level
 [message interface](model/msg-interface) for customizing the shared data.
 - Easy to integrate with AI frameworks on Python side.
 
@@ -33,18 +33,18 @@ Check out [install.md](./docs/install.md) for how to install and setup ns3-ai.
 ### Demo
 
 To get started on ns3-ai, check out the [A-Plus-B](examples/a-plus-b) example. This example shows how
-C++ passes two numbers to Python and their sum is passed back to C++, with the implementation using 
-all available interfaces: Gym interface, message interface (struct-based) and message 
+C++ passes two numbers to Python and their sum is passed back to C++, with the implementation using
+all available interfaces: Gym interface, message interface (struct-based) and message
 interface (vector-based).
 
 ### Documentation
 
 Ready to deploy ns3-ai in your own research? Before you code, please go over the tutorials on
-[Gym interface](model/gym-interface) and [message interface](model/msg-interface). They provide 
+[Gym interface](model/gym-interface) and [message interface](model/msg-interface). They provide
 step-by-step guidance on writing C++-Python interfaces, with some useful code snippets.
 
-We also created some **pure C++** examples, which uses C++-based ML frameworks to train 
-models. They don't rely on interprocess communication, so there is no overhead in serialization 
+We also created some **pure C++** examples, which uses C++-based ML frameworks to train
+models. They don't rely on interprocess communication, so there is no overhead in serialization
 and interprocess communication. See [using-pure-cpp](docs/using-pure-cpp.md) for details.
 
 ## Examples
@@ -58,7 +58,7 @@ and calculate `a + b` in Python to put back the results.
 
 ### [Multi-BSS](examples/multi-bss)
 
-This example simulates a VR gaming scenario. We change the CCA threshold using DQN 
+This example simulates a VR gaming scenario. We change the CCA threshold using DQN
 to meet VR delay and throughput requirements. Model optimization is in progress.
 
 ### [RL-TCP](examples/rl-tcp/)
@@ -84,10 +84,10 @@ are based on NR work.
 The new interface utilizes Boost C++ Library and pybind11 to support fast data interaction in C++-Python shared memory.
 It is still in development. Two interfaces are introduced before midterm evaluation:
 
-1. Message Interface: Based on Boost.Interprocess shared memory, providing APIs to define 
-   message structures and perform low level synchronization. STL container `std::vector` 
+1. Message Interface: Based on Boost.Interprocess shared memory, providing APIs to define
+   message structures and perform low level synchronization. STL container `std::vector`
    is supported for this interface.
-2. Gym Interface: Base on message interface, providing Gym APIs for Python side and environment 
+2. Gym Interface: Base on message interface, providing Gym APIs for Python side and environment
    APIs for C++ side.
 
 ## Online Tutorial
@@ -118,5 +118,5 @@ keywords = {AI, network simulation, ns-3},
 location = {Gaithersburg, MD, USA},
 series = {WNS3 2020}
 }
-  
+
 ```

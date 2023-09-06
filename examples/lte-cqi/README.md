@@ -33,7 +33,7 @@ station to test the downlink scheduling performance.
 3. Using LSTM to predict the CQI and shipping back to ns-3.
 4. Using the feedback value for the next scheduling decision.
 
-The scheduler type is Round-Robin, which means that every user has an equal number of times being scheduled. 
+The scheduler type is Round-Robin, which means that every user has an equal number of times being scheduled.
 We mainly concern the total throughput as the performance metric.
 
 ## Running the example

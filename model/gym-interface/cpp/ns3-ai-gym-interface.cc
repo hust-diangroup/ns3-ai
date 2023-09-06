@@ -27,8 +27,8 @@
 
 #include "ns3-ai-gym-interface.h"
 
-#include "messages.pb.h"
 #include "container.h"
+#include "messages.pb.h"
 #include "ns3-ai-gym-env.h"
 #include "spaces.h"
 
@@ -39,20 +39,20 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-//inline uint64_t get_cpu_cycle_x86()
+// inline uint64_t get_cpu_cycle_x86()
 //{
-//#ifdef __x86_64__
-//    unsigned long lo, hi;
-//    __asm__ __volatile__("rdtsc"
-//                         : "=a"(lo), "=d"(hi));
-//    return ((uint64_t)hi << 32) + lo;
-//#else
-//    return 0;
-//#endif
-//}
+// #ifdef __x86_64__
+//     unsigned long lo, hi;
+//     __asm__ __volatile__("rdtsc"
+//                          : "=a"(lo), "=d"(hi));
+//     return ((uint64_t)hi << 32) + lo;
+// #else
+//     return 0;
+// #endif
+// }
 
-//std::vector<uint64_t> cpp2py_durations;
-//std::vector<uint64_t> py2cpp_durations;
+// std::vector<uint64_t> cpp2py_durations;
+// std::vector<uint64_t> py2cpp_durations;
 
 namespace ns3
 {
@@ -121,20 +121,22 @@ OpenGymInterface::Init()
     }
 
     // get the interface
-    Ns3AiMsgInterfaceImpl<Ns3AiGymMsg, Ns3AiGymMsg> *msgInterface = 
+    Ns3AiMsgInterfaceImpl<Ns3AiGymMsg, Ns3AiGymMsg>* msgInterface =
         Ns3AiMsgInterface::Get()->GetInterface<Ns3AiGymMsg, Ns3AiGymMsg>();
 
     // send init msg to python
     msgInterface->CppSendBegin();
     msgInterface->GetCpp2PyStruct()->size = simInitMsg.ByteSizeLong();
     assert(msgInterface->GetCpp2PyStruct()->size <= MSG_BUFFER_SIZE);
-    simInitMsg.SerializeToArray(msgInterface->GetCpp2PyStruct()->buffer, msgInterface->GetCpp2PyStruct()->size);
+    simInitMsg.SerializeToArray(msgInterface->GetCpp2PyStruct()->buffer,
+                                msgInterface->GetCpp2PyStruct()->size);
     msgInterface->CppSendEnd();
 
     // receive init ack msg from python
     ns3_ai_gym::SimInitAck simInitAck;
     msgInterface->CppRecvBegin();
-    simInitAck.ParseFromArray(msgInterface->GetPy2CppStruct()->buffer, msgInterface->GetPy2CppStruct()->size);
+    simInitAck.ParseFromArray(msgInterface->GetPy2CppStruct()->buffer,
+                              msgInterface->GetPy2CppStruct()->size);
     msgInterface->CppRecvEnd();
 
     bool done = simInitAck.done();
@@ -194,54 +196,60 @@ OpenGymInterface::NotifyCurrentState()
     envStateMsg.set_info(extraInfo);
 
     // get the interface
-    Ns3AiMsgInterfaceImpl<Ns3AiGymMsg, Ns3AiGymMsg> *msgInterface =
+    Ns3AiMsgInterfaceImpl<Ns3AiGymMsg, Ns3AiGymMsg>* msgInterface =
         Ns3AiMsgInterface::Get()->GetInterface<Ns3AiGymMsg, Ns3AiGymMsg>();
 
     // send env state msg to python
     msgInterface->CppSendBegin();
     msgInterface->GetCpp2PyStruct()->size = envStateMsg.ByteSizeLong();
     assert(msgInterface->GetCpp2PyStruct()->size <= MSG_BUFFER_SIZE);
-    envStateMsg.SerializeToArray(msgInterface->GetCpp2PyStruct()->buffer, msgInterface->GetCpp2PyStruct()->size);
-//    // For benchmarking: here get CPU cycle
-//    uint64_t cpp_send_env_cpu_cycle = get_cpu_cycle_x86();
+    envStateMsg.SerializeToArray(msgInterface->GetCpp2PyStruct()->buffer,
+                                 msgInterface->GetCpp2PyStruct()->size);
+    //    // For benchmarking: here get CPU cycle
+    //    uint64_t cpp_send_env_cpu_cycle = get_cpu_cycle_x86();
     msgInterface->CppSendEnd();
 
     // receive act msg from python
     ns3_ai_gym::EnvActMsg envActMsg;
     msgInterface->CppRecvBegin();
-//    // For benchmarking: here get CPU cycle
-//    uint64_t cpp_recv_act_cpu_cycle = get_cpu_cycle_x86();
-    envActMsg.ParseFromArray(msgInterface->GetPy2CppStruct()->buffer, msgInterface->GetPy2CppStruct()->size);
+    //    // For benchmarking: here get CPU cycle
+    //    uint64_t cpp_recv_act_cpu_cycle = get_cpu_cycle_x86();
+    envActMsg.ParseFromArray(msgInterface->GetPy2CppStruct()->buffer,
+                             msgInterface->GetPy2CppStruct()->size);
     msgInterface->CppRecvEnd();
 
-//    // store transmission times
-//    uint64_t py_prev_recv_env_cpu_cycle = envActMsg.pyrecvenvcpucycle();
-//    uint64_t py_prev_send_act_cpu_cycle = envActMsg.pysendactcpucycle();
-//    if (m_prev_cpp_send_env_cpu_cycle == 0 && m_prev_cpp_recv_act_cpu_cycle == 0)
-//    {
-//        // first time, only update
-//        m_prev_cpp_send_env_cpu_cycle = cpp_send_env_cpu_cycle;
-//        m_prev_cpp_recv_act_cpu_cycle = cpp_recv_act_cpu_cycle;
-//    }
-//    else
-//    {
-//        // calculate and store the duration and update
-////        std::cout << "m_prev_cpp_send_env_cpu_cycle = " << m_prev_cpp_send_env_cpu_cycle << "\n";
-////        std::cout << "py_prev_recv_env_cpu_cycle = " << py_prev_recv_env_cpu_cycle << "\n";
-////        std::cout << "py_prev_send_act_cpu_cycle = " << py_prev_send_act_cpu_cycle << "\n";
-////        std::cout << "m_prev_cpp_recv_act_cpu_cycle = " << m_prev_cpp_recv_act_cpu_cycle << "\n";
-//        assert(py_prev_recv_env_cpu_cycle);
-//        assert(py_prev_send_act_cpu_cycle);
-//        assert(m_prev_cpp_send_env_cpu_cycle < py_prev_recv_env_cpu_cycle &&
-//               py_prev_recv_env_cpu_cycle < py_prev_send_act_cpu_cycle &&
-//               py_prev_send_act_cpu_cycle < m_prev_cpp_recv_act_cpu_cycle);
-//        cpp2py_durations.push_back(py_prev_recv_env_cpu_cycle - m_prev_cpp_send_env_cpu_cycle);
-//        py2cpp_durations.push_back(m_prev_cpp_recv_act_cpu_cycle - py_prev_send_act_cpu_cycle);
-////        std::cout << "cpp2py: " << py_prev_recv_env_cpu_cycle - m_prev_cpp_send_env_cpu_cycle
-////                  << ", py2cpp: " << m_prev_cpp_recv_act_cpu_cycle - py_prev_send_act_cpu_cycle << "\n";
-//        m_prev_cpp_send_env_cpu_cycle = cpp_send_env_cpu_cycle;
-//        m_prev_cpp_recv_act_cpu_cycle = cpp_recv_act_cpu_cycle;
-//    }
+    //    // store transmission times
+    //    uint64_t py_prev_recv_env_cpu_cycle = envActMsg.pyrecvenvcpucycle();
+    //    uint64_t py_prev_send_act_cpu_cycle = envActMsg.pysendactcpucycle();
+    //    if (m_prev_cpp_send_env_cpu_cycle == 0 && m_prev_cpp_recv_act_cpu_cycle == 0)
+    //    {
+    //        // first time, only update
+    //        m_prev_cpp_send_env_cpu_cycle = cpp_send_env_cpu_cycle;
+    //        m_prev_cpp_recv_act_cpu_cycle = cpp_recv_act_cpu_cycle;
+    //    }
+    //    else
+    //    {
+    //        // calculate and store the duration and update
+    ////        std::cout << "m_prev_cpp_send_env_cpu_cycle = " << m_prev_cpp_send_env_cpu_cycle <<
+    ///"\n"; /        std::cout << "py_prev_recv_env_cpu_cycle = " << py_prev_recv_env_cpu_cycle <<
+    ///"\n"; /        std::cout << "py_prev_send_act_cpu_cycle = " << py_prev_send_act_cpu_cycle <<
+    ///"\n"; /        std::cout << "m_prev_cpp_recv_act_cpu_cycle = " <<
+    ///m_prev_cpp_recv_act_cpu_cycle << "\n";
+    //        assert(py_prev_recv_env_cpu_cycle);
+    //        assert(py_prev_send_act_cpu_cycle);
+    //        assert(m_prev_cpp_send_env_cpu_cycle < py_prev_recv_env_cpu_cycle &&
+    //               py_prev_recv_env_cpu_cycle < py_prev_send_act_cpu_cycle &&
+    //               py_prev_send_act_cpu_cycle < m_prev_cpp_recv_act_cpu_cycle);
+    //        cpp2py_durations.push_back(py_prev_recv_env_cpu_cycle -
+    //        m_prev_cpp_send_env_cpu_cycle);
+    //        py2cpp_durations.push_back(m_prev_cpp_recv_act_cpu_cycle -
+    //        py_prev_send_act_cpu_cycle);
+    ////        std::cout << "cpp2py: " << py_prev_recv_env_cpu_cycle -
+    ///m_prev_cpp_send_env_cpu_cycle /                  << ", py2cpp: " <<
+    ///m_prev_cpp_recv_act_cpu_cycle - py_prev_send_act_cpu_cycle << "\n";
+    //        m_prev_cpp_send_env_cpu_cycle = cpp_send_env_cpu_cycle;
+    //        m_prev_cpp_recv_act_cpu_cycle = cpp_recv_act_cpu_cycle;
+    //    }
 
     if (m_simEnd)
     {
@@ -270,7 +278,7 @@ void
 OpenGymInterface::WaitForStop()
 {
     NS_LOG_FUNCTION(this);
-//    NS_LOG_UNCOND("Wait for stop message");
+    //    NS_LOG_UNCOND("Wait for stop message");
     NotifyCurrentState();
 }
 
@@ -412,15 +420,15 @@ OpenGymInterface::SetExecuteActionsCb(Callback<bool, Ptr<OpenGymDataContainer>> 
 }
 
 void
-OpenGymInterface::DoInitialize ()
+OpenGymInterface::DoInitialize()
 {
-    NS_LOG_FUNCTION (this);
+    NS_LOG_FUNCTION(this);
 }
 
 void
-OpenGymInterface::DoDispose ()
+OpenGymInterface::DoDispose()
 {
-    NS_LOG_FUNCTION (this);
+    NS_LOG_FUNCTION(this);
 }
 
 void

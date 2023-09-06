@@ -21,56 +21,57 @@
 
 #pragma once
 #include "ns3/ai-module.h"
-#include "ns3/ff-mac-common.h"
 #include "ns3/core-module.h"
+#include "ns3/ff-mac-common.h"
 
-namespace ns3 {
+namespace ns3
+{
 #define MAX_RBG_NUM 32
 
 /**
  * \brief The feature of cqi.
- * 
+ *
  * The feature of DL training (in this example, feature of cqi)
  * shared between ns-3 and python with the same shared memory
  * using the ns3-ai model.
  */
 struct CqiFeature
 {
-  uint8_t wbCqi;                  ///< wide band cqi
-//  uint8_t rbgNum;                 ///< resource block group number
-//  uint8_t nLayers;                ///< number of layers
-//  uint8_t sbCqi[MAX_RBG_NUM][2];  ///< sub band cqi
+    uint8_t wbCqi; ///< wide band cqi
+    //  uint8_t rbgNum;                 ///< resource block group number
+    //  uint8_t nLayers;                ///< number of layers
+    //  uint8_t sbCqi[MAX_RBG_NUM][2];  ///< sub band cqi
 };
 
 /**
  * \brief The prediction of cqi.
- * 
+ *
  * The prediction of DL training (in this example, prediction of cqi)
  * calculated by python and put back to ns-3 with the shared memory.
  */
 struct CqiPredicted
 {
-  uint8_t new_wbCqi;
-//  uint8_t new_sbCqi[MAX_RBG_NUM][2];
+    uint8_t new_wbCqi;
+    //  uint8_t new_sbCqi[MAX_RBG_NUM][2];
 };
 
 /**
  * \brief A class to predict CQI(Channel Quality Indication).
  *
  * This class shared memory with python by the same id.
- * It set data through member function 'Set[xxx]()', 
+ * It set data through member function 'Set[xxx]()',
  * and put them into the shared memory, using python to calculate,
  * and got prediction through member function 'Get[xxx]()'.
  */
 class CQIDL : public Object
 {
-public:
-  CQIDL ();
-  ~CQIDL() override;
-  static TypeId GetTypeId();
+  public:
+    CQIDL();
+    ~CQIDL() override;
+    static TypeId GetTypeId();
 
-  void SetWbCQI (uint8_t cqi);
-  uint8_t GetWbCQI ();
+    void SetWbCQI(uint8_t cqi);
+    uint8_t GetWbCQI();
 };
 
 } // namespace ns3

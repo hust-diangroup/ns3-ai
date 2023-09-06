@@ -85,7 +85,7 @@ TgaxResidentialPropagationLossModel::GetRxPower(double txPowerDbm,
     //
 
     double pathlossDb = 0;
-//    double shadowingDb = 0;
+    //    double shadowingDb = 0;
     double breakpointDistance = 5; // meters
     double fc = 2.4e9;             // carrier frequency, Hz
     uint16_t floors = 0;
@@ -123,9 +123,9 @@ TgaxResidentialPropagationLossModel::GetRxPower(double txPowerDbm,
     }
 
     // TODO:  cache the shadowingDb value and reuse until positions change
-//    shadowingDb = m_shadowingRandomVariable->GetValue(
-//        0,
-//        m_shadowingSigma * m_shadowingSigma); // Disabled shadowing because nodes do not move
+    //    shadowingDb = m_shadowingRandomVariable->GetValue(
+    //        0,
+    //        m_shadowingSigma * m_shadowingSigma); // Disabled shadowing because nodes do not move
     // std::cout << "Distance " << distance << " Pathloss " << pathlossDb << " Floor " << floors
     //           << " walls " << walls << std::endl;
     return txPowerDbm - pathlossDb;
@@ -156,7 +156,7 @@ TgaxResidentialPropagationLossModel::DoCalcRxPower(double txPowerDbm,
     //
 
     double pathlossDb = 0;
-//    double shadowingDb = 0;
+    //    double shadowingDb = 0;
     double breakpointDistance = 5; // meters
     double fc = 2.4e9;             // carrier frequency, Hz
     uint16_t floors = 0;
@@ -194,9 +194,10 @@ TgaxResidentialPropagationLossModel::DoCalcRxPower(double txPowerDbm,
     }
 
     // TODO:  cache the shadowingDb value and reuse until positions change
-//    shadowingDb = m_shadowingRandomVariable->GetValue(0, m_shadowingSigma * m_shadowingSigma);
-//    // std::cout << "Distance " << distance << " Pathloss " << pathlossDb << " Floor " << floors
-//    //           << " walls " << walls << std::endl;
+    //    shadowingDb = m_shadowingRandomVariable->GetValue(0, m_shadowingSigma * m_shadowingSigma);
+    //    // std::cout << "Distance " << distance << " Pathloss " << pathlossDb << " Floor " <<
+    //    floors
+    //    //           << " walls " << walls << std::endl;
     return txPowerDbm - pathlossDb;
 }
 

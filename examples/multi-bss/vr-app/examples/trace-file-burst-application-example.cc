@@ -63,8 +63,7 @@ BurstRx(Ptr<const Packet> burst,
 int
 main(int argc, char* argv[])
 {
-    std::string traceFolder =
-        "./BurstGeneratorTraces/"; // example traces can be found here
+    std::string traceFolder = "./BurstGeneratorTraces/"; // example traces can be found here
     std::string traceFile = "ge_cities_20mbps_30fps.csv";
     double startTime = 0;
     double simTime = 20;

@@ -2,7 +2,7 @@
 
 ## Introduction
 
-There are existing models of constant rate and Thompson sampling algorithms in Wi-Fi module. Here we reimplement 
+There are existing models of constant rate and Thompson sampling algorithms in Wi-Fi module. Here we reimplement
 them in Python to show how to develop a new rate control algorithm for the Wi-Fi module using ns3-ai.
 
 ### Cmake targets
@@ -12,13 +12,13 @@ them in Python to show how to develop a new rate control algorithm for the Wi-Fi
 
 ## Algorithms
 
-We provide two rate control algorithms that dynamically adjusts MCS (Modulation and Coding 
-Scheme) and NSS (Number of Spacial Streams): 
+We provide two rate control algorithms that dynamically adjusts MCS (Modulation and Coding
+Scheme) and NSS (Number of Spacial Streams):
 
-- Constant rate: the MCS and NSS do not change, i.e., Python side write the received states 
+- Constant rate: the MCS and NSS do not change, i.e., Python side write the received states
 without modification into the corresponding actions.
-- Thompson Sampling: changes the MCS and NSS according to Thompson Sampling algorithm. 
-  - In TS algorithm each action has parameters alpha and beta attached to it (independent 
+- Thompson Sampling: changes the MCS and NSS according to Thompson Sampling algorithm.
+  - In TS algorithm each action has parameters alpha and beta attached to it (independent
 with other actions), used to estimate probability of success.
 The goal is to find the action with the highest estimated probability of success.
   - TS algorithm estimates by sampling from posterior beta distribution (defined with alpha and beta).

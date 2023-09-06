@@ -16,6 +16,11 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  */
+#include "multi-bss.h"
+
+#include "tgax-residential-propagation-loss-model.h"
+
+#include "ns3/ai-module.h"
 #include "ns3/ampdu-subframe-header.h"
 #include "ns3/ap-wifi-mac.h"
 #include "ns3/application-container.h"
@@ -45,7 +50,6 @@
 #include "ns3/mobility-module.h"
 #include "ns3/multi-model-spectrum-channel.h"
 #include "ns3/node-list.h"
-#include "ns3/ai-module.h"
 #include "ns3/on-off-helper.h"
 #include "ns3/packet-sink-helper.h"
 #include "ns3/packet-sink.h"
@@ -85,9 +89,6 @@
 #include <sstream>
 #include <unordered_map>
 #include <vector>
-
-#include "multi-bss.h"
-#include "tgax-residential-propagation-loss-model.h"
 
 /// Avoid std::numbers::pi because it's C++20
 #define PI 3.1415926535
@@ -218,7 +219,7 @@ struct InFlightPacketInfo
     Time appTypeRxTime{Seconds(0)};     // time the packet was received by app (E2E)
     Time m_HoLTime{Seconds(0)};         // time the packet became Head of Line
     Time m_L2RxTime{Seconds(0)};  // time packet got forwarded up to the Mac Layer (L2 latency =
-                                        // L2RxTime - edcaEnqueueTime)
+                                  // L2RxTime - edcaEnqueueTime)
     Time m_phyTxTime{Seconds(0)}; // time packet began transmission
     bool m_dequeued{false};
 };
@@ -654,12 +655,12 @@ RestartCalc()
     }
 }
 
-//void
-//TrackTime()
+// void
+// TrackTime()
 //{
-//    std::cout << "Time = " << Simulator::Now().GetSeconds() << "s" << std::endl;
-//    Simulator::Schedule(Seconds(5), &TrackTime);
-//}
+//     std::cout << "Time = " << Simulator::Now().GetSeconds() << "s" << std::endl;
+//     Simulator::Schedule(Seconds(5), &TrackTime);
+// }
 
 void
 CheckAssociation()
@@ -790,7 +791,8 @@ PrintPythonPlotCSV(std::string filename)
         {
             rowCount = 2;
         }
-        outFile << "box," << box.xMax - box.xMin << "," << box.yMax - box.yMin << "," << rowCount << std::endl;
+        outFile << "box," << box.xMax - box.xMin << "," << box.yMax - box.yMin << "," << rowCount
+                << std::endl;
     }
     double maxDistance;
     if (appType != "setup-done")
@@ -835,9 +837,9 @@ PrintPythonPlotCSV(std::string filename)
             // size_t pos = configString.find(',');
             // configString = configString.substr(pos + 1);
             // size_t pos2 = configString.find(',');
-//            std::cout << "CCaSensitivity: " << m_ccaSensitivity << std::endl;
+            //            std::cout << "CCaSensitivity: " << m_ccaSensitivity << std::endl;
             // double m_ccaSensitivity = std::stoi(configString.substr(0, pos2));
-//            std::cout << "apTxPower: " << m_txPower << std::endl;
+            //            std::cout << "apTxPower: " << m_txPower << std::endl;
             // double m_txPower = std::stoi(configString.substr(pos2 + 1));
             // Formula to draw radius of circle
             double max_loss = -(m_ccaSensitivity - m_txPower); // TODO: fix to specific tx power
@@ -905,7 +907,7 @@ RestartIntervalThroughputHolDelay()
 void
 MeasureIntervalThroughputHolDelay()
 {
-    Ns3AiMsgInterfaceImpl<Env, Act> *msgInterface =
+    Ns3AiMsgInterfaceImpl<Env, Act>* msgInterface =
         Ns3AiMsgInterface::Get()->GetInterface<Env, Act>();
     // std::cout << "\nInterval T " << Simulator::Now().GetSeconds() << std::endl;
     std::map<uint32_t, std::tuple<double, double, double, double>> nodeDelays;
@@ -939,11 +941,11 @@ MeasureIntervalThroughputHolDelay()
     for (size_t i = 0; i < wifiNodes.GetN(); i++)
     {
         uint32_t txNodeId = wifiNodes.Get(i)->GetId();
-        auto &env_struct = msgInterface->GetCpp2PyVector()->at(txNodeId);
+        auto& env_struct = msgInterface->GetCpp2PyVector()->at(txNodeId);
         env_struct.txNode = txNodeId;
         env_struct.mcs = nodeMcs[txNodeId];
         env_struct.holDelay = std::get<0>(nodeDelays[txNodeId]);
-        if (txNodeId >= N_BSS)  // STAs
+        if (txNodeId >= N_BSS) // STAs
         {
             env_struct.throughput = (intervalBytesReceived.find(txNodeId)->second * 8) /
                                     static_cast<double>(Seconds(1).GetMicroSeconds());
@@ -953,10 +955,11 @@ MeasureIntervalThroughputHolDelay()
             // Only count for UL traffic
             env_struct.throughput = 0;
         }
-        std::cout << "CPP send: txnode " << txNodeId << " tpt " << env_struct.throughput << std::endl;
+        std::cout << "CPP send: txnode " << txNodeId << " tpt " << env_struct.throughput
+                  << std::endl;
         for (auto rxNodePower : nodeRxPower[txNodeId])
         {
-            NS_ASSERT(rxNodePower.first % N_BSS == 0);  // only record rx node in first BSS
+            NS_ASSERT(rxNodePower.first % N_BSS == 0); // only record rx node in first BSS
             if (rxNodePower.first == txNodeId)
             {
                 env_struct.rxPower[rxNodePower.first / N_BSS] = 0;
@@ -992,36 +995,33 @@ MeasureIntervalThroughputHolDelay()
         preambleCaptureModel->SetAttribute("MinimumRssi", DoubleValue(nextCca));
         wifi_phy->SetCcaSensitivityThreshold(nextCca);
         wifi_phy->SetPreambleDetectionModel(preambleCaptureModel);
-        std::cout << "-- " << ssid
-                  << " Node " << nodeId
-                  << " current CCA " << currentCca
-                  << " next CCA " << nextCca
-                  << std::endl;
+        std::cout << "-- " << ssid << " Node " << nodeId << " current CCA " << currentCca
+                  << " next CCA " << nextCca << std::endl;
     }
 
     Simulator::ScheduleNow(&RestartIntervalThroughputHolDelay);
     Simulator::Schedule(Seconds(1), &MeasureIntervalThroughputHolDelay);
 
-//    // Set position for Nodes
-//    for (uint32_t i = 0; i < wifiNodes.GetN(); i++)
-//    {
-//        double x = 0;
-//        double y = 0;
-//
-//        x = randomX->GetValue() + ((i % apNodeCount) * boxSize);
-//        y = randomY->GetValue();
-//
-//        Vector l1(x, y, 1.5);
-//        Ptr<Object> object = wifiNodes.Get(i);
-//        Ptr<MobilityModel> model = object->GetObject<MobilityModel>();
-//        model->SetPosition(l1);
-//
-//        std::cout << "Node" << wifiNodes.Get(i)->GetId() << " " << x << "," << y << std::endl;
-//        // std::cout << "Points intersect how many walls? " <<
-//        // building->WallInLOS(l1, l2)
-//        //           << std::endl;
-//    }
-//    PrintPythonPlotCSV("box.csv");
+    //    // Set position for Nodes
+    //    for (uint32_t i = 0; i < wifiNodes.GetN(); i++)
+    //    {
+    //        double x = 0;
+    //        double y = 0;
+    //
+    //        x = randomX->GetValue() + ((i % apNodeCount) * boxSize);
+    //        y = randomY->GetValue();
+    //
+    //        Vector l1(x, y, 1.5);
+    //        Ptr<Object> object = wifiNodes.Get(i);
+    //        Ptr<MobilityModel> model = object->GetObject<MobilityModel>();
+    //        model->SetPosition(l1);
+    //
+    //        std::cout << "Node" << wifiNodes.Get(i)->GetId() << " " << x << "," << y << std::endl;
+    //        // std::cout << "Points intersect how many walls? " <<
+    //        // building->WallInLOS(l1, l2)
+    //        //           << std::endl;
+    //    }
+    //    PrintPythonPlotCSV("box.csv");
 }
 
 // // std::map<uint32_t, std::vector<>>;
@@ -1765,7 +1765,7 @@ main(int argc, char* argv[])
     double frequency = 5;                   ///< The operating frequency band in GHz: 2.4, 5 or 6
     uint16_t channelWidths = 20;     ///< The constant channel width in MHz (only for 11n/ac/ax)
     uint16_t guardIntervalNs = 3200; ///< The guard interval in nanoseconds (800 or 400 for
-                                            ///< 11n/ac, 800 or 1600 or 3200 for 11 ax)
+                                     ///< 11n/ac, 800 or 1600 or 3200 for 11 ax)
     uint16_t pktInterval =
         1000; ///< The socket packet interval in microseconds (a higher value is needed to reach
     ///< saturation conditions as the channel bandwidth or the MCS increases)
@@ -1813,10 +1813,12 @@ main(int argc, char* argv[])
     cmd.AddValue("traceFile", "The trace file name.", traceFile);
     cmd.AddValue("networkSize", "Number of stations per bss", networkSize);
     cmd.AddValue("standard", "Set the standard (11a, 11b, 11g, 11n, 11ac, 11ax)", standard);
-    cmd.AddValue("apNodes", "Number of APs", apNodeCount);  // use 4
+    cmd.AddValue("apNodes", "Number of APs", apNodeCount); // use 4
     cmd.AddValue("phyMode", "Set the constant PHY mode string used to transmit frames", phyMode);
     cmd.AddValue("frequency", "Set the operating frequency band in GHz: 2.4, 5 or 6", frequency);
-    cmd.AddValue("overlapStats", "Enable the calculation of overlapping packets and their source", calculateStats);
+    cmd.AddValue("overlapStats",
+                 "Enable the calculation of overlapping packets and their source",
+                 calculateStats);
     cmd.AddValue("channelWidth",
                  "Set the constant channel width in MHz (only for 11n/ac/ax)",
                  channelWidths);
@@ -2147,13 +2149,9 @@ main(int argc, char* argv[])
             //     std::cout << "STA Values " << it << std::endl;
             // }
 
-            std::cout << "STA node id " << staNodes.Get(i)->GetId() << " : "
-                      << configValues[0] << ", "
-                      << configValues[1] << ", "
-                      << configValues[2] << ", "
-                      << configValues[3] << ", "
-                      << configValues[4] << ", "
-                      << std::endl;
+            std::cout << "STA node id " << staNodes.Get(i)->GetId() << " : " << configValues[0]
+                      << ", " << configValues[1] << ", " << configValues[2] << ", "
+                      << configValues[3] << ", " << configValues[4] << ", " << std::endl;
 
             double m_ccaSensitivity = std::stoi(configValues[1]);
             double m_txPower = std::stoi(configValues[2]);
@@ -2416,13 +2414,13 @@ main(int argc, char* argv[])
             // }
             if (currentAp == 1)
             {
-                x = x+ (boxSize);
+                x = x + (boxSize);
                 //                y = y;
             }
             if (currentAp == 2)
             {
                 //                x = x;
-                y =  y+ (boxSize);
+                y = y + (boxSize);
             }
             else if (currentAp == 3)
             {
@@ -2821,7 +2819,7 @@ main(int argc, char* argv[])
     Simulator::Schedule(Seconds(10), &RestartIntervalThroughputHolDelay);
     Simulator::Schedule(Seconds(1.5), &CheckAssociation);
     Simulator::Schedule(Seconds(10), &RestartCalc);
-//    Simulator::Schedule(Seconds(10), &TrackTime);
+    //    Simulator::Schedule(Seconds(10), &TrackTime);
     Simulator::Stop(Seconds((10) + duration));
     Simulator::Run();
 
@@ -3188,10 +3186,10 @@ main(int argc, char* argv[])
     {
         NS_ABORT_MSG("There was a station dessasociated");
     }
-//    if (drlCca)
-//    {
-//        rlAlgo.SetFinish();
-//    }
+    //    if (drlCca)
+    //    {
+    //        rlAlgo.SetFinish();
+    //    }
     PrintPythonPlotCSV("box.csv");
     Simulator::Destroy();
     return 0;

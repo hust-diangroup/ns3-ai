@@ -2,8 +2,8 @@
 
 ## Introduction
 
-The Gym interface of ns3-ai transforms ns-3 into a RL playground. With this interface, high-level 
-observations (states), actions, rewards and game status information can be exchanged 
+The Gym interface of ns3-ai transforms ns-3 into a RL playground. With this interface, high-level
+observations (states), actions, rewards and game status information can be exchanged
 between C++ and Python.
 
 ## Tutorial
@@ -12,8 +12,8 @@ The following tutorial of this interface is based on the [A-Plus-B](../../exampl
 
 ### C++ side
 
-The C++ side of Gym interface provides skeleton code to create 
-[Gymnasium](https://gymnasium.farama.org/index.html)-compatible environment at ns-3, 
+The C++ side of Gym interface provides skeleton code to create
+[Gymnasium](https://gymnasium.farama.org/index.html)-compatible environment at ns-3,
 and a callback-based mechanism to easily collect information and execute actions.
 
 To begin, simply inherit from `OpenGymEnv` to create an environment. In the code below,
@@ -29,7 +29,7 @@ class ApbEnv : public OpenGymEnv
     void DoDispose() override;
 
     uint32_t GetAPlusB();
-    
+
     // OpenGym interfaces:
     Ptr<OpenGymSpace> GetActionSpace() override;
     Ptr<OpenGymSpace> GetObservationSpace() override;
@@ -38,7 +38,7 @@ class ApbEnv : public OpenGymEnv
     float GetReward() override;
     std::string GetExtraInfo() override;
     bool ExecuteActions(Ptr<OpenGymDataContainer> action) override;
-    
+
     uint32_t m_a;
     uint32_t m_b;
   private:
@@ -165,7 +165,7 @@ apb->NotifySimulationEnd();
 
 ### Python side
 
-You don't need to write much code on Python side, because the 
+You don't need to write much code on Python side, because the
 internal of the interface already implements [Gymnasium](https://gymnasium.farama.org/index.html)
 APIs such as `reset`, `step` and `close`.
 
@@ -176,7 +176,7 @@ import ns3ai_gym_env
 import gymnasium as gym
 ```
 
-While your IDE may warn that module `ns3ai_gym_env` is unused, it's necessary to `import ns3ai_gym_env` 
+While your IDE may warn that module `ns3ai_gym_env` is unused, it's necessary to `import ns3ai_gym_env`
 as it registers the `ns3ai_gym_env/Ns3-v0` environment in gym.
 
 Define the agent that interacts with ns-3 environment:

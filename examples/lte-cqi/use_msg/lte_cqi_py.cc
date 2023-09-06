@@ -1,24 +1,32 @@
-#include <pybind11/pybind11.h>
+#include "cqi-dl-env.h"
 
 #include <ns3/ai-module.h>
-#include "cqi-dl-env.h"
+
+#include <pybind11/pybind11.h>
 
 namespace py = pybind11;
 
-PYBIND11_MODULE(ns3ai_ltecqi_py, m) {
-
+PYBIND11_MODULE(ns3ai_ltecqi_py, m)
+{
     py::class_<ns3::CqiFeature>(m, "PyEnvStruct")
         .def(py::init<>())
-        .def_readwrite("wbCqi", &ns3::CqiFeature::wbCqi)
-        ;
+        .def_readwrite("wbCqi", &ns3::CqiFeature::wbCqi);
 
     py::class_<ns3::CqiPredicted>(m, "PyActStruct")
         .def(py::init<>())
-        .def_readwrite("new_wbCqi", &ns3::CqiPredicted::new_wbCqi)
-        ;
+        .def_readwrite("new_wbCqi", &ns3::CqiPredicted::new_wbCqi);
 
-    py::class_<ns3::Ns3AiMsgInterfaceImpl<ns3::CqiFeature, ns3::CqiPredicted>>(m, "Ns3AiMsgInterfaceImpl")
-        .def(py::init<bool, bool, bool, uint32_t, const char*, const char*, const char*, const char*>())
+    py::class_<ns3::Ns3AiMsgInterfaceImpl<ns3::CqiFeature, ns3::CqiPredicted>>(
+        m,
+        "Ns3AiMsgInterfaceImpl")
+        .def(py::init<bool,
+                      bool,
+                      bool,
+                      uint32_t,
+                      const char*,
+                      const char*,
+                      const char*,
+                      const char*>())
         .def("PyRecvBegin",
              &ns3::Ns3AiMsgInterfaceImpl<ns3::CqiFeature, ns3::CqiPredicted>::PyRecvBegin)
         .def("PyRecvEnd",
@@ -34,8 +42,5 @@ PYBIND11_MODULE(ns3ai_ltecqi_py, m) {
              py::return_value_policy::reference)
         .def("GetPy2CppStruct",
              &ns3::Ns3AiMsgInterfaceImpl<ns3::CqiFeature, ns3::CqiPredicted>::GetPy2CppStruct,
-             py::return_value_policy::reference)
-        ;
-
+             py::return_value_policy::reference);
 }
-

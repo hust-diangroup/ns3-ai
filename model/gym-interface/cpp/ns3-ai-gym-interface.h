@@ -23,13 +23,13 @@
 #ifndef NS3_NS3_AI_GYM_INTERFACE_H
 #define NS3_NS3_AI_GYM_INTERFACE_H
 
-#include <ns3/callback.h>
+#include "../ns3-ai-gym-msg.h"
+
 #include <ns3/ai-module.h>
+#include <ns3/callback.h>
 #include <ns3/object.h>
 #include <ns3/ptr.h>
 #include <ns3/type-id.h>
-
-#include "../ns3-ai-gym-msg.h"
 
 namespace ns3
 {
@@ -76,7 +76,7 @@ class OpenGymInterface : public Object
 
   private:
     static Ptr<OpenGymInterface>* DoGet();
-//    static void Delete();
+    //    static void Delete();
 
     bool m_simEnd;
     bool m_stopEnvRequested;
@@ -90,9 +90,9 @@ class OpenGymInterface : public Object
     Callback<std::string> m_extraInfoCb;
     Callback<bool, Ptr<OpenGymDataContainer>> m_actionCb;
 
-//    // cpu cycle count for benchmarking
-//    uint64_t m_prev_cpp_send_env_cpu_cycle;
-//    uint64_t m_prev_cpp_recv_act_cpu_cycle;
+    //    // cpu cycle count for benchmarking
+    //    uint64_t m_prev_cpp_send_env_cpu_cycle;
+    //    uint64_t m_prev_cpp_recv_act_cpu_cycle;
 };
 
 } // end of namespace ns3

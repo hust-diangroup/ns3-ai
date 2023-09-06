@@ -290,9 +290,9 @@ AutoMcsWifiManager::DoReportDataFailed(WifiRemoteStation* station)
 
 void
 AutoMcsWifiManager::DoReportRtsOk(WifiRemoteStation* st,
-                                double ctsSnr,
-                                WifiMode ctsMode,
-                                double rtsSnr)
+                                  double ctsSnr,
+                                  WifiMode ctsMode,
+                                  double rtsSnr)
 {
     NS_LOG_FUNCTION(this << st << ctsSnr << ctsMode.GetUniqueName() << rtsSnr);
     AutoMcsWifiRemoteStation* station = static_cast<AutoMcsWifiRemoteStation*>(st);
@@ -304,11 +304,11 @@ AutoMcsWifiManager::DoReportRtsOk(WifiRemoteStation* st,
 
 void
 AutoMcsWifiManager::DoReportDataOk(WifiRemoteStation* st,
-                                 double ackSnr,
-                                 WifiMode ackMode,
-                                 double dataSnr,
-                                 uint16_t dataChannelWidth,
-                                 uint8_t dataNss)
+                                   double ackSnr,
+                                   WifiMode ackMode,
+                                   double dataSnr,
+                                   uint16_t dataChannelWidth,
+                                   uint8_t dataNss)
 {
     NS_LOG_FUNCTION(this << st << ackSnr << ackMode.GetUniqueName() << dataSnr << dataChannelWidth
                          << +dataNss);
@@ -330,12 +330,12 @@ AutoMcsWifiManager::DoReportDataOk(WifiRemoteStation* st,
 
 void
 AutoMcsWifiManager::DoReportAmpduTxStatus(WifiRemoteStation* st,
-                                        uint16_t nSuccessfulMpdus,
-                                        uint16_t nFailedMpdus,
-                                        double rxSnr,
-                                        double dataSnr,
-                                        uint16_t dataChannelWidth,
-                                        uint8_t dataNss)
+                                          uint16_t nSuccessfulMpdus,
+                                          uint16_t nFailedMpdus,
+                                          double rxSnr,
+                                          double dataSnr,
+                                          uint16_t dataChannelWidth,
+                                          uint8_t dataNss)
 {
     NS_LOG_FUNCTION(this << st << nSuccessfulMpdus << nFailedMpdus << rxSnr << dataSnr
                          << dataChannelWidth << +dataNss);
@@ -599,7 +599,7 @@ AutoMcsWifiManager::DoGetDataTxVector(WifiRemoteStation* st, uint16_t allowedWid
         average = std::ceil(average / choosenMCS.size());
         std::string mode = "HeMcs" + std::to_string(int(average));
 
-//        std::cout << "Mode " << mode << std::endl;
+        //        std::cout << "Mode " << mode << std::endl;
         maxMode = WifiMode(mode);
     }
     NS_LOG_DEBUG("Found maxMode: " << maxMode << " channelWidth: " << channelWidth
@@ -703,8 +703,8 @@ AutoMcsWifiManager::DoGetRtsTxVector(WifiRemoteStation* st)
 
 double
 AutoMcsWifiManager::GetLastObservedSnr(AutoMcsWifiRemoteStation* station,
-                                     uint16_t channelWidth,
-                                     uint8_t nss) const
+                                       uint16_t channelWidth,
+                                       uint8_t nss) const
 {
     double snr = station->m_lastSnrObserved;
     if (channelWidth != station->m_lastChannelWidthObserved)

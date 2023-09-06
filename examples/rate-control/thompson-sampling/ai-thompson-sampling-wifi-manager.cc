@@ -89,8 +89,9 @@ AiThompsonSamplingWifiManager::AiThompsonSamplingWifiManager()
     Ns3AiMsgInterface::Get()->SetIsMemoryCreator(false);
     Ns3AiMsgInterface::Get()->SetUseVector(false);
     Ns3AiMsgInterface::Get()->SetHandleFinish(true);
-    Ns3AiMsgInterfaceImpl<AiThompsonSamplingEnvStruct, AiThompsonSamplingActStruct> *msgInterface = 
-        Ns3AiMsgInterface::Get()->GetInterface<AiThompsonSamplingEnvStruct, AiThompsonSamplingActStruct>();
+    Ns3AiMsgInterfaceImpl<AiThompsonSamplingEnvStruct, AiThompsonSamplingActStruct>* msgInterface =
+        Ns3AiMsgInterface::Get()
+            ->GetInterface<AiThompsonSamplingEnvStruct, AiThompsonSamplingActStruct>();
 
     msgInterface->CppSendBegin();
     msgInterface->GetCpp2PyStruct()->type = 0x01;
@@ -111,8 +112,9 @@ AiThompsonSamplingWifiManager::DoCreateStation() const
 {
     NS_LOG_FUNCTION(this);
     AiThompsonSamplingWifiRemoteStation* station = new AiThompsonSamplingWifiRemoteStation();
-    Ns3AiMsgInterfaceImpl<AiThompsonSamplingEnvStruct, AiThompsonSamplingActStruct> *msgInterface =
-        Ns3AiMsgInterface::Get()->GetInterface<AiThompsonSamplingEnvStruct, AiThompsonSamplingActStruct>();
+    Ns3AiMsgInterfaceImpl<AiThompsonSamplingEnvStruct, AiThompsonSamplingActStruct>* msgInterface =
+        Ns3AiMsgInterface::Get()
+            ->GetInterface<AiThompsonSamplingEnvStruct, AiThompsonSamplingActStruct>();
 
     msgInterface->CppSendBegin();
     msgInterface->GetCpp2PyStruct()->type = 0x02;
@@ -188,8 +190,9 @@ AiThompsonSamplingWifiManager::InitializeStation(WifiRemoteStation* st) const
 
     NS_ASSERT_MSG(!station->m_mcsStats.empty(), "No usable MCS found");
 
-    Ns3AiMsgInterfaceImpl<AiThompsonSamplingEnvStruct, AiThompsonSamplingActStruct> *msgInterface =
-        Ns3AiMsgInterface::Get()->GetInterface<AiThompsonSamplingEnvStruct, AiThompsonSamplingActStruct>();
+    Ns3AiMsgInterfaceImpl<AiThompsonSamplingEnvStruct, AiThompsonSamplingActStruct>* msgInterface =
+        Ns3AiMsgInterface::Get()
+            ->GetInterface<AiThompsonSamplingEnvStruct, AiThompsonSamplingActStruct>();
 
     msgInterface->CppSendBegin();
     msgInterface->GetCpp2PyStruct()->type = 0x03;
@@ -212,7 +215,8 @@ AiThompsonSamplingWifiManager::InitializeStation(WifiRemoteStation* st) const
     msgInterface->CppSendEnd();
 
     msgInterface->CppRecvBegin();
-    NS_ASSERT_MSG(msgInterface->GetPy2CppStruct()->stationId == msgInterface->GetCpp2PyStruct()->stationId,
+    NS_ASSERT_MSG(msgInterface->GetPy2CppStruct()->stationId ==
+                      msgInterface->GetCpp2PyStruct()->stationId,
                   "Error 0x03");
     msgInterface->CppRecvEnd();
 
@@ -239,8 +243,9 @@ AiThompsonSamplingWifiManager::DoReportDataFailed(WifiRemoteStation* st)
     NS_LOG_FUNCTION(this << st);
     InitializeStation(st);
     auto station = static_cast<AiThompsonSamplingWifiRemoteStation*>(st);
-    Ns3AiMsgInterfaceImpl<AiThompsonSamplingEnvStruct, AiThompsonSamplingActStruct> *msgInterface =
-        Ns3AiMsgInterface::Get()->GetInterface<AiThompsonSamplingEnvStruct, AiThompsonSamplingActStruct>();
+    Ns3AiMsgInterfaceImpl<AiThompsonSamplingEnvStruct, AiThompsonSamplingActStruct>* msgInterface =
+        Ns3AiMsgInterface::Get()
+            ->GetInterface<AiThompsonSamplingEnvStruct, AiThompsonSamplingActStruct>();
 
     msgInterface->CppSendBegin();
     msgInterface->GetCpp2PyStruct()->type = 0x05;
@@ -251,7 +256,8 @@ AiThompsonSamplingWifiManager::DoReportDataFailed(WifiRemoteStation* st)
     msgInterface->CppSendEnd();
 
     msgInterface->CppRecvBegin();
-    NS_ASSERT_MSG(msgInterface->GetPy2CppStruct()->stationId == msgInterface->GetCpp2PyStruct()->stationId,
+    NS_ASSERT_MSG(msgInterface->GetPy2CppStruct()->stationId ==
+                      msgInterface->GetCpp2PyStruct()->stationId,
                   "Error 0x05");
     msgInterface->CppRecvEnd();
 }
@@ -271,8 +277,9 @@ AiThompsonSamplingWifiManager::UpdateNextMode(WifiRemoteStation* st) const
     InitializeStation(st);
     auto station = static_cast<AiThompsonSamplingWifiRemoteStation*>(st);
     NS_ASSERT(!station->m_mcsStats.empty());
-    Ns3AiMsgInterfaceImpl<AiThompsonSamplingEnvStruct, AiThompsonSamplingActStruct> *msgInterface =
-        Ns3AiMsgInterface::Get()->GetInterface<AiThompsonSamplingEnvStruct, AiThompsonSamplingActStruct>();
+    Ns3AiMsgInterfaceImpl<AiThompsonSamplingEnvStruct, AiThompsonSamplingActStruct>* msgInterface =
+        Ns3AiMsgInterface::Get()
+            ->GetInterface<AiThompsonSamplingEnvStruct, AiThompsonSamplingActStruct>();
 
     msgInterface->CppSendBegin();
     msgInterface->GetCpp2PyStruct()->type = 0x0a;
@@ -283,7 +290,8 @@ AiThompsonSamplingWifiManager::UpdateNextMode(WifiRemoteStation* st) const
     msgInterface->CppSendEnd();
 
     msgInterface->CppRecvBegin();
-    NS_ASSERT_MSG(msgInterface->GetPy2CppStruct()->stationId == msgInterface->GetCpp2PyStruct()->stationId,
+    NS_ASSERT_MSG(msgInterface->GetPy2CppStruct()->stationId ==
+                      msgInterface->GetCpp2PyStruct()->stationId,
                   "Error 0x0a");
     msgInterface->CppRecvEnd();
 }
@@ -299,8 +307,9 @@ AiThompsonSamplingWifiManager::DoReportDataOk(WifiRemoteStation* st,
     NS_LOG_FUNCTION(this << st << ackSnr << ackMode.GetUniqueName() << dataSnr);
     InitializeStation(st);
     auto station = static_cast<AiThompsonSamplingWifiRemoteStation*>(st);
-    Ns3AiMsgInterfaceImpl<AiThompsonSamplingEnvStruct, AiThompsonSamplingActStruct> *msgInterface =
-        Ns3AiMsgInterface::Get()->GetInterface<AiThompsonSamplingEnvStruct, AiThompsonSamplingActStruct>();
+    Ns3AiMsgInterfaceImpl<AiThompsonSamplingEnvStruct, AiThompsonSamplingActStruct>* msgInterface =
+        Ns3AiMsgInterface::Get()
+            ->GetInterface<AiThompsonSamplingEnvStruct, AiThompsonSamplingActStruct>();
 
     msgInterface->CppSendBegin();
     msgInterface->GetCpp2PyStruct()->type = 0x06;
@@ -311,7 +320,8 @@ AiThompsonSamplingWifiManager::DoReportDataOk(WifiRemoteStation* st,
     msgInterface->CppSendEnd();
 
     msgInterface->CppRecvBegin();
-    NS_ASSERT_MSG(msgInterface->GetPy2CppStruct()->stationId == msgInterface->GetCpp2PyStruct()->stationId,
+    NS_ASSERT_MSG(msgInterface->GetPy2CppStruct()->stationId ==
+                      msgInterface->GetCpp2PyStruct()->stationId,
                   "Error 0x06");
     msgInterface->CppRecvEnd();
 }
@@ -328,8 +338,9 @@ AiThompsonSamplingWifiManager::DoReportAmpduTxStatus(WifiRemoteStation* st,
     NS_LOG_FUNCTION(this << st << nSuccessfulMpdus << nFailedMpdus << rxSnr << dataSnr);
     InitializeStation(st);
     auto station = static_cast<AiThompsonSamplingWifiRemoteStation*>(st);
-    Ns3AiMsgInterfaceImpl<AiThompsonSamplingEnvStruct, AiThompsonSamplingActStruct> *msgInterface =
-        Ns3AiMsgInterface::Get()->GetInterface<AiThompsonSamplingEnvStruct, AiThompsonSamplingActStruct>();
+    Ns3AiMsgInterfaceImpl<AiThompsonSamplingEnvStruct, AiThompsonSamplingActStruct>* msgInterface =
+        Ns3AiMsgInterface::Get()
+            ->GetInterface<AiThompsonSamplingEnvStruct, AiThompsonSamplingActStruct>();
 
     msgInterface->CppSendBegin();
     msgInterface->GetCpp2PyStruct()->type = 0x07;
@@ -341,7 +352,8 @@ AiThompsonSamplingWifiManager::DoReportAmpduTxStatus(WifiRemoteStation* st,
     msgInterface->CppSendEnd();
 
     msgInterface->CppRecvBegin();
-    NS_ASSERT_MSG(msgInterface->GetPy2CppStruct()->stationId == msgInterface->GetCpp2PyStruct()->stationId,
+    NS_ASSERT_MSG(msgInterface->GetPy2CppStruct()->stationId ==
+                      msgInterface->GetCpp2PyStruct()->stationId,
                   "Error 0x07");
     msgInterface->CppRecvEnd();
 }
@@ -383,8 +395,9 @@ AiThompsonSamplingWifiManager::DoGetDataTxVector(WifiRemoteStation* st, uint16_t
     NS_LOG_FUNCTION(this << st);
     InitializeStation(st);
     auto station = static_cast<AiThompsonSamplingWifiRemoteStation*>(st);
-    Ns3AiMsgInterfaceImpl<AiThompsonSamplingEnvStruct, AiThompsonSamplingActStruct> *msgInterface =
-        Ns3AiMsgInterface::Get()->GetInterface<AiThompsonSamplingEnvStruct, AiThompsonSamplingActStruct>();
+    Ns3AiMsgInterfaceImpl<AiThompsonSamplingEnvStruct, AiThompsonSamplingActStruct>* msgInterface =
+        Ns3AiMsgInterface::Get()
+            ->GetInterface<AiThompsonSamplingEnvStruct, AiThompsonSamplingActStruct>();
 
     msgInterface->CppSendBegin();
     msgInterface->GetCpp2PyStruct()->type = 0x08;
@@ -426,8 +439,9 @@ AiThompsonSamplingWifiManager::DoGetRtsTxVector(WifiRemoteStation* st)
     NS_LOG_FUNCTION(this << st);
     InitializeStation(st);
     auto station = static_cast<AiThompsonSamplingWifiRemoteStation*>(st);
-    Ns3AiMsgInterfaceImpl<AiThompsonSamplingEnvStruct, AiThompsonSamplingActStruct> *msgInterface =
-        Ns3AiMsgInterface::Get()->GetInterface<AiThompsonSamplingEnvStruct, AiThompsonSamplingActStruct>();
+    Ns3AiMsgInterfaceImpl<AiThompsonSamplingEnvStruct, AiThompsonSamplingActStruct>* msgInterface =
+        Ns3AiMsgInterface::Get()
+            ->GetInterface<AiThompsonSamplingEnvStruct, AiThompsonSamplingActStruct>();
 
     msgInterface->CppSendBegin();
     msgInterface->GetCpp2PyStruct()->type = 0x09;

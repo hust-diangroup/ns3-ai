@@ -40,4 +40,4 @@ Ns3AiMsgInterface::SetNames(std::string segmentName,
     this->m_lockableName = lockableName;
 }
 
-}
+} // namespace ns3

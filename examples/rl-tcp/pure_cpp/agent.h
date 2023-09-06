@@ -1,11 +1,11 @@
 #ifndef NS3_RLTCP_AGENT_H
 #define NS3_RLTCP_AGENT_H
 
-#include <torch/torch.h>
-#include <vector>
-#include <tuple>
-#include <random>
 #include <cmath>
+#include <random>
+#include <torch/torch.h>
+#include <tuple>
+#include <vector>
 
 #define REPLAY_LENGTH 2000
 #define BATCH_SIZE 32
@@ -16,8 +16,8 @@
 class NetImpl : public torch::nn::Module
 {
   public:
-    NetImpl(int in, int out) :
-          in_features(in),
+    NetImpl(int in, int out)
+        : in_features(in),
           out_features(out),
           layers(torch::nn::Linear(in_features, 20),
                  torch::nn::Linear(20, 20),
@@ -35,24 +35,30 @@ class NetImpl : public torch::nn::Module
     int in_features, out_features;
     torch::nn::Sequential layers;
 };
+
 TORCH_MODULE(Net);
 
-struct Transition {
+struct Transition
+{
     std::array<float, OBS_SHAPE> state;
     int64_t action;
     std::array<float, OBS_SHAPE> next_state;
     int64_t reward;
 };
 
-class ReplayMemory {
+class ReplayMemory
+{
   public:
-    ReplayMemory() :
-          capacity(REPLAY_LENGTH),
+    ReplayMemory()
+        : capacity(REPLAY_LENGTH),
           rng(std::random_device()())
-    {}
+    {
+    }
 
-    void Add(Transition& experience) {
-        if (memory.size() >= capacity) {
+    void Add(Transition& experience)
+    {
+        if (memory.size() >= capacity)
+        {
             memory.erase(memory.begin());
         }
         memory.push_back(experience);
@@ -84,7 +90,8 @@ class ReplayMemory {
         // save samples to tuple
         std::get<0>(sample) = torch::from_blob(states.data(), {BATCH_SIZE, OBS_SHAPE}, at::kFloat);
         std::get<1>(sample) = torch::from_blob(actions.data(), {BATCH_SIZE, 1}, at::kLong);
-        std::get<2>(sample) = torch::from_blob(next_states.data(), {BATCH_SIZE, OBS_SHAPE}, at::kFloat);
+        std::get<2>(sample) =
+            torch::from_blob(next_states.data(), {BATCH_SIZE, OBS_SHAPE}, at::kFloat);
         std::get<3>(sample) = torch::from_blob(rewards.data(), {BATCH_SIZE, 1}, at::kLong);
     }
 
@@ -98,8 +105,8 @@ class ReplayMemory {
 class DQN
 {
   public:
-    DQN() :
-          memory_counter(0),
+    DQN()
+        : memory_counter(0),
           policy_net(OBS_SHAPE, ACTION_NUM),
           target_net(OBS_SHAPE, ACTION_NUM),
           step(0),
@@ -109,7 +116,8 @@ class DQN
           dist(0.0, 1.0),
           optim(policy_net->parameters(), torch::optim::AdamOptions(LEARNING_RATE)),
           loss_model(torch::nn::MSELossOptions(torch::kMean))
-    {}
+    {
+    }
 
     uint32_t ChooseAction(std::array<float, OBS_SHAPE> obs)
     {
@@ -177,8 +185,10 @@ class DQN
 class TcpDeepQAgent
 {
   public:
-    TcpDeepQAgent() : dqn()
-    {}
+    TcpDeepQAgent()
+        : dqn()
+    {
+    }
 
     std::tuple<uint32_t, uint32_t> GetAction(float ssThresh,
                                              float cWnd,
@@ -211,7 +221,8 @@ class TcpDeepQAgent
         }
         else if (cWnd > 0)
         {
-            new_cWnd = cWnd + std::floor(std::max((double)1, (double)segmentSize * segmentSize / cWnd));
+            new_cWnd =
+                cWnd + std::floor(std::max((double)1, (double)segmentSize * segmentSize / cWnd));
         }
         if (trans.action < 3)
         {
