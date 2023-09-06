@@ -24,8 +24,8 @@
 
 #include "messages.pb.h"
 
-#include "ns3/object.h"
-#include "ns3/type-name.h"
+#include <ns3/object.h>
+#include <ns3/type-name.h>
 
 namespace ns3
 {

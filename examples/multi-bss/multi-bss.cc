@@ -1751,9 +1751,10 @@ std::unordered_map<uint64_t, int> bssNode;
 int
 main(int argc, char* argv[])
 {
-    Ns3AiMsgInterface::Get()->SetIsMemoryCreator(false);
-    Ns3AiMsgInterface::Get()->SetUseVector(true);
-    Ns3AiMsgInterface::Get()->SetHandleFinish(true);
+    auto interface = Ns3AiMsgInterface::Get();
+    interface->SetIsMemoryCreator(false);
+    interface->SetUseVector(true);
+    interface->SetHandleFinish(true);
     duration = 100;    ///< duration (in seconds)
     bool pcap = false; ///< Flag to enable/disable PCAP files generation
     uint32_t seedNumber = 1;

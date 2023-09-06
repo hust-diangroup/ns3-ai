@@ -22,6 +22,9 @@
 
 #include <cstdint>
 
+/**
+ * \brief Structure providing semaphore operations
+ */
 struct Ns3AiSemaphore
 {
     explicit Ns3AiSemaphore() = default;

@@ -34,11 +34,12 @@ using namespace ns3;
 int
 main()
 {
-    Ns3AiMsgInterface::Get()->SetIsMemoryCreator(false);
-    Ns3AiMsgInterface::Get()->SetUseVector(false);
-    Ns3AiMsgInterface::Get()->SetHandleFinish(true);
+    auto interface = Ns3AiMsgInterface::Get();
+    interface->SetIsMemoryCreator(false);
+    interface->SetUseVector(false);
+    interface->SetHandleFinish(true);
     Ns3AiMsgInterfaceImpl<EnvStruct, ActStruct>* msgInterface =
-        Ns3AiMsgInterface::Get()->GetInterface<EnvStruct, ActStruct>();
+        interface->GetInterface<EnvStruct, ActStruct>();
 
     unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
     std::mt19937 gen(seed);

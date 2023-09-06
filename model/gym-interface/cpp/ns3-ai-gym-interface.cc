@@ -31,9 +31,9 @@
 #include "ns3-ai-gym-env.h"
 #include "spaces.h"
 
-#include "ns3/config.h"
-#include "ns3/log.h"
-#include "ns3/simulator.h"
+#include <ns3/config.h>
+#include <ns3/log.h>
+#include <ns3/simulator.h>
 
 namespace ns3
 {
@@ -52,12 +52,11 @@ OpenGymInterface::OpenGymInterface()
     : m_simEnd(false),
       m_stopEnvRequested(false),
       m_initSimMsgSent(false)
-//      m_prev_cpp_send_env_cpu_cycle(0),
-//      m_prev_cpp_recv_act_cpu_cycle(0)
 {
-    Ns3AiMsgInterface::Get()->SetIsMemoryCreator(false);
-    Ns3AiMsgInterface::Get()->SetUseVector(false);
-    Ns3AiMsgInterface::Get()->SetHandleFinish(false);
+    auto interface = Ns3AiMsgInterface::Get();
+    interface->SetIsMemoryCreator(false);
+    interface->SetUseVector(false);
+    interface->SetHandleFinish(false);
 }
 
 OpenGymInterface::~OpenGymInterface()

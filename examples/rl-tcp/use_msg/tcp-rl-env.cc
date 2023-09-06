@@ -35,9 +35,10 @@ NS_OBJECT_ENSURE_REGISTERED(TcpTimeStepEnv);
 TcpTimeStepEnv::TcpTimeStepEnv()
 {
     //    std::cerr << "in TcpTimeStepEnv(), this = " << this << std::endl;
-    Ns3AiMsgInterface::Get()->SetIsMemoryCreator(false);
-    Ns3AiMsgInterface::Get()->SetUseVector(false);
-    Ns3AiMsgInterface::Get()->SetHandleFinish(true);
+    auto interface = Ns3AiMsgInterface::Get();
+    interface->SetIsMemoryCreator(false);
+    interface->SetUseVector(false);
+    interface->SetHandleFinish(true);
 }
 
 TcpTimeStepEnv::~TcpTimeStepEnv()
@@ -232,9 +233,10 @@ NS_OBJECT_ENSURE_REGISTERED(TcpEventBasedEnv);
 
 TcpEventBasedEnv::TcpEventBasedEnv()
 {
-    Ns3AiMsgInterface::Get()->SetIsMemoryCreator(false);
-    Ns3AiMsgInterface::Get()->SetUseVector(false);
-    Ns3AiMsgInterface::Get()->SetHandleFinish(true);
+    auto interface = Ns3AiMsgInterface::Get();
+    interface->SetIsMemoryCreator(false);
+    interface->SetUseVector(false);
+    interface->SetHandleFinish(true);
 }
 
 TcpEventBasedEnv::~TcpEventBasedEnv()

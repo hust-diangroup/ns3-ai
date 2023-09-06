@@ -34,9 +34,10 @@ NS_OBJECT_ENSURE_REGISTERED(CQIDL);
 
 CQIDL::CQIDL()
 {
-    Ns3AiMsgInterface::Get()->SetIsMemoryCreator(false);
-    Ns3AiMsgInterface::Get()->SetUseVector(false);
-    Ns3AiMsgInterface::Get()->SetHandleFinish(true);
+    auto interface = Ns3AiMsgInterface::Get();
+    interface->SetIsMemoryCreator(false);
+    interface->SetUseVector(false);
+    interface->SetHandleFinish(true);
 }
 
 CQIDL::~CQIDL()

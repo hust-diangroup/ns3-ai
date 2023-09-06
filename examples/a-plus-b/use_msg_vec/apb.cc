@@ -33,11 +33,12 @@ using namespace ns3;
 int
 main()
 {
-    Ns3AiMsgInterface::Get()->SetIsMemoryCreator(false);
-    Ns3AiMsgInterface::Get()->SetUseVector(true);
-    Ns3AiMsgInterface::Get()->SetHandleFinish(true);
+    auto interface = Ns3AiMsgInterface::Get();
+    interface->SetIsMemoryCreator(false);
+    interface->SetUseVector(true);
+    interface->SetHandleFinish(true);
     Ns3AiMsgInterfaceImpl<EnvStruct, ActStruct>* msgInterface =
-        Ns3AiMsgInterface::Get()->GetInterface<EnvStruct, ActStruct>();
+        interface->GetInterface<EnvStruct, ActStruct>();
 
     // Should run after Python
     assert(msgInterface->GetCpp2PyVector()->size() == APB_SIZE);

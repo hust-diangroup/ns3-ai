@@ -342,7 +342,7 @@ msgInterface.PySendEnd()
 
 `PySendBegin` is called before `PyRecvEnd` for the convenience of saving a temp
 variable. This won't cause errors because C++ is not posting on the semaphore
-`m_py2cpp_empty_count` which `PySendBegin` is waiting until `PySendEnd` completes.
+`m_py2cppEmptyCount` which `PySendBegin` is waiting until `PySendEnd` completes.
 
 Remember to destroy the interface:
 

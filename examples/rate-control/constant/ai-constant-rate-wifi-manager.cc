@@ -60,9 +60,10 @@ AiConstantRateWifiManager::GetTypeId()
 AiConstantRateWifiManager::AiConstantRateWifiManager()
 {
     NS_LOG_FUNCTION(this);
-    Ns3AiMsgInterface::Get()->SetIsMemoryCreator(false);
-    Ns3AiMsgInterface::Get()->SetUseVector(false);
-    Ns3AiMsgInterface::Get()->SetHandleFinish(true);
+    auto interface = Ns3AiMsgInterface::Get();
+    interface->SetIsMemoryCreator(false);
+    interface->SetUseVector(false);
+    interface->SetHandleFinish(true);
 }
 
 AiConstantRateWifiManager::~AiConstantRateWifiManager()

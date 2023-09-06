@@ -86,12 +86,12 @@ AiThompsonSamplingWifiManager::AiThompsonSamplingWifiManager()
     : m_currentRate{0}
 {
     NS_LOG_FUNCTION(this);
-    Ns3AiMsgInterface::Get()->SetIsMemoryCreator(false);
-    Ns3AiMsgInterface::Get()->SetUseVector(false);
-    Ns3AiMsgInterface::Get()->SetHandleFinish(true);
+    auto interface = Ns3AiMsgInterface::Get();
+    interface->SetIsMemoryCreator(false);
+    interface->SetUseVector(false);
+    interface->SetHandleFinish(true);
     Ns3AiMsgInterfaceImpl<AiThompsonSamplingEnvStruct, AiThompsonSamplingActStruct>* msgInterface =
-        Ns3AiMsgInterface::Get()
-            ->GetInterface<AiThompsonSamplingEnvStruct, AiThompsonSamplingActStruct>();
+        interface->GetInterface<AiThompsonSamplingEnvStruct, AiThompsonSamplingActStruct>();
 
     msgInterface->CppSendBegin();
     msgInterface->GetCpp2PyStruct()->type = 0x01;

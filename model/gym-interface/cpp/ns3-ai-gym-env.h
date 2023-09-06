@@ -22,7 +22,7 @@
 #ifndef OPENGYM_ENV_H
 #define OPENGYM_ENV_H
 
-#include "ns3/object.h"
+#include <ns3/object.h>
 
 namespace ns3
 {
@@ -31,6 +31,9 @@ class OpenGymSpace;
 class OpenGymDataContainer;
 class OpenGymInterface;
 
+/**
+ * \brief Base class to create Gymnasium-compatible environments in C++ side.
+ */
 class OpenGymEnv : public Object
 {
   public:
@@ -39,16 +42,56 @@ class OpenGymEnv : public Object
 
     static TypeId GetTypeId();
 
+    /**
+     * Get action space (Box, Dict, ...) from simulation
+     */
     virtual Ptr<OpenGymSpace> GetActionSpace() = 0;
+
+    /**
+     * Get observation space (Box, Dict, ...) from simulation
+     */
     virtual Ptr<OpenGymSpace> GetObservationSpace() = 0;
+
+    /**
+     * Get whether game is over (simulation is finished).
+     * Normally, this should always return false.
+     */
     virtual bool GetGameOver() = 0;
+
+    /**
+     * Get observation (stored in container)
+     */
     virtual Ptr<OpenGymDataContainer> GetObservation() = 0;
+
+    /**
+     * Get reward
+     */
     virtual float GetReward() = 0;
+
+    /**
+     * Get extra information
+     */
     virtual std::string GetExtraInfo() = 0;
+
+    /**
+     * Execute actions. E.g., modify the contention window in TCP.
+     */
     virtual bool ExecuteActions(Ptr<OpenGymDataContainer> action) = 0;
 
+    /**
+     * Sets the lower level gym interface (shared memory)
+     * associated to the environment
+     */
     void SetOpenGymInterface(Ptr<OpenGymInterface> openGymInterface);
+
+    /**
+     * Notify Python side about the states, and execute the actions
+     */
     void Notify();
+
+    /**
+     * Notify Python side that the simulation has ended.
+     */
     void NotifySimulationEnd();
 
   protected:
