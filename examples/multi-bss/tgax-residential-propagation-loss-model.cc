@@ -84,7 +84,7 @@ TgaxResidentialPropagationLossModel::GetRxPower(double txPowerDbm,
     //     PL(d) += 35 * log10(d/5)
     //
 
-    double pathlossDb = 0;
+    double pathlossDb;
     //    double shadowingDb = 0;
     double breakpointDistance = 5; // meters
     double fc = 2.4e9;             // carrier frequency, Hz
@@ -155,7 +155,7 @@ TgaxResidentialPropagationLossModel::DoCalcRxPower(double txPowerDbm,
     //     PL(d) += 35 * log10(d/5)
     //
 
-    double pathlossDb = 0;
+    double pathlossDb;
     //    double shadowingDb = 0;
     double breakpointDistance = 5; // meters
     double fc = 2.4e9;             // carrier frequency, Hz

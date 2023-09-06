@@ -21,9 +21,7 @@
 
 #include "ns3-ai-gym-env.h"
 
-#include "container.h"
 #include "ns3-ai-gym-interface.h"
-#include "spaces.h"
 
 #include "ns3/log.h"
 #include "ns3/object.h"

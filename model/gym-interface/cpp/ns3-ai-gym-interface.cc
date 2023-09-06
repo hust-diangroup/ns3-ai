@@ -35,24 +35,6 @@
 #include "ns3/log.h"
 #include "ns3/simulator.h"
 
-#include <sys/types.h>
-#include <unistd.h>
-
-// inline uint64_t get_cpu_cycle_x86()
-//{
-// #ifdef __x86_64__
-//     unsigned long lo, hi;
-//     __asm__ __volatile__("rdtsc"
-//                          : "=a"(lo), "=d"(hi));
-//     return ((uint64_t)hi << 32) + lo;
-// #else
-//     return 0;
-// #endif
-// }
-
-// std::vector<uint64_t> cpp2py_durations;
-// std::vector<uint64_t> py2cpp_durations;
-
 namespace ns3
 {
 

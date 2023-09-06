@@ -131,7 +131,6 @@ void
 AutoMcsWifiManager::BuildSnrThresholds()
 {
     m_thresholds.clear();
-    WifiMode mode;
     WifiTxVector txVector;
     uint8_t nss = 1;
     for (const auto& mode : GetPhy()->GetModeList())
@@ -562,15 +561,15 @@ AutoMcsWifiManager::DoGetDataTxVector(WifiRemoteStation* st, uint16_t allowedWid
                     mode = GetSupported(station, i);
                     txVector.SetMode(mode);
                     txVector.SetNss(selectedNss);
-                    uint16_t channelWidth = GetChannelWidthForNonHtMode(mode);
-                    txVector.SetChannelWidth(channelWidth);
+                    uint16_t width = GetChannelWidthForNonHtMode(mode);
+                    txVector.SetChannelWidth(width);
                     double threshold = GetSnrThreshold(txVector);
                     uint64_t dataRate = mode.GetDataRate(txVector.GetChannelWidth(),
                                                          txVector.GetGuardInterval(),
                                                          txVector.GetNss());
                     NS_LOG_DEBUG("mode = " << mode.GetUniqueName() << " threshold " << threshold
                                            << " last snr observed " << station->m_lastSnrObserved);
-                    double snr = GetLastObservedSnr(station, channelWidth, 1);
+                    double snr = GetLastObservedSnr(station, width, 1);
                     if (dataRate > bestRate && threshold < snr)
                     {
                         NS_LOG_DEBUG("Candidate mode = " << mode.GetUniqueName() << " data rate "
@@ -597,10 +596,8 @@ AutoMcsWifiManager::DoGetDataTxVector(WifiRemoteStation* st, uint16_t allowedWid
         }
         // std::cout << " raw value " << average / choosenMCS.size() << std::endl;
         average = std::ceil(average / choosenMCS.size());
-        std::string mode = "HeMcs" + std::to_string(int(average));
-
-        //        std::cout << "Mode " << mode << std::endl;
-        maxMode = WifiMode(mode);
+        std::string mcs = "HeMcs" + std::to_string(int(average));
+        maxMode = WifiMode(mcs);
     }
     NS_LOG_DEBUG("Found maxMode: " << maxMode << " channelWidth: " << channelWidth
                                    << " nss: " << +selectedNss);

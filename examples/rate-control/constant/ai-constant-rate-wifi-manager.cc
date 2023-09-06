@@ -26,7 +26,6 @@
 #include <ns3/string.h>
 #include <ns3/wifi-phy.h>
 #include <ns3/wifi-tx-vector.h>
-#include <ns3/wifi-utils.h>
 
 #define Min(a, b) ((a < b) ? a : b)
 
