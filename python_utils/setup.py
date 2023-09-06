@@ -1,5 +1,4 @@
-# -*- Mode: python; py-indent-offset: 4; indent-tabs-mode: nil; coding: utf-8; -*-
-# Copyright (c) 2019 Huazhong University of Science and Technology, Dian Group
+# Copyright (c) 2019-2023 Huazhong University of Science and Technology
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License version 2 as
