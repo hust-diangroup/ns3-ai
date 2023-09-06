@@ -5,6 +5,9 @@
 #ifndef NS3_MULTI_BSS_H
 #define NS3_MULTI_BSS_H
 
+#include <cstdint>
+#include <array>
+
 struct Env
 {
     uint32_t txNode;

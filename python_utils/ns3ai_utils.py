@@ -61,7 +61,7 @@ def run_single_ns3(path, pname, setting=None, env=None, show_output=False):
 
 # used to kill the ns-3 script process and its child processes
 def kill_proc_tree(p, timeout=None, on_terminate=None):
-    print('ns3ai_utils: Killing subprocesses:')
+    print('ns3ai_utils: Killing subprocesses...')
     if isinstance(p, int):
         p = psutil.Process(p)
     elif not isinstance(p, psutil.Process):
@@ -69,8 +69,8 @@ def kill_proc_tree(p, timeout=None, on_terminate=None):
     ch = [p]+p.children(recursive=True)
     for c in ch:
         try:
-            print("\t-- {}, pid={}, ppid={}".format(psutil.Process(c.pid).name(), c.pid, c.ppid()))
-            print("\t   \"{}\"".format(" ".join(c.cmdline())))
+            # print("\t-- {}, pid={}, ppid={}".format(psutil.Process(c.pid).name(), c.pid, c.ppid()))
+            # print("\t   \"{}\"".format(" ".join(c.cmdline())))
             c.kill()
         except Exception as e:
             continue

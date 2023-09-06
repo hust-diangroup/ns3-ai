@@ -56,7 +56,7 @@ else()
     set(NS3AI_LIBTORCH_EXAMPLES OFF)
 endif()
 
-set(msg_interface_srcs model/msg-interface/ns3-ai-msg-interface.cc)
+set(msg_interface_srcs )
 set(msg_interface_hdrs model/msg-interface/ns3-ai-msg-interface.h)
 set(gym_interface_srcs
         model/gym-interface/cpp/ns3-ai-gym-interface.cc

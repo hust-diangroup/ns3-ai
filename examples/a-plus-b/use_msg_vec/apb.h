@@ -1,6 +1,8 @@
 #ifndef APB_H
 #define APB_H
 
+#include <cstdint>
+
 struct EnvStruct
 {
     uint32_t env_a;

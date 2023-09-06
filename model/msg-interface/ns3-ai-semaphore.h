@@ -1,6 +1,8 @@
 #ifndef NS3_AI_SEMAPHORE_H
 #define NS3_AI_SEMAPHORE_H
 
+#include <cstdint>
+
 struct Ns3AiSemaphore
 {
     explicit Ns3AiSemaphore() = default;
