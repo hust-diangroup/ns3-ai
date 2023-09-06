@@ -8,33 +8,10 @@ This installation works on Ubuntu 22.04 and macOS 13.0 or higher.
     - Ubuntu: `sudo apt install libboost-all-dev`
     - macOS: `brew install boost`
 2. Protocol buffers
-    - Ubuntu:
-    ```shell
-    # Recommended
-    sudo apt install libprotobuf-dev protobuf-compiler
-
-    # Try building from source if the above installation causes cmake error
-    git clone https://github.com/protocolbuffers/protobuf.git
-    cd protobuf
-    git submodule update --init --recursive
-    cmake -S . -B build -Dprotobuf_BUILD_SHARED_LIBS=ON
-    cmake --build build
-    sudo cmake --install build
-    ```
+    - Ubuntu: `sudo apt install libprotobuf-dev protobuf-compiler`
     - macOS: `brew install protobuf`
 3. pybind11
-    - Ubuntu:
-    ```shell
-    # Recommended
-    sudo apt install pybind11-dev
-
-    # Try building from source if the above installation causes cmake error
-    git clone https://github.com/pybind/pybind11.git
-    cd pybind11
-    cmake -S . -B build
-    cmake --build build
-    sudo cmake --install build
-    ```
+    - Ubuntu: `sudo apt install pybind11-dev`
     - macOS: `brew install pybind11`
 
 ## General Setup
@@ -60,6 +37,12 @@ for ns3-ai.
 pip install -e contrib/ai/python_utils
 pip install -e contrib/ai/model/gym-interface/py
 ```
+
+- Note: In later build, Python bindings are generated with the Python library 
+found by Cmake, which is unlikely the Conda environment you are using.
+Please ensure that the Python version in your Conda environment is consistent 
+with the default Python version in your OS, so that the Python interpreter 
+can import the binding modules properly.
 
 4. Build the examples (optional)
 
