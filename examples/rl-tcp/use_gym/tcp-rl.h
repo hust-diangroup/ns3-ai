@@ -1,4 +1,3 @@
-/* -*-  Mode: C++; c-file-style: "gnu"; indent-tabs-mode:nil; -*- */
 /*
  * Copyright (c) 2018 Technische Universität Berlin
  *
@@ -16,7 +15,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  * Author: Piotr Gawlowicz <gawlowicz@tkn.tu-berlin.de>
- * Modify: Muyuan Shen
+ * Modify: Muyuan Shen <muyuan_shen@hust.edu.cn>
  */
 
 #ifndef NS3_TCP_RL_H

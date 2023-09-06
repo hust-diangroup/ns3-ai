@@ -1,4 +1,3 @@
-/* -*-  Mode: C++; c-file-style: "gnu"; indent-tabs-mode:nil; -*- */
 /*
  * Copyright (c) 2018 Piotr Gawlowicz
  *
@@ -16,7 +15,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  * Author: Piotr Gawlowicz <gawlowicz.p@gmail.com>
- * Modify: Muyuan Shen <shmy315@gmail.com>
+ * Modify: Muyuan Shen <muyuan_shen@hust.edu.cn>
  *
  */
 
@@ -234,7 +233,7 @@ OpenGymInterface::NotifyCurrentState()
     ///"\n"; /        std::cout << "py_prev_recv_env_cpu_cycle = " << py_prev_recv_env_cpu_cycle <<
     ///"\n"; /        std::cout << "py_prev_send_act_cpu_cycle = " << py_prev_send_act_cpu_cycle <<
     ///"\n"; /        std::cout << "m_prev_cpp_recv_act_cpu_cycle = " <<
-    ///m_prev_cpp_recv_act_cpu_cycle << "\n";
+    /// m_prev_cpp_recv_act_cpu_cycle << "\n";
     //        assert(py_prev_recv_env_cpu_cycle);
     //        assert(py_prev_send_act_cpu_cycle);
     //        assert(m_prev_cpp_send_env_cpu_cycle < py_prev_recv_env_cpu_cycle &&
@@ -245,8 +244,8 @@ OpenGymInterface::NotifyCurrentState()
     //        py2cpp_durations.push_back(m_prev_cpp_recv_act_cpu_cycle -
     //        py_prev_send_act_cpu_cycle);
     ////        std::cout << "cpp2py: " << py_prev_recv_env_cpu_cycle -
-    ///m_prev_cpp_send_env_cpu_cycle /                  << ", py2cpp: " <<
-    ///m_prev_cpp_recv_act_cpu_cycle - py_prev_send_act_cpu_cycle << "\n";
+    /// m_prev_cpp_send_env_cpu_cycle /                  << ", py2cpp: " <<
+    /// m_prev_cpp_recv_act_cpu_cycle - py_prev_send_act_cpu_cycle << "\n";
     //        m_prev_cpp_send_env_cpu_cycle = cpp_send_env_cpu_cycle;
     //        m_prev_cpp_recv_act_cpu_cycle = cpp_recv_act_cpu_cycle;
     //    }

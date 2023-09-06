@@ -1,4 +1,3 @@
-/* -*-  Mode: C++; c-file-style: "gnu"; indent-tabs-mode:nil; -*- */
 /*
  * Copyright (c) 2018 Technische Universität Berlin
  *
@@ -18,6 +17,7 @@
  * Author: Piotr Gawlowicz <gawlowicz@tkn.tu-berlin.de>
  * Modify: Pengyu Liu <eic_lpy@hust.edu.cn>
  *         Hao Yin <haoyin@uw.edu>
+ *         Muyuan Shen <muyuan_shen@hust.edu.cn>
  */
 
 #ifndef TCP_RL_ENV_H_MSG

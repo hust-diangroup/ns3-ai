@@ -1,4 +1,3 @@
-/* -*-  Mode: C++; c-file-style: "gnu"; indent-tabs-mode:nil; -*- */
 /*
  * Copyright (c) 2018 Piotr Gawlowicz
  *
@@ -19,6 +18,7 @@
  * Based on script: ./examples/tcp/tcp-variants-comparison.cc
  * Modify: Pengyu Liu <eic_lpy@hust.edu.cn>
  *         Hao Yin <haoyin@uw.edu>
+ *         Muyuan Shen <muyuan_shen@hust.edu.cn>
  * Topology:
  *
  *   Left Leafs (Clients)                       Right Leafs (Sinks)

@@ -1,4 +1,3 @@
-/* -*-  Mode: C++; c-file-style: "gnu"; indent-tabs-mode:nil; -*- */
 /*
  * Copyright (c) 2011-2018 Centre Tecnologic de Telecomunicacions de Catalunya (CTTC)
  *
@@ -17,8 +16,9 @@
  *
  * Authors: Jaume Nin <jaume.nin@cttc.cat>
  *          Manuel Requena <manuel.requena@cttc.es>
- * Modify: Pengyu Liu <eic_lpy@hust.edu.cn>
- *         Hao Yin <haoyin@uw.edu>
+ * Modify:  Pengyu Liu <eic_lpy@hust.edu.cn>
+ *          Hao Yin <haoyin@uw.edu>
+ *          Muyuan Shen <muyuan_shen@hust.edu.cn>
  */
 
 #include "ns3/applications-module.h"

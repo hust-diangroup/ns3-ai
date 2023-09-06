@@ -1,4 +1,3 @@
-/* -*- Mode:C++; c-file-style:"gnu"; indent-tabs-mode:nil; -*- */
 /*
  * Copyright (c) 2021 IITP RAS
  *
@@ -18,6 +17,7 @@
  * Author: Alexander Krotov <krotov@iitp.ru>
  * Modify: Xun Deng <dorence@hust.edu.cn>
  *         Hao Yin <haoyin@uw.edu>
+ *         Muyuan Shen <muyuan_shen@hust.edu.cn>
  */
 
 #ifndef AI_THOMPSON_SAMPLING_WIFI_MANAGER_H

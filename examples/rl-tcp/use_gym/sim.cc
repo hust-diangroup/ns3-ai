@@ -1,4 +1,3 @@
-/* -*-  Mode: C++; c-file-style: "gnu"; indent-tabs-mode:nil; -*- */
 /*
  * Copyright (c) 2018 Piotr Gawlowicz
  *
@@ -19,6 +18,7 @@
  * Based on script: ./examples/tcp/tcp-variants-comparison.cc
  * Modify: Pengyu Liu <eic_lpy@hust.edu.cn>
  *         Hao Yin <haoyin@uw.edu>
+ *         Muyuan Shen <muyuan_shen@hust.edu.cn>
  * Topology:
  *
  *   Left Leafs (Clients)                       Right Leafs (Sinks)
@@ -47,19 +47,6 @@
 
 #include <iostream>
 #include <string>
-
-// extern std::vector<uint64_t> cpp2py_durations;
-// extern std::vector<uint64_t> py2cpp_durations;
-
-// uint64_t average(std::vector<uint64_t> const& v){
-//     if(v.empty()){
-//         return 0;
-//     }
-//
-//     auto count = v.size();
-//
-//     return std::reduce(v.begin(), v.end()) / count;
-// }
 
 using namespace ns3;
 
@@ -312,25 +299,6 @@ main(int argc, char* argv[])
     }
 
     PrintRxCount();
-    //    uint64_t cpp2py_cycle_mean = average(cpp2py_durations);
-    //    uint64_t py2cpp_cycle_mean = average(py2cpp_durations);
-    //    uint64_t accum = 0;
-    //    std::for_each (std::begin(cpp2py_durations), std::end(cpp2py_durations), [&](const double
-    //    d) {
-    //        accum += (d - cpp2py_cycle_mean) * (d - cpp2py_cycle_mean);
-    //    });
-    //    auto cpp2py_cycle_stddev = sqrt(accum / (cpp2py_durations.size() - 1));
-    //    accum = 0;
-    //    std::for_each (std::begin(py2cpp_durations), std::end(py2cpp_durations), [&](const double
-    //    d) {
-    //        accum += (d - py2cpp_cycle_mean) * (d - py2cpp_cycle_mean);
-    //    });
-    //    auto py2cpp_cycle_stddev = sqrt(accum / (py2cpp_durations.size() - 1));
-    //    std::cout << "cpp2py_cycle_mean = " << cpp2py_cycle_mean
-    //              << ", py2cpp_cycle_mean = " << py2cpp_cycle_mean
-    //              << ", cpp2py_cycle_stddev = " << cpp2py_cycle_stddev
-    //              << ", py2cpp_cycle_stddev = " << py2cpp_cycle_stddev
-    //              << std::endl;
     Simulator::Destroy();
     return 0;
 }

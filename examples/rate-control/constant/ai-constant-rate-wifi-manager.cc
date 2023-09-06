@@ -1,4 +1,3 @@
-/* -*- Mode:C++; c-file-style:"gnu"; indent-tabs-mode:nil; -*- */
 /*
  * Copyright (c) 2004,2005 INRIA
  *
@@ -18,6 +17,7 @@
  * Author: Mathieu Lacage <mathieu.lacage@sophia.inria.fr>
  * Modify: Xun Deng <dorence@hust.edu.cn>
  *         Hao Yin <haoyin@uw.edu>
+ *         Muyuan Shen <muyuan_shen@hust.edu.cn>
  */
 
 #include "ai-constant-rate-wifi-manager.h"

@@ -1,6 +1,4 @@
-#! /usr/bin/env python
-# -*- Mode: python; py-indent-offset: 4; indent-tabs-mode: nil; coding: utf-8; -*-
-# Copyright (c) 2021 Huazhong University of Science and Technology, Dian Group
+# Copyright (c) 2021-2023 Huazhong University of Science and Technology
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License version 2 as
@@ -17,6 +15,7 @@
 #
 # Author: Xun Deng <dorence@hust.edu.cn>
 #         Hao Yin <haoyin@uw.edu>
+#         Muyuan Shen <muyuan_shen@hust.edu.cn>
 
 
 import ns3ai_ratecontrol_constant_py as py_binding

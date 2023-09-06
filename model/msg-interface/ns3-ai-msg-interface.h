@@ -1,3 +1,22 @@
+/*
+ * Copyright (c) 2023 Huazhong University of Science and Technology
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 as
+ * published by the Free Software Foundation;
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ *
+ * Authors:  Muyuan Shen <muyuan_shen@hust.edu.cn>
+ */
+
 #ifndef NS3_AI_MSG_INTERFACE_H
 #define NS3_AI_MSG_INTERFACE_H
 
@@ -31,6 +50,7 @@ class Ns3AiMsgInterfaceImpl
 {
   public:
     Ns3AiMsgInterfaceImpl() = delete;
+
     explicit Ns3AiMsgInterfaceImpl(bool is_memory_creator,
                                    bool use_vector,
                                    bool handle_finish,
@@ -225,18 +245,22 @@ class Ns3AiMsgInterface : public Singleton<Ns3AiMsgInterface>
     {
         this->m_isMemoryCreator = isMemoryCreator;
     };
+
     void SetUseVector(bool useVector)
     {
         this->m_useVector = useVector;
     };
+
     void SetHandleFinish(bool handleFinish)
     {
         this->m_handleFinish = handleFinish;
     };
+
     void SetMemorySize(uint32_t size)
     {
         this->m_size = size;
     };
+
     void SetNames(std::string segmentName,
                   std::string cpp2pyMsgName,
                   std::string py2cppMsgName,
@@ -247,6 +271,7 @@ class Ns3AiMsgInterface : public Singleton<Ns3AiMsgInterface>
         this->m_py2cppMsgName = py2cppMsgName;
         this->m_lockableName = lockableName;
     };
+
     template <typename Cpp2PyMsgType, typename Py2CppMsgType>
     Ns3AiMsgInterfaceImpl<Cpp2PyMsgType, Py2CppMsgType>* GetInterface();
 
