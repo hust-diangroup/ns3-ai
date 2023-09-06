@@ -55,8 +55,8 @@ this dependency no longer exists and the code needs substantial changes.
 
 ## 3. Pure C++ vs. C++-Python interface
 
-The benchmark is based on the [pure C++ (libtorch)](../../examples/rl-tcp/pure_cpp) and
-[message interface (PyTorch)](../../examples/rl-tcp/use_msg) version of RL-TCP example.
+The benchmark is based on the [pure C++ (libtorch)](../../examples/rl-tcp/pure-cpp) and
+[message interface (PyTorch)](../../examples/rl-tcp/use-msg) version of RL-TCP example.
 We compare the processing time (i.e. transmission time + DRL algorithm time
 for message interface, DRL algorithm time for pure C++) for the two interfaces,
 including the mean and the standard deviation. The difference can be considered

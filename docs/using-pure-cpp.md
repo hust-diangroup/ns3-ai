@@ -54,7 +54,7 @@ is [in progress and incomplete](https://github.com/tensorflow/docs/blob/master/s
 As a result, the [LTE-CQI](../examples/lte-cqi) example, which uses LSTM and requires Gradients and
 Neural Network library, cannot be rewritten into pure C++ version using `libtensorflow`.
 
-However, a [basic example](../examples/lte-cqi/pure_cpp) is provided for checking whether
+However, a [basic example](../examples/lte-cqi/pure-cpp) is provided for checking whether
 `libtensorflow` is correctly installed. If it is, `./ns3 run ns3ai_ltecqi_purecpp`
 should successfully print TensorFlow's version. The full example using LSTM will be
 available when TensorFlow offers sufficient C API to developers.
@@ -109,8 +109,8 @@ symbols like `_PyBaseObject_Type` are missing.
 
 - Cmake target: `ns3ai_rltcp_purecpp`
 
-The [message-interface version of the RL-TCP example](../examples/rl-tcp/use_msg)
-has been [modified](../examples/rl-tcp/pure_cpp) to run in pure C++, utilizing PyTorch C++ APIs. All RL
+The [message-interface version of the RL-TCP example](../examples/rl-tcp/use-msg)
+has been [modified](../examples/rl-tcp/pure-cpp) to run in pure C++, utilizing PyTorch C++ APIs. All RL
 functionalities are same with original, except for random seed settings that can
 lead to different results. Running `ns3ai_rltcp_purecpp` should by
 default apply deep Q-learning algorithm (DQN) to choose TCP parameters, with states

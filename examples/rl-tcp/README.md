@@ -85,7 +85,7 @@ The following code selects deep Q-learning to TCP congestion control.
 
 ```shell
 pip install -r contrib/ai/examples/rl-tcp/requirements.txt
-cd contrib/ai/examples/rl-tcp/use_gym
+cd contrib/ai/examples/rl-tcp/use-gym
 python run_rl_tcp.py --use_rl --result --show_log --seed=10
 ```
 
@@ -105,7 +105,7 @@ The following code selects deep Q-learning to TCP congestion control.
 
 ```shell
 pip install -r contrib/ai/examples/rl-tcp/requirements.txt
-cd contrib/ai/examples/rl-tcp/use_msg
+cd contrib/ai/examples/rl-tcp/use-msg
 python run_rl_tcp.py --use_rl --rl_algo=DeepQ --result --show_log --seed=10
 ```
 

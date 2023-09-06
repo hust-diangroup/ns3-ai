@@ -50,7 +50,7 @@ cd YOUR_NS3_DIRECTORY
 
 ```shell
 pip install -r contrib/ai/examples/lte-cqi/requirements.txt
-cd contrib/ai/examples/lte-cqi/use_msg
+cd contrib/ai/examples/lte-cqi/use-msg
 python run_online_lstm.py 1
 ```
 

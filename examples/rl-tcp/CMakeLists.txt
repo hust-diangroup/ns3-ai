@@ -1,9 +1,9 @@
 build_lib_example(
         NAME ns3ai_rltcp_gym
         SOURCE_FILES
-            use_gym/sim.cc
-            use_gym/tcp-rl-env.cc
-            use_gym/tcp-rl.cc
+            use-gym/sim.cc
+            use-gym/tcp-rl-env.cc
+            use-gym/tcp-rl.cc
         LIBRARIES_TO_LINK
             ${libai}
             ${libcore}
@@ -21,9 +21,9 @@ build_lib_example(
 build_lib_example(
         NAME ns3ai_rltcp_msg
         SOURCE_FILES
-            use_msg/rl-tcp.cc
-            use_msg/tcp-rl.cc
-            use_msg/tcp-rl-env.cc
+            use-msg/rl-tcp.cc
+            use-msg/tcp-rl.cc
+            use-msg/tcp-rl-env.cc
         LIBRARIES_TO_LINK
             ${libai}
             ${libcore}
@@ -38,9 +38,9 @@ build_lib_example(
             ${libflow-monitor}
 )
 
-pybind11_add_module(ns3ai_rltcp_msg_py use_msg/rl_tcp_py.cc)
+pybind11_add_module(ns3ai_rltcp_msg_py use-msg/rl_tcp_py.cc)
 set_target_properties(ns3ai_rltcp_msg_py PROPERTIES
-        LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/use_msg)
+        LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/use-msg)
 target_link_libraries(ns3ai_rltcp_msg_py PRIVATE ${libai})
 
 # Build Python interface along with C++ lib
@@ -51,9 +51,9 @@ if(NS3AI_LIBTORCH_EXAMPLES)
     message(STATUS "RL-TCP pure C++ example enabled")
     build_lib_example(
             NAME ns3ai_rltcp_purecpp
-            SOURCE_FILES pure_cpp/rl-tcp.cc
-                         pure_cpp/tcp-rl.cc
-                         pure_cpp/tcp-rl-env.cc
+            SOURCE_FILES pure-cpp/rl-tcp.cc
+                         pure-cpp/tcp-rl.cc
+                         pure-cpp/tcp-rl-env.cc
             LIBRARIES_TO_LINK   # Need not link with ns3-ai because there is no IPC between Python and C++
             ${libcore}
             ${Torch_LIBRARIES}
