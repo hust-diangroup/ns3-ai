@@ -14,8 +14,8 @@ between the two through interprocess data transmission.
     <img src="./docs/architecture.png" alt="arch" width="500"/>
 </p>
 
-Our model offers an efficient solution to facilitate the data exchange between ns-3 and other Python-based 
-AI frameworks. It does not implement any specific AI algorithms. Instead, it focuses on enabling AI 
+Our model offers an efficient solution to facilitate the data exchange between ns-3 and Python-based 
+AI frameworks. It does not implement any specific AI algorithms. Instead, it focuses on enabling 
 interconnectivity between Python and C++. Therefore, it is necessary to separately install the desired AI 
 framework. Then, by cloning or downloading our work and importing the relevant Python modules, you can 
 seamlessly exchange data between ns-3 and your AI algorithms.

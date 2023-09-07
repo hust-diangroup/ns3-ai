@@ -22,7 +22,7 @@ This example can be run using the following interfaces:
 ### Gym interface
 
 1. [Setup ns3-ai](../../docs/install.md)
-2. Build C++ side
+2. Build C++ executable & Python bindings
 
 ```shell
 cd YOUR_NS3_DIRECTORY
@@ -39,7 +39,7 @@ python apb.py
 ### Message interface (struct-based)
 
 1. [Setup ns3-ai](../../docs/install.md)
-2. Build C++ side
+2. Build C++ executable & Python bindings
 
 ```shell
 cd YOUR_NS3_DIRECTORY
@@ -56,7 +56,7 @@ python apb.py
 ### Message interface (vector-based)
 
 1. [Setup ns3-ai](../../docs/install.md)
-2. Build C++ side
+2. Build C++ executable & Python bindings
 
 ```shell
 cd YOUR_NS3_DIRECTORY
