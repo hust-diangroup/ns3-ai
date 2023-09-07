@@ -2,27 +2,34 @@
 
 ## Introduction
 
-The [ns–3](https://www.nsnam.org/) simulator is an open-source networking simulation tool implemented by C++ and wildly
-used for network research and education. Currently, more and more researchers are willing to apply AI algorithms to
-network research. Most AI algorithms are likely to rely on open source frameworks such
-as [TensorFlow](https://www.tensorflow.org/) and [PyTorch](https://pytorch.org/). These two parts are developed
-independently and extremely hard to merge, so it is more reasonable and convenient to connect these two tasks with data
-interaction. Our model provides a high-efficiency solution to enable the data interaction between ns-3 and other python
-based AI frameworks.
+[ns–3](https://www.nsnam.org/) is widely recognized as an excellent open-source networking simulation 
+tool utilized in network research and education. In recent times, there has been a growing interest in 
+integrating AI algorithms into network research, with many researchers opting for open-source frameworks 
+such as [TensorFlow](https://www.tensorflow.org/) and [PyTorch](https://pytorch.org/). Integrating the 
+ML frameworks with simulation tools in source code level has proven to be a challenging task due to their 
+independent development. As a result, it is more practical and convenient to establish a connection 
+between the two through interprocess data transmission.
 
-This module does not provide any AI algorithms or rely on any frameworks but instead is providing a module that
-enables AI interconnect, so the AI framework needs to be separately installed. You only need to clone or download this
-work, then import the Python modules, you could use this work to exchange data between ns-3 and your AI algorithms.
+<p align="center">
+    <img src="./docs/architecture.png" alt="arch" width="500"/>
+</p>
 
-Inspired by [ns3-gym](https://github.com/tkn-tub/ns3-gym), but using a shared-memory-based approach which is faster and
-more flexible.
+Our model offers an efficient solution to facilitate the data exchange between ns-3 and other Python-based 
+AI frameworks. It does not implement any specific AI algorithms. Instead, it focuses on enabling AI 
+interconnectivity between Python and C++. Therefore, it is necessary to separately install the desired AI 
+framework. Then, by cloning or downloading our work and importing the relevant Python modules, you can 
+seamlessly exchange data between ns-3 and your AI algorithms.
+
+The approach for enabling this data exchange is inspired by [ns3-gym](https://github.com/tkn-tub/ns3-gym), 
+but it utilizes a shared-memory-based approach, which not only ensures faster execution but also provides 
+greater flexibility.
 
 ### Features
 
 - High-performance data interaction module in both C++ and Python side.
 - A high-level [Gym interface](model/gym-interface) for using Gymnasium APIs, and a low-level
 [message interface](model/msg-interface) for customizing the shared data.
-- Easy to integrate with AI frameworks on Python side.
+- Useful skeleton code to easily integrate with AI frameworks on Python side.
 
 ## Installation
 
@@ -77,25 +84,23 @@ This original work is done based on [5G NR](https://5g-lena.cttc.es/) branch in 
 also run in LTE codebase in ns-3 mainline. We didn't reproduce all the experiments on LTE, and the results in our paper
 are based on NR work.
 
-## GSoC 2023
+## Other materials
 
-- Wiki page: [GSOC2023ns3-ai](https://www.nsnam.org/wiki/GSOC2023ns3-ai)
+### Google Summer of Code 2023
 
-The new interface utilizes Boost C++ Library and pybind11 to support fast data interaction in C++-Python shared memory.
-It is still in development. Two interfaces are introduced before midterm evaluation:
+'ns3-ai improvements' has been chosen as one of the [project ideas](https://www.nsnam.org/wiki/GSOC2023Projects) 
+for the ns-3 projects in [GSoC 2023](https://summerofcode.withgoogle.com/programs/2023). The project 
+developed the message interface (struct-based & vector-based) and Gym interface, provided more examples 
+and enhanced stability and usability.
 
-1. Message Interface: Based on Boost.Interprocess shared memory, providing APIs to define
-   message structures and perform low level synchronization. STL container `std::vector`
-   is supported for this interface.
-2. Gym Interface: Base on message interface, providing Gym APIs for Python side and environment
-   APIs for C++ side.
+- Project wiki page: [GSOC2023ns3-ai](https://www.nsnam.org/wiki/GSOC2023ns3-ai)
 
-## Online Tutorial
+### Online tutorial
 
-This section describes the original design and is not up to date with the newer interface proposed in GSOC 2023.
+Note: this tutorial explains the original design, which is not up to date with the newer interface.
 
-Join us in this [online recording](https://vimeo.com/566296651) to get better knowledge about ns3-ai! The slides
-introduce the ns3-ai model could also be found [here](https://www.nsnam.org/wp-content/uploads/2021/tutorials/ns3-ai-tutorial-June-2021.pdf)!
+Join us in this [online recording](https://vimeo.com/566296651) to get better knowledge about ns3-ai. 
+The slides introducing the ns3-ai model could also be found [here](https://www.nsnam.org/wp-content/uploads/2021/tutorials/ns3-ai-tutorial-June-2021.pdf).
 
 ## Cite Our Work
 
