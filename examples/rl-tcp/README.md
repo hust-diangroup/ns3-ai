@@ -3,8 +3,8 @@
 ## Introduction
 
 This example applies Q-learning algorithms to TCP congestion control for real-time
-changes in the environment of network transmission. By strengthening the learning
-management sliding window and threshold size, the network can get better throughput
+changes in the environment of network transmission. By optimizing cWnd (contention 
+window) and ssThresh (slow start threshold), the network can get better throughput
 and smaller delay.
 
 ### Cmake targets
