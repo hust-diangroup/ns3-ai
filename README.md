@@ -1,181 +1,108 @@
 # ns3-ai
 
-## Online Tutorial:
+## Introduction
 
-Join us in this [online recording](https://vimeo.com/566296651) to get better knowledge about ns3-ai! The slides
-introduce the ns3-ai model could also be
-found [here](https://www.nsnam.org/wp-content/uploads/2021/tutorials/ns3-ai-tutorial-June-2021.pdf)!
+[ns–3](https://www.nsnam.org/) is widely recognized as an excellent open-source networking simulation
+tool utilized in network research and education. In recent times, there has been a growing interest in
+integrating AI algorithms into network research, with many researchers opting for open-source frameworks
+such as [TensorFlow](https://www.tensorflow.org/) and [PyTorch](https://pytorch.org/). Integrating the
+ML frameworks with simulation tools in source code level has proven to be a challenging task due to their
+independent development. As a result, it is more practical and convenient to establish a connection
+between the two through interprocess data transmission.
 
-## Description
+<p align="center">
+    <img src="./docs/architecture.png" alt="arch" width="500"/>
+</p>
 
-The [ns–3](https://www.nsnam.org/) simulator is an open-source networking simulation tool implemented by C++ and wildly
-used for network research and education. Currently, more and more researchers are willing to apply AI algorithms to
-network research. Most AI algorithms are likely to rely on open source frameworks such
-as [TensorFlow](https://www.tensorflow.org/) and [PyTorch](https://pytorch.org/). These two parts are developed
-independently and extremely hard to merge, so it is more reasonable and convenient to connect these two tasks with data
-interaction. Our model provides a high-efficiency solution to enable the data interaction between ns-3 and other python
-based AI frameworks.
+Our model offers an efficient solution to facilitate the data exchange between ns-3 and Python-based
+AI frameworks. It does not implement any specific AI algorithms. Instead, it focuses on enabling
+interconnectivity between Python and C++. Therefore, it is necessary to separately install the desired AI
+framework. Then, by cloning or downloading our work and importing the relevant Python modules, you can
+seamlessly exchange data between ns-3 and your AI algorithms.
 
-This module does not provide any AI algorithms or rely on any frameworks but instead is providing a Python module that
-enables AI interconnect, so the AI framework needs to be separately installed. You only need to clone or download this
-work, then import the Python modules, you could use this work to exchange data between ns-3 and your AI algorithms.
-
-Inspired by [ns3-gym](https://github.com/tkn-tub/ns3-gym), but using a different approach which is faster and more
-flexible.
+The approach for enabling this data exchange is inspired by [ns3-gym](https://github.com/tkn-tub/ns3-gym),
+but it utilizes a shared-memory-based approach, which not only ensures faster execution but also provides
+greater flexibility.
 
 ### Features
 
-- High-performance data interaction module (using shared memory).
-- Provide a high-level interface for different AI algorithms.
-- Easy to integrate with other AI frameworks.
+- High-performance data interaction module in both C++ and Python side.
+- A high-level [Gym interface](model/gym-interface) for using Gymnasium APIs, and a low-level
+  [message interface](model/msg-interface) for customizing the shared data.
+- Useful skeleton code to easily integrate with AI frameworks on Python side.
 
 ## Installation
 
-### 1. Install this module in ns-3
+Check out [install.md](./docs/install.md) for how to install and setup ns3-ai.
 
-#### Get ns-3:
+## Quickstart on ns3-ai
 
-This module needs to be built within ns-3, so you need to get a ns-3-dev or other ns-3 codes first.
+### Demo
 
-Check [ns-3 installation wiki](https://www.nsnam.org/wiki/Installation) for detailed instructions.
+To get started on ns3-ai, check out the [A-Plus-B](examples/a-plus-b) example. This example shows how
+C++ passes two numbers to Python and their sum is passed back to C++, with the implementation using
+all available interfaces: Gym interface, message interface (struct-based) and message
+interface (vector-based).
 
-#### Add this module
+### Documentation
 
-```Shell
-cd $YOUR_NS3_CODE/contrib
-git clone https://github.com/hust-diangroup/ns3-ai.git
-```
+Ready to deploy ns3-ai in your own research? Before you code, please go over the tutorials on
+[Gym interface](model/gym-interface) and [message interface](model/msg-interface). They provide
+step-by-step guidance on writing C++-Python interfaces, with some useful code snippets.
 
-#### Reconfigure ns-3
-
-```Shell
-./ns3 clean
-./ns3 configure
-```
-
-### 2. Add Python interface
-
-#### Install
-
-Python 3 is used and tested. It's recommended to use ns3-ai under a Conda environment.
-
-```Shell
-cd $YOUR_NS3_CODE/contrib/ns3-ai/py_interface
-pip3 install . --user
-```
-
-#### Basic usage
-
-``` Python
-import py_interface
-mempool_key = 1234                                          # memory pool key, arbitrary integer large than 1000
-mem_size = 4096                                             # memory pool size in bytes
-memblock_key = 2333                                         # memory block key, need to keep the same in the ns-3 script
-py_interface.Init(mempool_key, mem_size) # key poolSize
-v = ShmBigVar(memblock_key, c_int*10)
-with v as o:
-    for i in range(10):
-        o[i] = c_int(i)
-    print(*o)
-py_interface.FreeMemory()
-```
-
-## Shared Memory Pool
-
-The ns3-ai module interconnects the ns-3 and AI frameworks by transferring data through the shared memory pool. The
-memory can be accessed by both sides and controlled mainly in ns-3. The shared memory pool is defined
-in `ns3-ai/model/memory-pool.h`.  
-The `CtrlInfoBlock` is the control block of the all shared memory pool, the `SharedMemoryCtrl` is the control block of
-each shared memory, and the `SharedMemoryLockable` is the actual shared memory used for data exchange. In each memory
-block, we use version and nextVersion as the lock indicator. The synchronization for reading/writing locks and the
-events update are accomplished by the lock indicator. For every process that wants to access or modify the data, it will
-compare the `version` variable and the `nextVersion` variable. If they are the same, it means that the memory is
-reachable. Then it will add one to the next version atomically to lock the memory and also add one to the version after
-its operation to the memory to unlock the memory. Besides the version of the memory acts as the signal to tell different
-processes the current state of the memory block, which provides different methods to synchronize.
-
-```
-|SharedMemoryBlock1|
-|SharedMemoryBlock2|
-|SharedMemoryBlock3|
-...
-...
-...
-|ControlMemoryBlock3|
-|ControlMemoryBlock2|
-|ControlMemoryBlock1|
-|MemoryPoolContrlBlk|
-```
+We also created some **pure C++** examples, which uses C++-based ML frameworks to train
+models. They don't rely on interprocess communication, so there is no overhead in serialization
+and interprocess communication. See [using-pure-cpp](docs/using-pure-cpp.md) for details.
 
 ## Examples
 
-### Quick Start on how to us ns3-ai - [a_plus_b](https://github.com/hust-diangroup/ns3-ai/tree/master/examples/a_plus_b)
+Please refer to the README.md in corresponding directories for more information.
 
-This example show how you can use ns3-ai by a very simple case that you transfer the data from ns-3 to python side and
-calculate a + b in the python to put back the results. Please check the README in it for more details.
+### [A-Plus-B](examples/a-plus-b)
 
-### [RL-TCP](https://github.com/hust-diangroup/ns3-ai/blob/master/examples/rl-tcp/)
+This example show how you can use ns3-ai by a very simple case that you transfer `a` and `b` from ns-3 (C++) to Python
+and calculate `a + b` in Python to put back the results.
+
+### [Multi-BSS](examples/multi-bss)
+
+This example simulates a VR gaming scenario. We change the CCA threshold using DQN
+to meet VR delay and throughput requirements. Model optimization is in progress.
+
+### [RL-TCP](examples/rl-tcp/)
 
 This example is inspired by [ns3-gym example](https://github.com/tkn-tub/ns3-gym#rl-tcp). We build this example for the
-benchmarking and to compare with their module.
+[benchmarking](./docs/benchmarking) and to compare with their module.
 
-#### Build and Run
+### [Rate-Control](examples/rate-control)
 
-Run ns-3 example:
+This is an example that shows how to develop a new rate control algorithm for the ns-3 Wi-Fi module using ns3-ai.
+Available examples are Constant Rate and Thompson Sampling.
 
-```
-cp -r contrib/ns3-ai/examples/rl-tcp scratch/
-cd scratch/rl-tcp/
-python3 run_tcp_rl.py --use_rl --result
-```
-
-### [LTE_CQI](https://github.com/hust-diangroup/ns3-ai/blob/master/examples/lte_cqi/)
+### [LTE-CQI](examples/lte-cqi/)
 
 This original work is done based on [5G NR](https://5g-lena.cttc.es/) branch in ns-3. We made some changes to make it
-also run in LTE codebase in ns-3 mainline. We didn't reproduce all the experiments on LTE, and the results used in this
-document are based on NR work.
+also run in LTE codebase in ns-3 mainline. We didn't reproduce all the experiments on LTE, and the results in our paper
+are based on NR work.
 
-#### Build and Run
+## Other materials
 
-Run ns-3 example:
-If you want to test the LSTM, you can run another python script but you may need to
-install [TensorFlow](https://www.tensorflow.org/) environment first.
+### Google Summer of Code 2023
 
-```Shell
-cp -r contrib/ns3-ai/examples/lte_cqi scratch/
-cd scratch/lte_cqi/
-python3 run_online_lstm.py 1
-```    
+'ns3-ai improvements' has been chosen as one of the [project ideas](https://www.nsnam.org/wiki/GSOC2023Projects)
+for the ns-3 projects in [GSoC 2023](https://summerofcode.withgoogle.com/programs/2023). The project
+developed the message interface (struct-based & vector-based) and Gym interface, provided more examples
+and enhanced stability and usability.
 
-**NOTE: If the program does not exit normally, you need to run `freeshm.sh` to release the shared memory manually.**
+- Project wiki page: [GSOC2023ns3-ai](https://www.nsnam.org/wiki/GSOC2023ns3-ai)
 
-### [Rate-Control](https://github.com/hust-diangroup/ns3-ai/tree/master/examples/rate-control)
+### Online tutorial
 
-This is an example that shows how to develop a new rate control algorithm for the Wi-Fi model in ns-3 using the ns3-ai
-model.
+Note: this tutorial explains the original design, which is not up to date with the newer interface.
 
-#### Usage
+Join us in this [online recording](https://vimeo.com/566296651) to get better knowledge about ns3-ai.
+The slides introducing the ns3-ai model could also be found [here](https://www.nsnam.org/wp-content/uploads/2021/tutorials/ns3-ai-tutorial-June-2021.pdf).
 
-Copy this example to scratch:
-
-```shell
-cp -r contrib/ns3-ai/examples/rate-control scratch/
-cd scratch/rate-control
-```
-
-##### 1. Constant Rate Control
-
-```shell
-python3 ai_constant_rate.py
-```
-
-##### 2. Thompson Sampling Rate Control
-
-```shell
-python3 ai_thompson_sampling.py
-```
-
-## Cite our work
+## Cite Our Work
 
 Please use the following bibtex:
 
@@ -196,5 +123,5 @@ keywords = {AI, network simulation, ns-3},
 location = {Gaithersburg, MD, USA},
 series = {WNS3 2020}
 }
-  
+
 ```

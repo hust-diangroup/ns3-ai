@@ -1,15 +1,39 @@
-# RL-TCP
+# RL-TCP Example
 
-## Objective
+## Introduction
 
-- Apply RL algorithm to TCP congestion control for real-time changes in the environment of network transmission. By strengthening the learning management sliding window and threshold size, the network can get better throughput and smaller delay.
+This example applies Q-learning algorithms to TCP congestion control for real-time
+changes in the environment of network transmission. By optimizing cWnd (contention 
+window) and ssThresh (slow start threshold), the network can get better throughput
+and smaller delay.
 
-- Test the data interaction functions and the performance of ns3-ai module.
+### Cmake targets
 
-## TCP simulation in NS3
+- `ns3ai_rltcp_gym`: RL-TCP example using Gym interface.
+- `ns3ai_rltcp_msg`: RL-TCP example using vector-based message interface.
 
+## Algorithms
 
-### Simulation scenario
+### RL: Q-learning and Deep Q-learning
+
+Q-learning is based on estimating the values of state-action pairs
+in a Markov decision process, by iteratively updating an action-value
+function. In this example's implementation, the Q-table is updated
+each time ns-3 interacts with Python side, and the agent chooses
+cWnd and ssThresh according to epsilon-greedy algorithm.
+
+Deep Q-learning, on the other hand, is a variant of Q-learning that
+utilizes a deep neural network to approximate the Q-values. Here the
+DQN is also updated at every C++-Python interaction.
+
+### Non-RL: TcpNewReno
+
+TcpNewReno is a TCP layer congestion control algorithm which employs
+a "fast recovery" mechanism, which allows it to detect lost packets
+more quickly compared to the standard Reno algorithm. In this example,
+if RL algorithm is not selected, the algorithm will be TcpNewReno.
+
+## Simulation scenario
 
 ```
     //Topology in the code
@@ -20,148 +44,94 @@
             |             /                  \         |
             |   access   /                    \ access |
             N -----------                      --------N
-            
+
 ```
 
-- Test the TcpNewReno congestion control algorithm.
-- Constructing a dumbbell-type topology simulation scenario in NS3, with only one leaf node on the left and right, and two routers R0, R1 on the intermediate link.
+We construct a dumbbell-type topology simulation scenario in NS3, with only one
+leaf node on the left and right, and two routers R0, R1 on the intermediate link.
 
-### Test parameters：
+### Parameters
 
 |      Parameter       |        Description        | Value  |
-| :------------------: | :-----------------------: | ------ |
+|:--------------------:|:-------------------------:|--------|
 | bottleneck_bandwidth | bottleneck link bandwidth | 2Mbps  |
 |   bottleneck_delay   |  bottleneck link  delay   | 0.01ms |
 |   access_bandwidth   |   access link bandwidth   | 10Mbps |
 |     access_delay     |     access link delay     | 20ms   |
 
-### Simulation process：
+### Simulation process
 
-- TCP buffer is 4MB, receive and transmit are 2MB respectively; allow sack; DelAckCount (Number of packets to wait before sending a TCP ack) is 2.
+- TCP buffer is 4MB, receive and transmit are 2MB respectively; allow sack; DelAckCount
+(Number of packets to wait before sending a TCP ack) is 2.
+- The left leaf node sends packets to the right node; initialize a routing table about
+the nodes in the simulation so that the router is aware of all the nodes.
+- Output the number of packets received by the right node.
 
-- The left leaf node sends  packets to the right node; initialize a routing table about the nodes in the simulation so that the router is aware of all the nodes.
+## Running the example
 
--  Output the number of packets received by the right node.
+### Gym interface
 
+1. [Setup ns3-ai](../../docs/install.md)
+2. Build C++ executable & Python bindings
 
-
-
-
-## RL Algorithm
-
-* Apply Deep Q-learning algorithm to TCP congestion control.
-* In RL Algorithm, output actions and reward to determine the performance of model.
-
-
-
-## Interaction between RL and ns-3
-
-
-- Set up the environment
-
-```
-ns-3:
-env = Create<TcpTimeStepShmEnv> (1234);//1234 shared-memory key
-
-
-python：
-py_interface.Init(1234, 4096)#pool size = 4096
-var = py_interface.ShmBigVar(1234, TcpRl)
+```shell
+cd YOUR_NS3_DIRECTORY
+./ns3 build ns3ai_rltcp_gym
 ```
 
+3. Run Python script
 
+The following code selects deep Q-learning to TCP congestion control.
 
-- In ns-3, put data such as segmentsAcked into shared memory for use by the RL algorithm.
-
-ns-3 side：
-
-```
-auto env = EnvSetter ();
-
-env->ssThresh = m_tcb->m_ssThresh;
-env->cWnd = m_tcb->m_cWnd;
-env->segmentSize = m_tcb->m_segmentSize;//Length of data segment sent by TCP at one time
-env->bytesInFlight = bytesInFlightSum;//Bytes in flight is the amount of data that has been sent but not yet acknowledged
-env->segmentsAcked = segmentsAckedSum;
-
-
-auto act = ActionGetter ();
-m_new_cWnd = act->new_cWnd;//Read trained new congestion window
-m_new_ssThresh = act->new_ssThresh;
+```shell
+pip install -r contrib/ai/examples/rl-tcp/requirements.txt
+cd contrib/ai/examples/rl-tcp/use-gym
+python run_rl_tcp.py --use_rl --result --show_log --seed=10
 ```
 
+### Message interface (vector-based)
 
+1. [Setup ns3-ai](../../docs/install.md)
+2. Build C++ executable & Python bindings
 
-- Python trains based on the read data to get the size of the new congestion window and threshold; put it into shared memory, and update it on NS3.
-
-python side：
-
-```
- ssThresh = data.env.ssThresh
- cWnd = data.env.cWnd
- segmentsAcked = data.env.segmentsAcked
- segmentSize = data.env.segmentSize
- bytesInFlight = data.env.bytesInFlight
- 
- 
- data.act.new_cWnd = new_cWnd
- data.act.new_ssThresh = new_ssThresh
+```shell
+cd YOUR_NS3_DIRECTORY
+./ns3 build ns3ai_rltcp_msg
 ```
 
+3. Run Python script
 
+The following code selects deep Q-learning to TCP congestion control.
 
-## Build and Run
-
-Run code:
+```shell
+pip install -r contrib/ai/examples/rl-tcp/requirements.txt
+cd contrib/ai/examples/rl-tcp/use-msg
+python run_rl_tcp.py --use_rl --rl_algo=DeepQ --result --show_log --seed=10
 ```
-cd contrib/ns3-ai/example/rl-tcp/
 
-python3 run_rl_tcp.py --use_rl --result
-```
+### Arguments
 
-Arguments:
-
-- `--use_rl`: Use RL rather than traditional TCP algorithm
+- `--use_rl`: Use Reinforcement Learning. If not specified, program will use `TcpNewReno`.
+- `--rl_algo`: RL algorithm to apply, can be `DeepQ` for deep Q-learning or `Q` for Q-learning. Defaults to `DeepQ`.
 - `--result`: Draw figures for the following parameters vs time step:
-  - bytesInFlight
-  - cWnd
-  - segmentsAcked
-  - segmentSize
-  - ssThresh
-- `--output_dir`: Directory of figures, default to `./result`.
+    - bytesInFlight
+    - cWnd
+    - segmentsAcked
+    - segmentSize
+    - ssThresh
+- `--show_log`: Output step number, observation received and action sent.
+- `--output_dir`: Directory of figures relative from `YOUR_NS3_DIRECTORY`, defaults to `./rl_tcp_results`.
+- `--seed`: Python side seed for numpy and torch.
 
-By default, the simulation time is 1000s, which is configured in `rl-tcp.cc` using CommandLine value `duration`. Time step
-interval is 10ms, which is configured in `tcp-rl-env.h` using `m_timeStep`.
+## Results
 
-## Output
+When `--show_log` is enabled, the Python side output will have the following format:
 
-At each time step, states and actions and corresponding time are shown.
-
-For example:
-```c++
-At 163ms:
-        state -- ssThresh=4294967295 cWnd=3400 segmentSize=340 segmentAcked=1 bytesInFlightSum=3060
-        action -- new_cWnd=3740 new_ssThresh=680
-At 173ms:
-        state -- ssThresh=4294967295 cWnd=3740 segmentSize=340 segmentAcked=6 bytesInFlightSum=9180
-        action -- new_cWnd=4080 new_ssThresh=4590
-At 183ms:
-        state -- ssThresh=4294967295 cWnd=4080 segmentSize=340 segmentAcked=2 bytesInFlightSum=3060
-        action -- new_cWnd=4108 new_ssThresh=680
-.
-.
-.
-
+```text
+Step: <current step count>
+Send act: [new_cWnd, new_ssThresh]
+Recv obs: [ssThresh, cWnd, segmentsAcked, segmentSize, bytesInFlight]
 ```
 
-Output can be turned off by modifying`run_rl_tcp.py`:
-
-Change
-```c++
-exp.run(show_output=1)
-```
-
-to
-```c++
-exp.run(show_output=0)
-```
+C++ side always prints the number of packets received by the sink. If the seed and duration are the same, the result of
+two interfaces should have no difference.

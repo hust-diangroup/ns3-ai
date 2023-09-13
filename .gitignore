@@ -1,6 +1,7 @@
 
 .vscode
 build
+__pycache__
 # Prerequisites
 *.d
 
@@ -35,6 +36,16 @@ build
 *.app
 
 # Custom
-py_interface/build/
-py_interface/dist/
-py_interface/ns3_ai.egg-info/
+*.egg-info/
+.DS_Store
+result/
+dist/
+*.egg
+log_*
+libtensorflow/
+libtorch/
+
+# Protobuf files
+*.pb.cc
+*.pb.h
+*_pb2.py
