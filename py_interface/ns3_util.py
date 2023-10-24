@@ -20,8 +20,8 @@
 import os
 import subprocess
 import time
-from collections import OrderedDict
 from copy import copy
+from pathlib import Path
 
 import psutil
 import shutil
@@ -132,8 +132,8 @@ def run_single_ns3(path, pname, setting=None, env=None, show_output=False, profi
     if profile_ns3:
         perf_cmd = check_program_installed("perf")
         base_out_dir = str(setting["outDir"]) if (setting is not None and "outDir" in setting) else "."
-        perf_out_file = os.path.join(base_out_dir, "perf.data")
-        perf_options = f"record -o {perf_out_file} -g -e cpu-cycles,context-switches"
+        perf_out_fp = Path(base_out_dir) / "perf.data"
+        perf_options = f"record -o {str(perf_out_fp.resolve())} -g -e cpu-cycles,context-switches"
         cmd = f"{perf_cmd} {perf_options} bash -c \'{cmd}\'k"  # TODO (later): add option -a for run_bulk_ns3()
     if show_output:
         proc = subprocess.Popen(
