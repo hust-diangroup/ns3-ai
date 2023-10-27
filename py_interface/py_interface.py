@@ -26,6 +26,7 @@ from shm_pool import (AcquireMemory, AcquireMemoryCond, AcquireMemoryCondFunc,
                       AcquireMemoryTarget, FreeMemory, GetMemory,
                       GetMemoryVersion, IncMemoryVersion, Init, RegisterMemory,
                       ReleaseMemory, ReleaseMemoryRB, Reset, ResetAll)
+import os
 
 READABLE = 0xff
 SETABLE = 0
@@ -116,6 +117,7 @@ class Ns3AIRL:
         self.actType = ActType
         self.extInfo = ExtInfo
         self.finished = False
+        self.rollback_on_release = False
 
         # the main field for RL
         class StorageType(Structure):
@@ -144,6 +146,9 @@ class Ns3AIRL:
         self.mod = mod
         self.res = res
 
+    def SetRollbackOnRelease(self, value: bool):
+        self.rollback_on_release = value
+
     # acquire ns-3's data in the memory
     def Acquire(self):
         while not self.isFinish() and self.GetVersion() % self.mod != self.res:
@@ -166,7 +171,10 @@ class Ns3AIRL:
     def __exit__(self, Type, value, traceback):
         if self.finished:
             return
-        self.Release()
+        if self.rollback_on_release:
+            self.ReleaseAndRollback()
+        else:
+            self.Release()
 
 # This class established an environment for ns3 and python
 # to exchange data with the share memory
@@ -245,7 +253,8 @@ class Experiment:
     # \param[in] memSize : share memory size
     # \param[in] programName : program name of ns3
     # \param[in] path : current working directory
-    def __init__(self, shmKey, memSize, programName, path):
+    # \param[in] no_build : if specified, start out with self.dirty = False (i.e. don't build at startup)
+    def __init__(self, shmKey, memSize, programName, path, build_ns3=True):
         if self._created:
             raise Exception('Experiment is singleton')
         self._created = True
@@ -254,7 +263,7 @@ class Experiment:
         self.programName = programName
         self.path = path
         self.proc = None
-        self.dirty = True
+        self.dirty = build_ns3
         Init(shmKey, memSize)
 
     def __del__(self):
@@ -265,12 +274,15 @@ class Experiment:
     # run ns3 script in cmd with the setting being input
     # \param[in] setting : ns3 script input parameters(default : None)
     # \param[in] show_output : whether to show output or not(default : False)
-    def run(self, setting=None, show_output=False):
+    def run(self, setting=None, show_output=False, log_modules=[], log_level="none", profile_ns3=False):
         self.kill()
         env = {'NS_GLOBAL_VALUE': 'SharedMemoryKey={};SharedMemoryPoolSize={};'.format(
             self.shmKey, self.memSize)}
+        if log_level != "none" and len(log_modules) > 0:
+            env["NS_LOG"] = ":".join([f"{module}=level_{log_level}|prefix_level" for module in log_modules])
         self.proc = run_single_ns3(
-            self.path, self.programName, setting, env=env, show_output=show_output, build=self.dirty)
+            self.path, self.programName, setting, env=env, show_output=show_output,
+            profile_ns3=profile_ns3, build=self.dirty)
         self.dirty = False
         return self.proc
 

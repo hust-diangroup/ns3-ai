@@ -20,10 +20,11 @@
 import os
 import subprocess
 import time
-from collections import OrderedDict
 from copy import copy
+from pathlib import Path
 
 import psutil
+import shutil
 
 try:
     from collections.abc import Iterable
@@ -99,31 +100,41 @@ def get_setting(setting_map):
 
 
 def build_ns3(path):
-    print('build')
-    proc = subprocess.Popen('./waf build', shell=True, stdout=subprocess.PIPE,
+    print('=== NS3AI: BUILDING NS3 ===')
+    proc = subprocess.Popen('./ns3 build', shell=True, stdout=subprocess.PIPE,
                             stderr=devnull, universal_newlines=True, cwd=path)
     proc.wait()
-    ok = False
-    for line in proc.stdout:
-        if "'build' finished successfully" in line:
-            ok = True
-            break
+
+    ok = proc.returncode == 0
     return ok
 
 
-def run_single_ns3(path, pname, setting=None, env=None, show_output=False, build=True):
+def check_program_installed(program_name: str) -> str:
+    program_path = shutil.which(program_name)
+    if program_path is None:
+        print("Executable '{program}' was not found".format(program=program_name.capitalize()))
+        exit(-1)
+    return program_path
+
+
+def run_single_ns3(path, pname, setting=None, env=None, show_output=False, profile_ns3=False, build=True):
     if build and not build_ns3(path):
-        return None
+        raise RuntimeError("run_single_ns3(): requested to build ns3, but build failed!")
     if env:
         env.update(os.environ)
     env['LD_LIBRARY_PATH'] = os.path.abspath(os.path.join(path, 'build', 'lib'))
-    if not setting:
-        cmd = './{}'.format(pname)
-    else:
-        cmd = './{}{}'.format(pname, get_setting(setting))
     exec_path = os.path.join(path, 'build', 'scratch')
-    if os.path.isdir(os.path.join(exec_path, pname)):
-        exec_path = os.path.join(exec_path, pname)
+    # TODO hotfix for cmake-built ns3: executable seems to be placed differently, so take 1st file from exec_path
+    exec_name = [f for f in os.listdir(os.path.join(exec_path, pname)) if f.startswith("ns")][0]
+    cmd: str = f'./{pname}/{exec_name}'
+    if setting:
+        cmd += get_setting(setting)
+    if profile_ns3:
+        perf_cmd = check_program_installed("perf")
+        base_out_dir = str(setting["outDir"]) if (setting is not None and "outDir" in setting) else "."
+        perf_out_fp = Path(base_out_dir) / "perf.data"
+        perf_options = f"record -o {str(perf_out_fp.resolve())} -g -e cpu-cycles,context-switches"
+        cmd = f"{perf_cmd} {perf_options} bash -c \'{cmd}\'k"  # TODO (later): add option -a for run_bulk_ns3()
     if show_output:
         proc = subprocess.Popen(
             cmd, shell=True, universal_newlines=True, cwd=exec_path, env=env)

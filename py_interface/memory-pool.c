@@ -68,7 +68,7 @@ static void *GetMemory(uint16_t id, uint32_t size)
 {
     if (id >= MAX_ID)
     {
-        PyErr_SetString(PyExc_RuntimeError, "Id out of range");
+        PyErr_SetString(PyExc_RuntimeError, "Id out of range (upper exclusive limit is %u)");
         return NULL;
     }
     CtrlInfoLock();
@@ -80,7 +80,7 @@ static void *GetMemory(uint16_t id, uint32_t size)
             if (gMemoryCtrlInfo[gCurCtrlInfo->id] != 0)
             {
                 CtrlInfoUnlock();
-                PyErr_Format(PyExc_RuntimeError, "Id %u has been used", gCurCtrlInfo->id);
+                PyErr_Format(PyExc_RuntimeError, "Id %u has been used already", gCurCtrlInfo->id);
                 return NULL;
             }
             gMemoryCtrlInfo[gCurCtrlInfo->id] = gCurCtrlInfo;
@@ -92,7 +92,8 @@ static void *GetMemory(uint16_t id, uint32_t size)
         if (size != gMemoryCtrlInfo[id]->size)
         {
             CtrlInfoUnlock();
-            PyErr_Format(PyExc_RuntimeError, "Size of memory error(%u %u)", size, gMemoryCtrlInfo[id]->size);
+            PyErr_Format(PyExc_RuntimeError, "Size mismatch in (requested, allocated) memory: (%u %u)",
+                         size, gMemoryCtrlInfo[id]->size);
             return NULL;
         }
         CtrlInfoUnlock();
