@@ -76,7 +76,7 @@ build_lib(
         LIBNAME ai
         SOURCE_FILES ${msg_interface_srcs} ${gym_interface_srcs}
         HEADER_FILES ${msg_interface_hdrs} ${gym_interface_hdrs}
-        LIBRARIES_TO_LINK ${libcore} Boost::program_options protobuf::libprotobuf
+        LIBRARIES_TO_LINK ${libcore} protobuf
 )
 
 # protobuf_generate function is missing in some installations by package manager
