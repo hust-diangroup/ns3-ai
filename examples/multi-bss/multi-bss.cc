@@ -73,7 +73,7 @@
 #include "ns3/traffic-control-layer.h"
 #include "ns3/udp-client-server-helper.h"
 #include "ns3/uinteger.h"
-#include "ns3/v4ping-helper.h"
+// #include "ns3/v4ping-helper.h"
 #include "ns3/wifi-acknowledgment.h"
 #include "ns3/wifi-mac-queue.h"
 #include "ns3/wifi-net-device.h"

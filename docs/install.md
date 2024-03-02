@@ -13,6 +13,14 @@ This installation works on Ubuntu 22.04 and macOS 13.0 or higher.
 3. pybind11
     - Ubuntu: `sudo apt install pybind11-dev`
     - macOS: `brew install pybind11`
+4. A Python virtual environment dedicated for ns3-ai (highly recommended)
+    - Why: 
+        - Separate your ns3-ai dependencies from your other Python-based projects. (Why being virtual)
+        - In build process of ns3-ai examples, Python binding modules are built using system Python libraries (installed with `apt` or `brew`), while your scripts are interpreted with environmental Python (possibly created and activated with `conda`, for your another project). Version mismatch between those Python environments may cause error in your Python script (possibly some modules could not be found). (Why being dedicated)
+    - How:
+        - Check your version of system-wide installed Python: Find the version of Python in the output of `apt list --installed` (Ubuntu) or `brew list` (macOS). If two or more versions are found, keep only one version.
+        - Create a conda virtual environment of the same version: `conda create -n ns3ai_env python=<version found in previous step>`
+        - Activate the virtual and dedicated Python environment for ns3-ai: `conda activate ns3ai_env`
 
 ## General Setup
 
@@ -38,19 +46,13 @@ pip install -e contrib/ai/python_utils
 pip install -e contrib/ai/model/gym-interface/py
 ```
 
-- Note: In later build, Python bindings are generated with the Python library 
-found by Cmake, which is unlikely the Conda environment you are using.
-Please ensure that the Python version in your Conda environment is consistent 
-with the default Python version in your OS, so that the Python interpreter 
-can import the binding modules properly.
-
 4. Build the examples (optional)
 
 All targets named `ns3ai_*` can be built separately.
 
 ```shell
 # build all examples in all versions
-./ns3 build ns3ai_apb_gym ns3ai_apb_msg_stru ns3ai_apb_msg_vec ns3ai_multibss ns3ai_rltcp_gym ns3ai_rltcp_msg ns3ai_ratecontrol_constant ns3ai_ratecontrol_ts ns3ai_ltecqi
+./ns3 build ns3ai_apb_gym ns3ai_apb_msg_stru ns3ai_apb_msg_vec ns3ai_multibss ns3ai_rltcp_gym ns3ai_rltcp_msg ns3ai_ratecontrol_constant ns3ai_ratecontrol_ts ns3ai_ltecqi_msg
 
 # build A-Plus-B example
 # with Gym interface
