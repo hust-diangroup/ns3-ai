@@ -1,7 +1,5 @@
 # Using C++-based ML Frameworks in ns-3
 
-Note: The pure C++ examples are prone to changes in C++ APIs of ML frameworks, so they may contain bugs depend on your OS version and ML library version.
-
 ## TensorFlow C API
 
 ### `libtensorflow` Installation
