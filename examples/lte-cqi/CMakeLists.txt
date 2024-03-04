@@ -28,12 +28,12 @@ add_dependencies(ns3ai_ltecqi_msg ns3ai_ltecqi_py)
 # Check if libtensorflow exists, if true, enable the pure C++ example
 if(NS3AI_LIBTENSORFLOW_EXAMPLES)
     message(STATUS "LTE-CQI pure C++ example enabled")
-    build_lib_example(
-            NAME ns3ai_ltecqi_purecpp
-            SOURCE_FILES pure-cpp/main.cc
-            LIBRARIES_TO_LINK   # Need not link with ns3-ai because there is no IPC between Python and C++
-                ${libcore}
-                ${TensorFlow_LIBRARIES}
+    string(REPLACE "${PROJECT_SOURCE_DIR}/" "" FOLDER "${CMAKE_CURRENT_SOURCE_DIR}")
+    build_exec(
+        EXECNAME ns3ai_ltecqi_purecpp
+        SOURCE_FILES pure-cpp/main.cc
+        LIBRARIES_TO_LINK ${libcore} ${TensorFlow_LIBRARIES}
+        EXECUTABLE_DIRECTORY_PATH ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${FOLDER}/
     )
     target_include_directories(ns3ai_ltecqi_purecpp PRIVATE ${Libtensorflow_INCLUDE_DIR})
 else()

@@ -29,7 +29,7 @@
 #include <ns3/rng-seed-manager.h>
 #include <ns3/rng-stream.h>
 #include <ns3/string.h>
-#include <ns3/unused.h>
+// #include <ns3/unused.h>
 
 #include <algorithm> // upper_bound
 #include <cmath>

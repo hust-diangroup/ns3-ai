@@ -54,7 +54,7 @@ if(NS3AI_LIBTORCH_EXAMPLES)
             SOURCE_FILES pure-cpp/rl-tcp.cc
                          pure-cpp/tcp-rl.cc
                          pure-cpp/tcp-rl-env.cc
-            LIBRARIES_TO_LINK   # Need not link with ns3-ai because there is no IPC between Python and C++
+            LIBRARIES_TO_LINK
             ${libcore}
             ${Torch_LIBRARIES}
             ${Python_LIBRARIES}  # need to link with Python, otherwise symbol _PyBaseObject_Type will be missing
