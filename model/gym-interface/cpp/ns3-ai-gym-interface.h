@@ -55,7 +55,7 @@ class OpenGymInterface : public Object
     Ptr<OpenGymDataContainer> GetObservation();
     float GetReward();
     bool IsGameOver();
-    std::string GetExtraInfo();
+    std::map<std::string, std::string> GetExtraInfo();
     bool ExecuteActions(Ptr<OpenGymDataContainer> action);
 
     void SetGetActionSpaceCb(Callback<Ptr<OpenGymSpace>> cb);
@@ -63,7 +63,7 @@ class OpenGymInterface : public Object
     void SetGetObservationCb(Callback<Ptr<OpenGymDataContainer>> cb);
     void SetGetRewardCb(Callback<float> cb);
     void SetGetGameOverCb(Callback<bool> cb);
-    void SetGetExtraInfoCb(Callback<std::string> cb);
+    void SetGetExtraInfoCb(Callback<std::map<std::string, std::string>> cb);
     void SetExecuteActionsCb(Callback<bool, Ptr<OpenGymDataContainer>> cb);
 
     void Notify(Ptr<OpenGymEnv> entity);
@@ -86,7 +86,7 @@ class OpenGymInterface : public Object
     Callback<bool> m_gameOverCb;
     Callback<Ptr<OpenGymDataContainer>> m_obsCb;
     Callback<float> m_rewardCb;
-    Callback<std::string> m_extraInfoCb;
+    Callback<std::map<std::string, std::string>> m_extraInfoCb;
     Callback<bool, Ptr<OpenGymDataContainer>> m_actionCb;
 };
 

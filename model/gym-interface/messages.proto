@@ -114,7 +114,7 @@ message EnvStateMsg {
 		GameOver = 1;
 	}
 	Reason reason = 4;
-	string info = 5;
+	map<string, string> info = 5;
 }
 
 message EnvActMsg {

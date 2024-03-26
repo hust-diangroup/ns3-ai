@@ -147,7 +147,7 @@ OpenGymInterface::NotifyCurrentState()
     Ptr<OpenGymDataContainer> obsDataContainer = GetObservation();
     float reward = GetReward();
     bool isGameOver = IsGameOver();
-    std::string extraInfo = GetExtraInfo();
+    std::map<std::string, std::string> extraInfo = GetExtraInfo();
     ns3_ai_gym::EnvStateMsg envStateMsg;
     // observation
     ns3_ai_gym::DataContainer obsDataContainerPbMsg;
@@ -173,7 +173,10 @@ OpenGymInterface::NotifyCurrentState()
         }
     }
     // extra info
-    envStateMsg.set_info(extraInfo);
+    for (auto const &[key, value] : extraInfo)
+    {
+        (*envStateMsg.mutable_info())[key] = value;
+    }
 
     // get the interface
     Ns3AiMsgInterfaceImpl<Ns3AiGymMsg, Ns3AiGymMsg>* msgInterface =
@@ -298,11 +301,11 @@ OpenGymInterface::IsGameOver()
     return (gameOver || m_simEnd);
 }
 
-std::string
+std::map<std::string, std::string>
 OpenGymInterface::GetExtraInfo()
 {
     NS_LOG_FUNCTION(this);
-    std::string info;
+    std::map<std::string, std::string> info;
     if (!m_extraInfoCb.IsNull())
     {
         info = m_extraInfoCb();
@@ -353,7 +356,7 @@ OpenGymInterface::SetGetRewardCb(Callback<float> cb)
 }
 
 void
-OpenGymInterface::SetGetExtraInfoCb(Callback<std::string> cb)
+OpenGymInterface::SetGetExtraInfoCb(Callback<std::map<std::string, std::string>> cb)
 {
     m_extraInfoCb = cb;
 }

@@ -163,9 +163,7 @@ class Ns3Env(gym.Env):
         if self.gameOver:
             self.send_close_command()
 
-        self.extraInfo = envStateMsg.info
-        if not self.extraInfo:
-            self.extraInfo = {}
+        self.extraInfo = dict(envStateMsg.info)
 
         self.newStateRx = True
 
@@ -268,7 +266,7 @@ class Ns3Env(gym.Env):
         obs = self.get_obs()
         reward = self.get_reward()
         done = self.is_game_over()
-        extraInfo = {"info": self.get_extra_info()}
+        extraInfo = self.get_extra_info()
         return obs, reward, done, False, extraInfo
 
     def __init__(self, targetName, ns3Path, ns3Settings=None, shmSize=4096):

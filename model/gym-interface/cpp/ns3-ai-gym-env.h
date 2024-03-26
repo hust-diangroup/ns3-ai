@@ -71,7 +71,7 @@ class OpenGymEnv : public Object
     /**
      * Get extra information
      */
-    virtual std::string GetExtraInfo() = 0;
+    virtual std::map<std::string, std::string> GetExtraInfo() = 0;
 
     /**
      * Execute actions. E.g., modify the contention window in TCP.
