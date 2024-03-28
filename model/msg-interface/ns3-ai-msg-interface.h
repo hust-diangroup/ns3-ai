@@ -113,7 +113,7 @@ class Ns3AiMsgInterfaceImpl
             }
             m_sync = segment.find<Ns3AiMsgSync>(lockable_name).first;
         }
-    };
+    }
 
     ~Ns3AiMsgInterfaceImpl()
     {
@@ -128,7 +128,7 @@ class Ns3AiMsgInterfaceImpl
                 CppSetFinished();
             }
         }
-    };
+    }
 
     typedef boost::interprocess::
         allocator<Cpp2PyMsgType, boost::interprocess::managed_shared_memory::segment_manager>
@@ -149,7 +149,7 @@ class Ns3AiMsgInterfaceImpl
     {
         assert(!m_useVector);
         return m_cpp2pyStruct;
-    };
+    }
 
     /**
      * Get the struct used in Python to C++ transmission in
@@ -159,7 +159,7 @@ class Ns3AiMsgInterfaceImpl
     {
         assert(!m_useVector);
         return m_py2CppStruct;
-    };
+    }
 
     // use vector for passing multiple structures at once:
 
@@ -171,7 +171,7 @@ class Ns3AiMsgInterfaceImpl
     {
         assert(m_useVector);
         return m_cpp2pyVector;
-    };
+    }
 
     /**
      * Get the vector used in Python to C++ transmission in
@@ -181,7 +181,7 @@ class Ns3AiMsgInterfaceImpl
     {
         assert(m_useVector);
         return m_py2cppVector;
-    };
+    }
 
     // for C++ side:
 
@@ -192,7 +192,7 @@ class Ns3AiMsgInterfaceImpl
     void CppSendBegin()
     {
         Ns3AiSemaphore::sem_wait(&m_sync->m_cpp2pyEmptyCount);
-    };
+    }
 
     /**
      * C++ side stops writing into shared memory, struct-based
@@ -201,7 +201,7 @@ class Ns3AiMsgInterfaceImpl
     void CppSendEnd()
     {
         Ns3AiSemaphore::sem_post(&m_sync->m_cpp2pyFullCount);
-    };
+    }
 
     /**
      * C++ side starts reading from shared memory, struct-based
@@ -210,7 +210,7 @@ class Ns3AiMsgInterfaceImpl
     void CppRecvBegin()
     {
         Ns3AiSemaphore::sem_wait(&m_sync->m_py2cppFullCount);
-    };
+    }
 
     /**
      * C++ side stops reading from shared memory, struct-based
@@ -219,7 +219,7 @@ class Ns3AiMsgInterfaceImpl
     void CppRecvEnd()
     {
         Ns3AiSemaphore::sem_post(&m_sync->m_py2cppEmptyCount);
-    };
+    }
 
     /**
      * C++ side sets the overall status to finished when
@@ -232,7 +232,7 @@ class Ns3AiMsgInterfaceImpl
         CppSendBegin();
         m_sync->m_isFinished = true;
         CppSendEnd();
-    };
+    }
 
     // for Python side:
 
@@ -247,7 +247,7 @@ class Ns3AiMsgInterfaceImpl
         {
             m_isFinished = m_sync->m_isFinished;
         }
-    };
+    }
 
     /**
      * Python side stops reading from shared memory, struct-based
@@ -256,7 +256,7 @@ class Ns3AiMsgInterfaceImpl
     void PyRecvEnd()
     {
         Ns3AiSemaphore::sem_post(&m_sync->m_cpp2pyEmptyCount);
-    };
+    }
 
     /**
      * Python side starts writing into shared memory, struct-based
@@ -265,7 +265,7 @@ class Ns3AiMsgInterfaceImpl
     void PySendBegin()
     {
         Ns3AiSemaphore::sem_wait(&m_sync->m_py2cppEmptyCount);
-    };
+    }
 
     /**
      * Python side stops writing into shared memory, struct-based
@@ -274,7 +274,7 @@ class Ns3AiMsgInterfaceImpl
     void PySendEnd()
     {
         Ns3AiSemaphore::sem_post(&m_sync->m_py2cppFullCount);
-    };
+    }
 
     /**
      * Python side gets whether the simulation is over
@@ -283,7 +283,7 @@ class Ns3AiMsgInterfaceImpl
     {
         assert(m_handleFinish);
         return m_isFinished;
-    };
+    }
 
   private:
     Cpp2PyMsgType* m_cpp2pyStruct;
@@ -313,7 +313,7 @@ class Ns3AiMsgInterface : public Singleton<Ns3AiMsgInterface>
     void SetIsMemoryCreator(bool isMemoryCreator)
     {
         this->m_isMemoryCreator = isMemoryCreator;
-    };
+    }
 
     /**
      * Sets if both C++ and Python sides use vector. Configuration on
@@ -322,7 +322,7 @@ class Ns3AiMsgInterface : public Singleton<Ns3AiMsgInterface>
     void SetUseVector(bool useVector)
     {
         this->m_useVector = useVector;
-    };
+    }
 
     /**
      * Sets if both C++ and Python sides handle finish. Configuration on
@@ -331,7 +331,7 @@ class Ns3AiMsgInterface : public Singleton<Ns3AiMsgInterface>
     void SetHandleFinish(bool handleFinish)
     {
         this->m_handleFinish = handleFinish;
-    };
+    }
 
     /**
      * Sets shared memory segment size, only valid for
@@ -341,7 +341,7 @@ class Ns3AiMsgInterface : public Singleton<Ns3AiMsgInterface>
     void SetMemorySize(uint32_t size)
     {
         this->m_size = size;
-    };
+    }
 
     /**
      * Sets the names of the named objects. See Boost's
@@ -357,7 +357,7 @@ class Ns3AiMsgInterface : public Singleton<Ns3AiMsgInterface>
         this->m_cpp2pyMsgName = cpp2pyMsgName;
         this->m_py2cppMsgName = py2cppMsgName;
         this->m_lockableName = lockableName;
-    };
+    }
 
     /**
      * Gets the impl which has semaphore (synchronization)
@@ -376,7 +376,7 @@ class Ns3AiMsgInterface : public Singleton<Ns3AiMsgInterface>
             this->m_py2cppMsgName.c_str(),
             this->m_lockableName.c_str());
         return &interface;
-    };
+    }
 
   private:
     bool m_isMemoryCreator;

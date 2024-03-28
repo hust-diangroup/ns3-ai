@@ -24,6 +24,8 @@
 
 #include <ns3/object.h>
 
+#include <map>
+
 namespace ns3
 {
 
