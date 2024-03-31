@@ -45,7 +45,7 @@ class ApbEnv : public OpenGymEnv
     bool GetGameOver() override;
     Ptr<OpenGymDataContainer> GetObservation() override;
     float GetReward() override;
-    std::string GetExtraInfo() override;
+    std::map<std::string, std::string> GetExtraInfo() override;
     bool ExecuteActions(Ptr<OpenGymDataContainer> action) override;
 
     uint32_t m_a;
@@ -125,10 +125,10 @@ ApbEnv::GetReward()
     return 0.0;
 }
 
-std::string
+std::map<std::string, std::string>
 ApbEnv::GetExtraInfo()
 {
-    return "";
+    return {};
 }
 
 bool

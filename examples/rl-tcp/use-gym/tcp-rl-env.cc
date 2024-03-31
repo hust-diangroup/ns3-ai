@@ -187,11 +187,11 @@ TcpEnvBase::GetReward()
 /*
 Define extra info. Optional
 */
-std::string
+std::map<std::string, std::string>
 TcpEnvBase::GetExtraInfo()
 {
     NS_LOG_INFO("MyGetExtraInfo: " << m_info);
-    return m_info;
+    return {{"info", m_info}};
 }
 
 /*
