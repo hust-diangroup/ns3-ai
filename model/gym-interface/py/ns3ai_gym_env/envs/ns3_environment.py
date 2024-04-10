@@ -306,6 +306,7 @@ class Ns3Env(gym.Env):
         if not self.gameOver:
             self.rx_env_state()
             self.send_close_command()
+            self.exp.proc.wait(2)
 
         self.msgInterface = None
         self.newStateRx = False
@@ -332,6 +333,11 @@ class Ns3Env(gym.Env):
         return act
 
     def close(self):
+        if not self.gameOver:
+            self.rx_env_state()
+            self.send_close_command()
+            self.exp.proc.wait(2)
+
         # environment is not needed anymore, so kill subprocess in a straightforward way
         self.exp.kill()
         # destroy the message interface and its shared memory segment
