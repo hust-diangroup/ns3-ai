@@ -1,8 +1,11 @@
-import numpy as np
+from contextlib import suppress
+from subprocess import TimeoutExpired
+
 import gymnasium as gym
-from gymnasium import spaces
 import messages_pb2 as pb
 import ns3ai_gym_msg_py as py_binding
+import numpy as np
+from gymnasium import spaces
 from ns3ai_utils import Experiment
 
 
@@ -336,7 +339,8 @@ class Ns3Env(gym.Env):
         if not self.gameOver:
             self.rx_env_state()
             self.send_close_command()
-            self.exp.proc.wait(2)
+            with suppress(TimeoutExpired):
+                self.exp.proc.wait(2)
 
         # environment is not needed anymore, so kill subprocess in a straightforward way
         self.exp.kill()
