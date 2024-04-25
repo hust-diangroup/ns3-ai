@@ -336,6 +336,8 @@ class OpenGymDictContainer : public OpenGymDataContainer
 
     void Print(std::ostream& where) const override;
 
+    std::vector<std::string> GetKeys();
+
     friend std::ostream& operator<<(std::ostream& os, const Ptr<OpenGymDictContainer> container)
     {
         container->Print(os);

@@ -332,6 +332,19 @@ OpenGymTupleContainer::Print(std::ostream& where) const
     where << ")";
 }
 
+std::vector<std::string>
+OpenGymDictContainer::GetKeys()
+{
+    std::vector<std::string> keys;
+    for (std::map<std::string, Ptr<OpenGymDataContainer>>::iterator it = m_dict.begin();
+         it != m_dict.end();
+         ++it)
+    {
+        keys.push_back(it->first);
+    }
+    return keys;
+}
+
 TypeId
 OpenGymDictContainer::GetTypeId()
 {
