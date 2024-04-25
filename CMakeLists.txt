@@ -60,6 +60,7 @@ set(msg_interface_srcs )
 set(msg_interface_hdrs model/msg-interface/ns3-ai-msg-interface.h)
 set(gym_interface_srcs
         model/gym-interface/cpp/ns3-ai-gym-interface.cc
+        model/gym-interface/cpp/ns3-ai-multi-agent-gym-interface.cc
         model/gym-interface/cpp/ns3-ai-gym-env.cc
         model/gym-interface/cpp/container.cc
         model/gym-interface/cpp/spaces.cc
@@ -67,6 +68,7 @@ set(gym_interface_srcs
 )
 set(gym_interface_hdrs
         model/gym-interface/cpp/ns3-ai-gym-interface.h
+        model/gym-interface/cpp/ns3-ai-multi-agent-gym-interface.h
         model/gym-interface/cpp/ns3-ai-gym-env.h
         model/gym-interface/cpp/container.h
         model/gym-interface/cpp/spaces.h
