@@ -37,10 +37,9 @@ class OpenGymSpace;
 class OpenGymDataContainer;
 class OpenGymEnv;
 
-class OpenGymInterface : public Object
+class OpenGymInterface : public Singleton<OpenGymInterface>, public Object
 {
   public:
-    static Ptr<OpenGymInterface> Get();
     OpenGymInterface();
     ~OpenGymInterface() override;
     static TypeId GetTypeId();
@@ -68,13 +67,7 @@ class OpenGymInterface : public Object
 
     void Notify(Ptr<OpenGymEnv> entity);
 
-  protected:
-    // Inherited
-    void DoInitialize() override;
-    void DoDispose() override;
-
   private:
-    static Ptr<OpenGymInterface>* DoGet();
     //    static void Delete();
 
     bool m_simEnd;

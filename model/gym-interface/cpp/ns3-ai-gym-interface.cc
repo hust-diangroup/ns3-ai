@@ -41,13 +41,6 @@ namespace ns3
 NS_LOG_COMPONENT_DEFINE("OpenGymInterface");
 NS_OBJECT_ENSURE_REGISTERED(OpenGymInterface);
 
-Ptr<OpenGymInterface>
-OpenGymInterface::Get()
-{
-    NS_LOG_FUNCTION_NOARGS();
-    return *DoGet();
-}
-
 OpenGymInterface::OpenGymInterface()
     : m_simEnd(false),
       m_stopEnvRequested(false),
@@ -365,18 +358,6 @@ OpenGymInterface::SetExecuteActionsCb(Callback<bool, Ptr<OpenGymDataContainer>> 
 }
 
 void
-OpenGymInterface::DoInitialize()
-{
-    NS_LOG_FUNCTION(this);
-}
-
-void
-OpenGymInterface::DoDispose()
-{
-    NS_LOG_FUNCTION(this);
-}
-
-void
 OpenGymInterface::Notify(Ptr<OpenGymEnv> entity)
 {
     NS_LOG_FUNCTION(this);
@@ -388,13 +369,6 @@ OpenGymInterface::Notify(Ptr<OpenGymEnv> entity)
     SetExecuteActionsCb(MakeCallback(&OpenGymEnv::ExecuteActions, entity));
 
     NotifyCurrentState();
-}
-
-Ptr<OpenGymInterface>*
-OpenGymInterface::DoGet()
-{
-    static Ptr<OpenGymInterface> ptr = CreateObject<OpenGymInterface>();
-    return &ptr;
 }
 
 } // namespace ns3
