@@ -37,17 +37,25 @@ def get_setting(setting_map: dict[str, Any]) -> str:
     return ret
 
 
-def run_single_ns3(path, pname, setting: dict[str, Any] | None = None, env=None, show_output=False):
+def run_single_ns3(
+    path,
+    pname,
+    setting: dict[str, Any] | None = None,
+    env=None,
+    show_output=False,
+    debug=False,
+):
     if env is None:
         env = {}
     env.update(os.environ)
     env['LD_LIBRARY_PATH'] = os.path.abspath(os.path.join(path, 'build', 'lib'))
     # import pdb; pdb.set_trace()
     exec_path = os.path.join(path, 'ns3')
-    if not setting:
-        cmd = '{} run {}'.format(exec_path, pname)
-    else:
-        cmd = '{} run {} --{}'.format(exec_path, pname, get_setting(setting))
+    cmd = f"{exec_path} run {pname}"
+    if setting:
+        cmd += f" --{get_setting(setting)}"
+    if debug:
+        cmd = f"sleep infinity && {cmd}"
     if show_output:
         proc = subprocess.Popen(cmd, shell=True, text=True, env=env,
                                 stdin=subprocess.PIPE,
@@ -103,6 +111,7 @@ class Experiment:
     # \param[in] targetName : program name of ns3
     # \param[in] path : current working directory
     def __init__(self, targetName, ns3Path, msgModule,
+                 debug=False,
                  handleFinish=False,
                  useVector=False, vectorSize=None,
                  shmSize=4096,
@@ -114,6 +123,7 @@ class Experiment:
             raise Exception('ns3ai_utils: Error: Experiment is singleton')
         self._created = True
         self.targetName = targetName  # ns-3 target name, not file name
+        self.debug = debug
         os.chdir(ns3Path)
         self.msgModule = msgModule
         self.handleFinish = handleFinish
@@ -150,7 +160,12 @@ class Experiment:
     def run(self, setting: dict[str, Any] | None = None, show_output=False):
         self.kill()
         self.simCmd, self.proc = run_single_ns3(
-            './', self.targetName, setting=setting, show_output=show_output)
+            "./",
+            self.targetName,
+            setting=setting,
+            show_output=show_output,
+            debug=self.debug,
+        )
         print("ns3ai_utils: Running ns-3 with: ", self.simCmd)
         # exit if an early error occurred, such as wrong target name
         time.sleep(SIMULATION_EARLY_ENDING)
