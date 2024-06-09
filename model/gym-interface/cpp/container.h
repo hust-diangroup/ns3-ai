@@ -26,6 +26,7 @@
 
 #include <ns3/object.h>
 #include <ns3/type-name.h>
+#include <cstdint>
 
 namespace ns3
 {
@@ -106,7 +107,7 @@ class OpenGymBoxContainer : public OpenGymDataContainer
         container->Print(os);
         return os;
     }
-
+    void SetValue(uint32_t idx, T value);
     bool AddValue(T value);
     T GetValue(uint32_t idx);
 
@@ -241,6 +242,16 @@ OpenGymBoxContainer<T>::AddValue(T value)
 {
     m_data.push_back(value);
     return true;
+}
+
+template <typename T>
+void
+OpenGymBoxContainer<T>::SetValue(uint32_t idx, T value)
+{
+    if (idx < m_data.size())
+    {
+        m_data[idx] = value;
+    }
 }
 
 template <typename T>
