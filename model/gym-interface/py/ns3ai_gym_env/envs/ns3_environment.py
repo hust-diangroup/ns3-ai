@@ -267,9 +267,15 @@ class Ns3Env(gym.Env):
     def get_state(self):
         obs = self.get_obs()
         reward = self.get_reward()
-        done = self.is_game_over()
+        terminated = False
+        truncated = False
+        if self.is_game_over():
+            if self.gameOverReason == 1:
+                terminated = True  # end because the agent reached its final state
+            else:
+                truncated = True  # end because the simulation ended (for this agent)
         extraInfo = {"info": self.get_extra_info()}
-        return obs, reward, done, False, extraInfo
+        return obs, reward, terminated, truncated, extraInfo
 
     def __init__(self, targetName, ns3Path, ns3Settings=None, shmSize=4096):
         if self._created:
