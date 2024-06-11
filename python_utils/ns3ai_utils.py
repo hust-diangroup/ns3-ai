@@ -21,6 +21,7 @@ import os
 import signal
 import subprocess
 import time
+from pathlib import Path
 from typing import Any
 
 import psutil
@@ -39,7 +40,7 @@ def get_setting(setting_map: dict[str, Any]) -> str:
 
 def run_single_ns3(
     path,
-    pname,
+    pname: str | Path,
     setting: dict[str, Any] | None = None,
     env=None,
     show_output=False,
@@ -48,24 +49,29 @@ def run_single_ns3(
     if env is None:
         env = {}
     env.update(os.environ)
-    env['LD_LIBRARY_PATH'] = os.path.abspath(os.path.join(path, 'build', 'lib'))
-    # import pdb; pdb.set_trace()
-    exec_path = os.path.join(path, 'ns3')
-    cmd = f"{exec_path} run {pname}"
+    env["LD_LIBRARY_PATH"] = os.path.abspath(os.path.join(path, "build", "lib"))
+    if Path(pname).is_file():
+        cmd = pname
+    else:
+        exec_path = os.path.join(path, "ns3")
+        cmd = f"{exec_path} run {pname} --"
     if setting:
-        cmd += f" --{get_setting(setting)}"
+        cmd += get_setting(setting)
     if debug:
         cmd = f"sleep infinity && {cmd}"
     if show_output:
-        proc = subprocess.Popen(cmd, shell=True, text=True, env=env,
-                                stdin=subprocess.PIPE,
-                                preexec_fn=os.setpgrp)
+        proc = subprocess.Popen(cmd, shell=True, text=True, env=env, stdin=subprocess.PIPE, preexec_fn=os.setpgrp)
     else:
-        proc = subprocess.Popen(cmd, shell=True, text=True, env=env,
-                                stdin=subprocess.PIPE,
-                                stdout=subprocess.PIPE,
-                                stderr=subprocess.PIPE,
-                                preexec_fn=os.setpgrp)
+        proc = subprocess.Popen(
+            cmd,
+            shell=True,
+            text=True,
+            env=env,
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            preexec_fn=os.setpgrp,
+        )
 
     return cmd, proc
 
@@ -110,19 +116,25 @@ class Experiment:
     # \param[in] memSize : share memory size
     # \param[in] targetName : program name of ns3
     # \param[in] path : current working directory
-    def __init__(self, targetName, ns3Path, msgModule,
-                 debug=False,
-                 handleFinish=False,
-                 useVector=False, vectorSize=None,
-                 shmSize=4096,
-                 segName="My Seg",
-                 cpp2pyMsgName="My Cpp to Python Msg",
-                 py2cppMsgName="My Python to Cpp Msg",
-                 lockableName="My Lockable"):
+    def __init__(
+        self,
+        targetName: str | Path,
+        ns3Path,
+        msgModule,
+        debug=False,
+        handleFinish=False,
+        useVector=False,
+        vectorSize=None,
+        shmSize=4096,
+        segName="My Seg",
+        cpp2pyMsgName="My Cpp to Python Msg",
+        py2cppMsgName="My Python to Cpp Msg",
+        lockableName="My Lockable",
+    ):
         if self._created:
             raise Exception('ns3ai_utils: Error: Experiment is singleton')
         self._created = True
-        self.targetName = targetName  # ns-3 target name, not file name
+        self.targetName = targetName  # ns-3 target name or file name
         self.debug = debug
         os.chdir(ns3Path)
         self.msgModule = msgModule

@@ -1,3 +1,4 @@
+from pathlib import Path
 from typing import Any
 
 import gymnasium as gym
@@ -274,7 +275,12 @@ class Ns3Env(gym.Env):
         return obs, reward, done, False, extraInfo
 
     def __init__(
-        self, targetName, ns3Path, ns3Settings: dict[str, Any] | None = None, debug: bool = False, shmSize=4096
+        self,
+        targetName: str | Path,
+        ns3Path: str,
+        ns3Settings: dict[str, Any] | None = None,
+        debug: bool = False,
+        shmSize=4096,
     ):
         if self._created:
             raise Exception('Error: Ns3Env is singleton')
