@@ -309,7 +309,8 @@ class Ns3Env(gym.Env):
         if not self.gameOver:
             self.rx_env_state()
             self.send_close_command()
-            self.exp.proc.wait(2)
+            with suppress(TimeoutExpired):
+                self.exp.proc.wait(2)
 
         self.msgInterface = None
         self.newStateRx = False
