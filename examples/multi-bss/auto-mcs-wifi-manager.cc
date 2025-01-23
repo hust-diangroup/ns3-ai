@@ -24,6 +24,7 @@
 #include "ns3/wifi-phy.h"
 
 #include <algorithm>
+#include <absl/time/time.h>
 
 namespace ns3
 {
@@ -152,7 +153,7 @@ AutoMcsWifiManager::BuildSnrThresholds()
                 if (mode.GetModulationClass() == WIFI_MOD_CLASS_HT)
                 {
                     uint16_t guardInterval = GetShortGuardIntervalSupported() ? 400 : 800;
-                    txVector.SetGuardInterval(guardInterval);
+                    txVector.SetGuardInterval(NanoSeconds(guardInterval));
                     // derive NSS from the MCS index
                     nss = (mode.GetMcsValue() / 8) + 1;
                     NS_LOG_DEBUG("Adding mode = " << mode.GetUniqueName() << " channel width " << j
@@ -170,9 +171,9 @@ AutoMcsWifiManager::BuildSnrThresholds()
                     }
                     else
                     {
-                        guardInterval = GetGuardInterval();
+                        guardInterval = GetGuardInterval().ToInteger(Time::NS);
                     }
-                    txVector.SetGuardInterval(guardInterval);
+                    txVector.SetGuardInterval(NanoSeconds(guardInterval));
                     for (uint8_t k = 1; k <= GetPhy()->GetMaxSupportedTxSpatialStreams(); k++)
                     {
                         if (mode.IsAllowed(j, k))
@@ -306,7 +307,7 @@ AutoMcsWifiManager::DoReportDataOk(WifiRemoteStation* st,
                                    double ackSnr,
                                    WifiMode ackMode,
                                    double dataSnr,
-                                   uint16_t dataChannelWidth,
+                                   MHz_u dataChannelWidth,
                                    uint8_t dataNss)
 {
     NS_LOG_FUNCTION(this << st << ackSnr << ackMode.GetUniqueName() << dataSnr << dataChannelWidth
@@ -333,7 +334,7 @@ AutoMcsWifiManager::DoReportAmpduTxStatus(WifiRemoteStation* st,
                                           uint16_t nFailedMpdus,
                                           double rxSnr,
                                           double dataSnr,
-                                          uint16_t dataChannelWidth,
+                                          MHz_u dataChannelWidth,
                                           uint8_t dataNss)
 {
     NS_LOG_FUNCTION(this << st << nSuccessfulMpdus << nFailedMpdus << rxSnr << dataSnr
@@ -368,7 +369,7 @@ AutoMcsWifiManager::DoReportFinalDataFailed(WifiRemoteStation* station)
 }
 
 WifiTxVector
-AutoMcsWifiManager::DoGetDataTxVector(WifiRemoteStation* st, uint16_t allowedWidth)
+AutoMcsWifiManager::DoGetDataTxVector(WifiRemoteStation* st, MHz_u allowedWidth)
 {
     NS_LOG_FUNCTION(this << st << allowedWidth);
     AutoMcsWifiRemoteStation* station = static_cast<AutoMcsWifiRemoteStation*>(st);
@@ -413,7 +414,7 @@ AutoMcsWifiManager::DoGetDataTxVector(WifiRemoteStation* st, uint16_t allowedWid
                         guardInterval = static_cast<uint16_t>(
                             std::max(GetShortGuardIntervalSupported(station) ? 400 : 800,
                                      GetShortGuardIntervalSupported() ? 400 : 800));
-                        txVector.SetGuardInterval(guardInterval);
+                        txVector.SetGuardInterval(NanoSeconds(guardInterval));
                         // If the node and peer are both VHT capable, only search VHT modes
                         if (GetVhtSupported() && GetVhtSupported(station))
                         {
@@ -462,7 +463,7 @@ AutoMcsWifiManager::DoGetDataTxVector(WifiRemoteStation* st, uint16_t allowedWid
                         guardInterval = static_cast<uint16_t>(
                             std::max(GetShortGuardIntervalSupported(station) ? 400 : 800,
                                      GetShortGuardIntervalSupported() ? 400 : 800));
-                        txVector.SetGuardInterval(guardInterval);
+                        txVector.SetGuardInterval(NanoSeconds(guardInterval));
                         // If the node and peer are both HE capable, only search HE modes
                         if (GetHeSupported() && GetHeSupported(station))
                         {
@@ -509,8 +510,8 @@ AutoMcsWifiManager::DoGetDataTxVector(WifiRemoteStation* st, uint16_t allowedWid
                     }
                     else // HE
                     {
-                        guardInterval = std::max(GetGuardInterval(station), GetGuardInterval());
-                        txVector.SetGuardInterval(guardInterval);
+                        guardInterval = std::max(GetGuardInterval(station).ToInteger(Time::NS), GetGuardInterval().ToInteger(Time::NS));
+                        txVector.SetGuardInterval(NanoSeconds(guardInterval));
                         // If the node and peer are not both HE capable, only search (V)HT modes
                         if (!GetHeSupported() || !GetHeSupported(station))
                         {
@@ -604,7 +605,7 @@ AutoMcsWifiManager::DoGetDataTxVector(WifiRemoteStation* st, uint16_t allowedWid
     station->m_lastChannelWidth = channelWidth;
     if (maxMode.GetModulationClass() == WIFI_MOD_CLASS_HE)
     {
-        guardInterval = std::max(GetGuardInterval(station), GetGuardInterval());
+        guardInterval = std::max(GetGuardInterval(station).ToInteger(Time::NS), GetGuardInterval().ToInteger(Time::NS));
     }
     else if ((maxMode.GetModulationClass() == WIFI_MOD_CLASS_HT) ||
              (maxMode.GetModulationClass() == WIFI_MOD_CLASS_VHT))
@@ -621,7 +622,7 @@ AutoMcsWifiManager::DoGetDataTxVector(WifiRemoteStation* st, uint16_t allowedWid
         maxMode,
         GetDefaultTxPowerLevel(),
         GetPreambleForTransmission(maxMode.GetModulationClass(), GetShortPreambleEnabled()),
-        guardInterval,
+        NanoSeconds(guardInterval),
         GetNumberOfAntennas(),
         selectedNss,
         0,
@@ -673,7 +674,7 @@ AutoMcsWifiManager::DoGetRtsTxVector(WifiRemoteStation* st)
             maxMode,
             GetDefaultTxPowerLevel(),
             GetPreambleForTransmission(maxMode.GetModulationClass(), GetShortPreambleEnabled()),
-            800,
+            NanoSeconds(800),
             GetNumberOfAntennas(),
             nss,
             0,
@@ -687,9 +688,7 @@ AutoMcsWifiManager::DoGetRtsTxVector(WifiRemoteStation* st)
             GetDefaultTxPowerLevel(),
             GetPreambleForTransmission(WifiMode("OfdmRate6Mbps").GetModulationClass(),
                                        GetShortPreambleEnabled()),
-            ConvertGuardIntervalToNanoSeconds(WifiMode("OfdmRate6Mbps"),
-                                              GetShortGuardIntervalSupported(st),
-                                              NanoSeconds(GetGuardInterval(st))),
+            GetGuardInterval(st),
             1,
             1,
             0,

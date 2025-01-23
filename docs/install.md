@@ -1,6 +1,6 @@
 # ns3-ai Installation
 
-This installation works on Ubuntu 22.04 and macOS 13.0 or higher.
+This installation works on Ubuntu 22.04 and macOS 15.0 or higher.
 
 ## Requirements
 
@@ -14,17 +14,13 @@ This installation works on Ubuntu 22.04 and macOS 13.0 or higher.
     - Ubuntu: `sudo apt install pybind11-dev`
     - macOS: `brew install pybind11`
 4. A Python virtual environment dedicated for ns3-ai (highly recommended)
-    - Why: 
-        - Separate your ns3-ai dependencies from your other Python-based projects. (Why being virtual)
-        - In build process of ns3-ai examples, Python binding modules are built using system Python libraries (installed with `apt` or `brew`), while your scripts are interpreted with environmental Python (possibly created and activated with `conda`, for your another project). Version mismatch between those Python environments may cause error in your Python script (possibly some modules could not be found). (Why being dedicated)
-    - How:
-        - Check your version of system-wide installed Python: Find the version of Python in the output of `apt list --installed` (Ubuntu) or `brew list` (macOS). If two or more versions are found, keep only one version.
-        - Create a conda virtual environment of the same version: `conda create -n ns3ai_env python=<version found in previous step>`
-        - Activate the virtual and dedicated Python environment for ns3-ai: `conda activate ns3ai_env`
+    - For example, to use conda to create an environment named `ns3ai_env` with python version 3.11: `conda create -n ns3ai_env python=3.11`.
 
 ## General Setup
 
-1. Clone this repository at `contrib/ai`
+1. If a Python virtual environment is used, activate it. The absolute path to the Python executable of this environment, denoted as `<path-to-python>`, will be later passed to cmake via `ns3` script. You can find the path by first activate it and then `which python`.
+
+2. Clone this repository at `contrib/ai`
 
 ```shell
 cd YOUR_NS3_DIRECTORY
@@ -34,12 +30,11 @@ git clone https://github.com/hust-diangroup/ns3-ai.git contrib/ai
 2. Configure and build the `ai` library
 
 ```shell
-./ns3 configure --enable-examples
+./ns3 configure --enable-examples -- -DPython_EXECUTABLE=<path-to-python> -DPython3_EXECUTABLE=<path-to-python>
 ./ns3 build ai
 ```
 
-3. Setup Python interfaces. It's recommended to use a separate Conda environment
-for ns3-ai.
+3. Setup Python interfaces.
 
 ```shell
 pip install -e contrib/ai/python_utils

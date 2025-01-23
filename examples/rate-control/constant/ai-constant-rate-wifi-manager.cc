@@ -111,7 +111,7 @@ AiConstantRateWifiManager::DoReportDataOk(WifiRemoteStation* st,
                                           double ackSnr,
                                           WifiMode ackMode,
                                           double dataSnr,
-                                          uint16_t dataChannelWidth,
+                                          MHz_u dataChannelWidth,
                                           uint8_t dataNss)
 {
     NS_LOG_FUNCTION(this << st << ackSnr << ackMode << dataSnr << dataChannelWidth << +dataNss);
@@ -130,7 +130,7 @@ AiConstantRateWifiManager::DoReportFinalDataFailed(WifiRemoteStation* station)
 }
 
 WifiTxVector
-AiConstantRateWifiManager::DoGetDataTxVector(WifiRemoteStation* st, uint16_t allowedWidth)
+AiConstantRateWifiManager::DoGetDataTxVector(WifiRemoteStation* st, MHz_u allowedWidth)
 {
     NS_LOG_FUNCTION(this << st);
     Ns3AiMsgInterfaceImpl<AiConstantRateEnvStruct, AiConstantRateActStruct>* msgInterface =
@@ -162,9 +162,7 @@ AiConstantRateWifiManager::DoGetDataTxVector(WifiRemoteStation* st, uint16_t all
         m_dataMode,
         GetDefaultTxPowerLevel(),
         GetPreambleForTransmission(m_dataMode.GetModulationClass(), GetShortPreambleEnabled()),
-        ConvertGuardIntervalToNanoSeconds(m_dataMode,
-                                          GetShortGuardIntervalSupported(st),
-                                          NanoSeconds(GetGuardInterval(st))),
+        GetGuardInterval(st),
         GetNumberOfAntennas(),
         nss,
         0,
@@ -180,9 +178,7 @@ AiConstantRateWifiManager::DoGetRtsTxVector(WifiRemoteStation* st)
         m_ctlMode,
         GetDefaultTxPowerLevel(),
         GetPreambleForTransmission(m_ctlMode.GetModulationClass(), GetShortPreambleEnabled()),
-        ConvertGuardIntervalToNanoSeconds(m_ctlMode,
-                                          GetShortGuardIntervalSupported(st),
-                                          NanoSeconds(GetGuardInterval(st))),
+        GetGuardInterval(st),
         1,
         1,
         0,

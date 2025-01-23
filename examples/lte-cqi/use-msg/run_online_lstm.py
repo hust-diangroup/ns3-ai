@@ -65,7 +65,7 @@ lstm_input_vec = Input(shape=(input_len, 1), name="input_vec")
 dense1 = Dense(30, activation='selu', kernel_regularizer='l1',)(
     lstm_input_vec[:, :, 0])
 old_print(dense1)
-lstm_l1_mse = K.expand_dims(dense1, axis=-1)
+lstm_l1_mse = tf.keras.ops.expand_dims(dense1, axis=-1)
 lstm_mse = LSTM(20)(lstm_l1_mse)
 predict_lstm_mse = Dense(1)(lstm_mse)
 lstm_model_mse = keras.Model(inputs=lstm_input_vec, outputs=predict_lstm_mse)

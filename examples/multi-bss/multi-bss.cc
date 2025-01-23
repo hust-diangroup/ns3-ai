@@ -1845,7 +1845,7 @@ main(int argc, char* argv[])
     {
         // std::cout << "Datarate: " << HePhy::GetDataRate(i, channelWidths, guardIntervalNs, 1)
         //           << std::endl;
-        dataRateToMcs[HePhy::GetDataRate(i, channelWidths, guardIntervalNs, 1)] = i;
+        dataRateToMcs[HePhy::GetDataRate(i, channelWidths, NanoSeconds(guardIntervalNs), 1)] = i;
     }
 
     if (phyMode != "OfdmRate54Mbps")
