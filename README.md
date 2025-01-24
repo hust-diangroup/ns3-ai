@@ -29,6 +29,7 @@ greater flexibility.
 - High-performance data interaction module in both C++ and Python side.
 - A high-level [Gym interface](model/gym-interface) for using Gymnasium APIs, and a low-level
   [message interface](model/msg-interface) for customizing the shared data.
+- Support for multi-agent reinforcement learning
 - Useful skeleton code to easily integrate with AI frameworks on Python side.
 
 ## Installation
@@ -43,11 +44,13 @@ To get started on ns3-ai, check out the [A-Plus-B](examples/a-plus-b) example. T
 C++ passes two numbers to Python and their sum is passed back to C++, with the implementation using
 all available interfaces: Gym interface, message interface (struct-based) and message
 interface (vector-based).
+An advanced example for [multi-agent](examples/multi-agent) reinforcement learning is also provided.
 
 ### Documentation
 
 Ready to deploy ns3-ai in your own research? Before you code, please go over the tutorials on
-[Gym interface](model/gym-interface) and [message interface](model/msg-interface). They provide
+[Gym interface](model/gym-interface) and [message interface](model/msg-interface). The documentation for [multi-agent environments](./docs/multi-agent.md) explains in detail how ns3-ai can be used to train multiple-agents in an ns3 simulation.
+They provide
 step-by-step guidance on writing C++-Python interfaces, with some useful code snippets.
 
 We also created some **pure C++** examples, which uses C++-based ML frameworks to train
@@ -84,6 +87,10 @@ This original work is done based on [5G NR](https://5g-lena.cttc.es/) branch in 
 also run in LTE codebase in ns-3 mainline. We didn't reproduce all the experiments on LTE, and the results in our paper
 are based on NR work.
 
+### [MULTI-AGENT](examples/multi-agent/)
+
+This example illustrates with a simple scenario how multi-agent environments can be created using ns3-ai. It also explains how the agents in the environment can be trained using RLlib and how the trained agents can be evaluated.
+
 ## Other materials
 
 ### Google Summer of Code 2023
@@ -101,6 +108,9 @@ Note: this tutorial explains the original design, which is not up to date with t
 
 Join us in this [online recording](https://vimeo.com/566296651) to get better knowledge about ns3-ai.
 The slides introducing the ns3-ai model could also be found [here](https://www.nsnam.org/wp-content/uploads/2021/tutorials/ns3-ai-tutorial-June-2021.pdf).
+
+## Related projects
+The [defiance project](https://github.com/DEFIANCE-project) builds upon the multi-agent capabilities of ns3-ai and allows the user to realistically simulate the deployment of reinforcement learning components. It handles setup, and communication of these components in a flexible way. The user only needs to write minimal code in order to specify the observations, actions and rewards in the experiment.
 
 ## Cite Our Work
 

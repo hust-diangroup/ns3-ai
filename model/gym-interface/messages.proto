@@ -117,6 +117,25 @@ message EnvStateMsg {
 	string info = 5;
 }
 
+message MultiAgentSimInitMsg {
+	map<string, SpaceDescription> obsSpaces = 1;
+	map<string, SpaceDescription> actSpaces = 2;
+}
+
+message MultiAgentEnvStateMsg {
+	DataContainer obsData = 1;
+	float reward = 2;
+	bool isGameOver = 3;
+
+	enum Reason {
+		SimulationEnd = 0;
+		GameOver = 1;
+	}
+	Reason reason = 4;
+	map<string, string> info = 5;
+	string agentID = 6;
+}
+
 message EnvActMsg {
 	DataContainer actData = 1;
 	bool stopSimReq = 2;
