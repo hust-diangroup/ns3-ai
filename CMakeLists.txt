@@ -3,9 +3,17 @@ if(HAVE_STDINT_H)
     add_definitions(-DHAVE_STDINT_H)
 endif()
 
+if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+    add_compile_options("-Wno-gcc-compat")
+endif()
+
 find_package(Boost REQUIRED COMPONENTS program_options)
 include_directories(${Boost_INCLUDE_DIRS})
 find_package(Python REQUIRED COMPONENTS Interpreter Development)
+if (Python_FOUND)
+    message(STATUS "Python include directories: ${Python_INCLUDE_DIRS}")
+    message(STATUS "Python library directories: ${Python_LIBRARY_DIRS}")
+endif()
 find_package(pybind11 CONFIG REQUIRED)
 include_directories(${pybind11_INCLUDE_DIRS})
 
@@ -72,13 +80,6 @@ set(gym_interface_hdrs
         model/gym-interface/cpp/spaces.h
 )
 
-build_lib(
-        LIBNAME ai
-        SOURCE_FILES ${msg_interface_srcs} ${gym_interface_srcs}
-        HEADER_FILES ${msg_interface_hdrs} ${gym_interface_hdrs}
-        LIBRARIES_TO_LINK ${libcore} protobuf
-)
-
 # protobuf_generate function is missing in some installations by package manager
 check_function_exists(protobuf_generate protobuf_generate_exists)
 if(${protobuf_generate_exists})
@@ -101,6 +102,13 @@ protobuf_generate(
         IMPORT_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/model/gym-interface"
         LANGUAGE python
         PROTOC_OUT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/model/gym-interface/py"
+)
+
+build_lib(
+        LIBNAME ai
+        SOURCE_FILES ${msg_interface_srcs} ${gym_interface_srcs}
+        HEADER_FILES ${msg_interface_hdrs} ${gym_interface_hdrs}
+        LIBRARIES_TO_LINK ${libcore} protobuf::libprotobuf
 )
 add_dependencies(${libai} proto-objects)
 

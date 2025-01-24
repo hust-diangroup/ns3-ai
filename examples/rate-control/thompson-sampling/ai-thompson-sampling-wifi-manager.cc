@@ -209,7 +209,7 @@ AiThompsonSamplingWifiManager::InitializeStation(WifiRemoteStation* st) const
         s.at(i).channelWidth = station->m_mcsStats.at(i).channelWidth;
         s.at(i).guardInterval = GetModeGuardInterval(st, mode);
         s.at(i).dataRate =
-            mode.GetDataRate(s.at(i).channelWidth, s.at(i).guardInterval, s.at(i).nss);
+            mode.GetDataRate(s.at(i).channelWidth, NanoSeconds(s.at(i).guardInterval), s.at(i).nss);
     }
     s[station->m_mcsStats.size()].lastDecay = -1.0;
     msgInterface->CppSendEnd();
@@ -301,7 +301,7 @@ AiThompsonSamplingWifiManager::DoReportDataOk(WifiRemoteStation* st,
                                               double ackSnr,
                                               WifiMode ackMode,
                                               double dataSnr,
-                                              uint16_t dataChannelWidth,
+                                              MHz_u dataChannelWidth,
                                               uint8_t dataNss)
 {
     NS_LOG_FUNCTION(this << st << ackSnr << ackMode.GetUniqueName() << dataSnr);
@@ -332,7 +332,7 @@ AiThompsonSamplingWifiManager::DoReportAmpduTxStatus(WifiRemoteStation* st,
                                                      uint16_t nFailedMpdus,
                                                      double rxSnr,
                                                      double dataSnr,
-                                                     uint16_t dataChannelWidth,
+                                                     MHz_u dataChannelWidth,
                                                      uint8_t dataNss)
 {
     NS_LOG_FUNCTION(this << st << nSuccessfulMpdus << nFailedMpdus << rxSnr << dataSnr);
@@ -375,7 +375,7 @@ AiThompsonSamplingWifiManager::GetModeGuardInterval(WifiRemoteStation* st, WifiM
 {
     if (mode.GetModulationClass() == WIFI_MOD_CLASS_HE)
     {
-        return std::max(GetGuardInterval(st), GetGuardInterval());
+        return std::max(GetGuardInterval(st).ToInteger(Time::NS), GetGuardInterval().ToInteger(Time::NS));
     }
     else if ((mode.GetModulationClass() == WIFI_MOD_CLASS_HT) ||
              (mode.GetModulationClass() == WIFI_MOD_CLASS_VHT))
@@ -390,7 +390,7 @@ AiThompsonSamplingWifiManager::GetModeGuardInterval(WifiRemoteStation* st, WifiM
 }
 
 WifiTxVector
-AiThompsonSamplingWifiManager::DoGetDataTxVector(WifiRemoteStation* st, uint16_t allowedWidth)
+AiThompsonSamplingWifiManager::DoGetDataTxVector(WifiRemoteStation* st, MHz_u allowedWidth)
 {
     NS_LOG_FUNCTION(this << st);
     InitializeStation(st);
@@ -409,11 +409,11 @@ AiThompsonSamplingWifiManager::DoGetDataTxVector(WifiRemoteStation* st, uint16_t
     WifiMode mode = station->m_mcsStats.at(msgInterface->GetPy2CppStruct()->res).mode;
     uint8_t nss = msgInterface->GetPy2CppStruct()->stats.nss;
     uint16_t channelWidth =
-        std::min(msgInterface->GetPy2CppStruct()->stats.channelWidth, GetPhy()->GetChannelWidth());
+        std::min(msgInterface->GetPy2CppStruct()->stats.channelWidth, static_cast<uint16_t>(GetPhy()->GetChannelWidth()));
     uint16_t guardInterval = msgInterface->GetPy2CppStruct()->stats.guardInterval;
     msgInterface->CppRecvEnd();
 
-    uint64_t rate = mode.GetDataRate(channelWidth, guardInterval, nss);
+    uint64_t rate = mode.GetDataRate(channelWidth, NanoSeconds(guardInterval), nss);
     if (m_currentRate != rate)
     {
         NS_LOG_DEBUG("New datarate: " << rate);
@@ -424,7 +424,7 @@ AiThompsonSamplingWifiManager::DoGetDataTxVector(WifiRemoteStation* st, uint16_t
         mode,
         GetDefaultTxPowerLevel(),
         GetPreambleForTransmission(mode.GetModulationClass(), GetShortPreambleEnabled()),
-        guardInterval,
+        NanoSeconds(guardInterval),
         GetNumberOfAntennas(),
         nss,
         0, // NESS
@@ -453,7 +453,7 @@ AiThompsonSamplingWifiManager::DoGetRtsTxVector(WifiRemoteStation* st)
     WifiMode mode = station->m_mcsStats.at(msgInterface->GetPy2CppStruct()->res).mode;
     uint8_t nss = msgInterface->GetPy2CppStruct()->stats.nss;
     uint16_t channelWidth =
-        std::min(msgInterface->GetPy2CppStruct()->stats.channelWidth, GetPhy()->GetChannelWidth());
+        std::min(msgInterface->GetPy2CppStruct()->stats.channelWidth, static_cast<uint16_t>(GetPhy()->GetChannelWidth()));
     uint16_t guardInterval = msgInterface->GetPy2CppStruct()->stats.guardInterval;
     msgInterface->CppRecvEnd();
 
@@ -464,7 +464,7 @@ AiThompsonSamplingWifiManager::DoGetRtsTxVector(WifiRemoteStation* st)
         mode,
         GetDefaultTxPowerLevel(),
         GetPreambleForTransmission(mode.GetModulationClass(), GetShortPreambleEnabled()),
-        guardInterval,
+        NanoSeconds(guardInterval),
         GetNumberOfAntennas(),
         nss,
         0, // NESS
