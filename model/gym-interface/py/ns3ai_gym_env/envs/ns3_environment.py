@@ -73,16 +73,15 @@ class Ns3Env(gym.Env):
             # print(boxContainerPb.shape, boxContainerPb.dtype, boxContainerPb.uintData)
 
             if boxContainerPb.dtype == pb.INT:
-                data = boxContainerPb.intData
+                data = np.array(boxContainerPb.intData, dtype=int)
             elif boxContainerPb.dtype == pb.UINT:
-                data = boxContainerPb.uintData
+                data = np.array(boxContainerPb.uintData, dtype=np.uint)
             elif boxContainerPb.dtype == pb.DOUBLE:
-                data = boxContainerPb.doubleData
+                data = np.array(boxContainerPb.doubleData, dtype=np.float64)
             else:
-                data = boxContainerPb.floatData
+                data = np.array(boxContainerPb.floatData, dtype=np.float32)
 
             # TODO: reshape using shape info
-            data = np.array(data)
             return data
 
         elif dataContainerPb.type == pb.Tuple:
@@ -181,7 +180,8 @@ class Ns3Env(gym.Env):
     def get_extra_info(self):
         return self.extraInfo
 
-    def _pack_data(self, actions, spaceDesc):
+    @classmethod
+    def _pack_data(cls, actions, spaceDesc):
         dataContainer = pb.DataContainer()
 
         spaceType = spaceDesc.__class__
@@ -206,11 +206,11 @@ class Ns3Env(gym.Env):
                 boxContainerPb.dtype = pb.UINT
                 boxContainerPb.uintData.extend(actions)
 
-            elif spaceDesc.dtype in ['float', 'float32', 'float64']:
+            elif spaceDesc.dtype.name in ["float", "float32"]:
                 boxContainerPb.dtype = pb.FLOAT
                 boxContainerPb.floatData.extend(actions)
 
-            elif spaceDesc.dtype in ['double']:
+            elif spaceDesc.dtype.name in ["double", "float64"]:
                 boxContainerPb.dtype = pb.DOUBLE
                 boxContainerPb.doubleData.extend(actions)
 
@@ -224,10 +224,10 @@ class Ns3Env(gym.Env):
             dataContainer.type = pb.Tuple
             tupleDataPb = pb.TupleDataContainer()
 
-            spaceList = list(self.action_space.spaces)
+            spaceList = list(spaceDesc.spaces)
             subDataList = []
             for subAction, subActSpaceType in zip(actions, spaceList):
-                subData = self._pack_data(subAction, subActSpaceType)
+                subData = cls._pack_data(subAction, subActSpaceType)
                 subDataList.append(subData)
 
             tupleDataPb.element.extend(subDataList)
@@ -239,8 +239,8 @@ class Ns3Env(gym.Env):
 
             subDataList = []
             for sName, subAction in actions.items():
-                subActSpaceType = self.action_space.spaces[sName]
-                subData = self._pack_data(subAction, subActSpaceType)
+                subActSpaceType = spaceDesc.spaces[sName]
+                subData = cls._pack_data(subAction, subActSpaceType)
                 subData.name = sName
                 subDataList.append(subData)
 
@@ -315,7 +315,7 @@ class Ns3Env(gym.Env):
         self.gameOverReason = None
         self.extraInfo = None
 
-        self.msgInterface = self.exp.run(show_output=True)
+        self.msgInterface = self.exp.run(setting=self.ns3Settings, show_output=True)
         self.initialize_env()
         # get first observations
         self.rx_env_state()
