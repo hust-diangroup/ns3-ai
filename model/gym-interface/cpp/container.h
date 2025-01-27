@@ -26,6 +26,7 @@
 
 #include <ns3/object.h>
 #include <ns3/type-name.h>
+#include <cstdint>
 
 namespace ns3
 {
@@ -106,7 +107,7 @@ class OpenGymBoxContainer : public OpenGymDataContainer
         container->Print(os);
         return os;
     }
-
+    void SetValue(uint32_t idx, T value);
     bool AddValue(T value);
     T GetValue(uint32_t idx);
 
@@ -244,6 +245,16 @@ OpenGymBoxContainer<T>::AddValue(T value)
 }
 
 template <typename T>
+void
+OpenGymBoxContainer<T>::SetValue(uint32_t idx, T value)
+{
+    if (idx < m_data.size())
+    {
+        m_data[idx] = value;
+    }
+}
+
+template <typename T>
 T
 OpenGymBoxContainer<T>::GetValue(uint32_t idx)
 {
@@ -335,6 +346,8 @@ class OpenGymDictContainer : public OpenGymDataContainer
     ns3_ai_gym::DataContainer GetDataContainerPbMsg() override;
 
     void Print(std::ostream& where) const override;
+
+    std::vector<std::string> GetKeys();
 
     friend std::ostream& operator<<(std::ostream& os, const Ptr<OpenGymDictContainer> container)
     {
