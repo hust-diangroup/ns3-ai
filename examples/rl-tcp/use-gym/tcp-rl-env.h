@@ -52,7 +52,7 @@ class TcpEnvBase : public OpenGymEnv
     Ptr<OpenGymSpace> GetActionSpace() override;
     bool GetGameOver() override;
     float GetReward() override;
-    std::string GetExtraInfo() override;
+    std::map<std::string, std::string> GetExtraInfo() override;
     bool ExecuteActions(Ptr<OpenGymDataContainer> action) override;
 
     Ptr<OpenGymSpace> GetObservationSpace() override = 0;
