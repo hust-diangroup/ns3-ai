@@ -50,6 +50,8 @@ message BoxSpace {
 	float high = 2;
 	Dtype dtype = 3;
 	repeated uint32 shape = 4;
+	repeated float lows = 5;
+	repeated float highs = 6;
 }
 
 message TupleSpace {

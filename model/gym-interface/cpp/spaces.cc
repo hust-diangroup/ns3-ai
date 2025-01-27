@@ -247,6 +247,15 @@ OpenGymBoxSpace::GetSpaceDescription()
         boxSpacePb.add_shape(*i);
     }
 
+    for (const auto& low : m_lowVec)
+    {
+        boxSpacePb.add_lows(low);
+    }
+    for (const auto& high : m_highVec)
+    {
+        boxSpacePb.add_highs(high);
+    }
+
     boxSpacePb.set_dtype(m_dtype);
     desc.mutable_space()->PackFrom(boxSpacePb);
     return desc;
