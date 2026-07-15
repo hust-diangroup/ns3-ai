@@ -69,19 +69,21 @@ class Ns3AiMsgInterfaceImpl
           m_useVector(use_vector),
           m_handleFinish(handle_finish),
           m_segName(segment_name),
-          m_isFinished(false)
+          m_isFinished(false),
+          m_segment(is_memory_creator ? 
+                    (boost::interprocess::shared_memory_object::remove(segment_name),
+                     boost::interprocess::managed_shared_memory(boost::interprocess::create_only, segment_name, size)) :
+                    boost::interprocess::managed_shared_memory(boost::interprocess::open_only, segment_name))
     {
         using namespace boost::interprocess;
         if (m_isCreator)
         {
-            shared_memory_object::remove(m_segName.c_str());
-            static managed_shared_memory segment(create_only, m_segName.c_str(), size);
             if (m_useVector)
             {
-                static const Cpp2PyMsgAllocator alloc_env(segment.get_segment_manager());
-                static const Cpp2PyMsgAllocator alloc_act(segment.get_segment_manager());
-                m_cpp2pyVector = segment.construct<Cpp2PyMsgVector>(cpp2py_msg_name)(alloc_env);
-                m_py2cppVector = segment.construct<Py2CppMsgVector>(py2cpp_msg_name)(alloc_act);
+                const Cpp2PyMsgAllocator alloc_env(m_segment.get_segment_manager());
+                const Cpp2PyMsgAllocator alloc_act(m_segment.get_segment_manager());
+                m_cpp2pyVector = m_segment.construct<Cpp2PyMsgVector>(cpp2py_msg_name)(alloc_env);
+                m_py2cppVector = m_segment.construct<Py2CppMsgVector>(py2cpp_msg_name)(alloc_act);
                 m_cpp2pyStruct = nullptr;
                 m_py2CppStruct = nullptr;
             }
@@ -89,18 +91,17 @@ class Ns3AiMsgInterfaceImpl
             {
                 m_cpp2pyVector = nullptr;
                 m_py2cppVector = nullptr;
-                m_cpp2pyStruct = segment.construct<Cpp2PyMsgType>(cpp2py_msg_name)();
-                m_py2CppStruct = segment.construct<Py2CppMsgType>(py2cpp_msg_name)();
+                m_cpp2pyStruct = m_segment.construct<Cpp2PyMsgType>(cpp2py_msg_name)();
+                m_py2CppStruct = m_segment.construct<Py2CppMsgType>(py2cpp_msg_name)();
             }
-            m_sync = segment.construct<Ns3AiMsgSync>(lockable_name)();
+            m_sync = m_segment.construct<Ns3AiMsgSync>(lockable_name)();
         }
         else
         {
-            static managed_shared_memory segment(open_only, segment_name);
             if (m_useVector)
             {
-                m_cpp2pyVector = segment.find<Cpp2PyMsgVector>(cpp2py_msg_name).first;
-                m_py2cppVector = segment.find<Py2CppMsgVector>(py2cpp_msg_name).first;
+                m_cpp2pyVector = m_segment.find<Cpp2PyMsgVector>(cpp2py_msg_name).first;
+                m_py2cppVector = m_segment.find<Py2CppMsgVector>(py2cpp_msg_name).first;
                 m_cpp2pyStruct = nullptr;
                 m_py2CppStruct = nullptr;
             }
@@ -108,10 +109,10 @@ class Ns3AiMsgInterfaceImpl
             {
                 m_cpp2pyVector = nullptr;
                 m_py2cppVector = nullptr;
-                m_cpp2pyStruct = segment.find<Cpp2PyMsgType>(cpp2py_msg_name).first;
-                m_py2CppStruct = segment.find<Py2CppMsgType>(py2cpp_msg_name).first;
+                m_cpp2pyStruct = m_segment.find<Cpp2PyMsgType>(cpp2py_msg_name).first;
+                m_py2CppStruct = m_segment.find<Py2CppMsgType>(py2cpp_msg_name).first;
             }
-            m_sync = segment.find<Ns3AiMsgSync>(lockable_name).first;
+            m_sync = m_segment.find<Ns3AiMsgSync>(lockable_name).first;
         }
     };
 
@@ -297,6 +298,9 @@ class Ns3AiMsgInterfaceImpl
     const bool m_handleFinish;
     const std::string m_segName;
     bool m_isFinished;
+    
+    // 添加segment作为成员变量，而不是static
+    boost::interprocess::managed_shared_memory m_segment;
 };
 
 /**
@@ -376,7 +380,7 @@ class Ns3AiMsgInterface : public Singleton<Ns3AiMsgInterface>
             this->m_py2cppMsgName.c_str(),
             this->m_lockableName.c_str());
         return &interface;
-    };
+    }
 
   private:
     bool m_isMemoryCreator;

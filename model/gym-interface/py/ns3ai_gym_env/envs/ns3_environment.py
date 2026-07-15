@@ -1,6 +1,10 @@
 import numpy as np
 import gymnasium as gym
 from gymnasium import spaces
+import sys
+import os
+# Add the parent directory to the path to import messages_pb2
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
 import messages_pb2 as pb
 import ns3ai_gym_msg_py as py_binding
 from ns3ai_utils import Experiment

@@ -24,7 +24,6 @@
 #include "ns3/wifi-phy.h"
 
 #include <algorithm>
-#include <absl/time/time.h>
 
 namespace ns3
 {
