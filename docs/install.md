@@ -13,8 +13,7 @@ This installation works on Ubuntu 22.04 and macOS 15.0 or higher.
 3. pybind11
     - Ubuntu: `sudo apt install pybind11-dev`
     - macOS: `brew install pybind11`
-4. A Python virtual environment dedicated for ns3-ai (highly recommended)
-    - For example, to use conda to create an environment named `ns3ai_env` with python version 3.11: `conda create -n ns3ai_env python=3.11`.
+
 
 ## General Setup
 
@@ -24,7 +23,7 @@ This installation works on Ubuntu 22.04 and macOS 15.0 or higher.
 
 ```shell
 cd YOUR_NS3_DIRECTORY
-git clone https://github.com/hust-diangroup/ns3-ai.git contrib/ai
+git clone --branch dev_multi --single-branch https://github.com/hust-diangroup/ns3-ai.git contrib/ai
 ```
 
 2. Configure and build the `ai` library
