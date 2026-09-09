@@ -42,12 +42,7 @@ pip install -e contrib/ai/model/gym-interface/py
 
 4. Build the examples (optional)
 
-All targets named `ns3ai_*` can be built separately.
-
 ```shell
-# build all examples in all versions
-./ns3 build ns3ai_apb_gym ns3ai_apb_msg_stru ns3ai_apb_msg_vec ns3ai_multibss ns3ai_rltcp_gym ns3ai_rltcp_msg ns3ai_ratecontrol_constant ns3ai_ratecontrol_ts ns3ai_ltecqi_msg
-
 # build A-Plus-B example
 # with Gym interface
 ./ns3 build ns3ai_apb_gym
@@ -56,23 +51,4 @@ All targets named `ns3ai_*` can be built separately.
 # with Message interface - vector based
 ./ns3 build ns3ai_apb_msg_vec
 
-# build Multi-BSS example
-# with Message interface - vector based
-./ns3 build ns3ai_multibss
-
-# build RL-TCP example
-# with Gym interface
-./ns3 build ns3ai_rltcp_gym
-# with Message interface - struct based
-./ns3 build ns3ai_rltcp_msg
-
-# build Rate-Control examples
-# constant rate example, with Message interface - struct based
-./ns3 build ns3ai_ratecontrol_constant
-# Thompson Sampling example, with Message interface - struct based
-./ns3 build ns3ai_ratecontrol_ts
-
-# build LTE-CQI example
-# with Message interface - struct based
-./ns3 build ns3ai_ltecqi_msg
 ```
