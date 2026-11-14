@@ -1,0 +1,8 @@
+panel,case,seeds,mean_cycles,sd_across_seeds,mean_serving_sinr_db,steps
+a,"C++ to Python, ns3-gym",6,117017,4187,,
+a,"C++ to Python, ns3-ai Gym",6,6518,672,,
+a,"Python to C++, ns3-gym",6,127148,3496,,
+a,"Python to C++, ns3-ai Gym",6,7584,206,,
+b,Message interface (PyTorch),6,733702,6093,,
+b,Pure C++ (libtorch),6,279648,3582,,
+c,gym steps with a measurement,1,,,15.71,10
