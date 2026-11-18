@@ -104,15 +104,19 @@ AiranInferenceClient::Poll(uint32_t timeout_ms, uint32_t max_msgs)
         InferenceResponse resp;
         if (!AiranMessageCodec::DecodeResponse(bytes, resp))
         {
+            ++m_totalUndecodable; // was dropped without a trace
             continue;
         }
-        ++m_totalRecv;
         const auto it = m_pending.find(resp.request_id);
         if (it == m_pending.end())
         {
             ++m_totalOrphan;
             continue;
         }
+        // TotalRecv() is documented as responses DISPATCHED; it used to be
+        // incremented before the orphan check, so orphans were counted twice
+        // (as received and as orphans) and Recv + Orphan exceeded the frames.
+        ++m_totalRecv;
         auto cb = std::move(it->second);
         m_pending.erase(it);
         if (cb)

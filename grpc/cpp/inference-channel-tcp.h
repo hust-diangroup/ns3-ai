@@ -47,6 +47,10 @@ class TcpInferenceChannel : public InferenceChannel
     bool IsOpen() const override;
     void Close() override;
     std::string Kind() const override { return "tcp"; }
+    /// Largest frame either side accepts (16 MiB).
+    static constexpr uint32_t kMaxFrameBytes = 16u * 1024u * 1024u;
+    /// Bytes received but not yet returned as a whole frame.
+    std::size_t StashedBytes() const { return m_rxStash.size(); }
 
     int Fd() const { return m_fd; }
 

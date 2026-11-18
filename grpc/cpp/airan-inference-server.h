@@ -79,7 +79,14 @@ class AiranInferenceServer
 
     uint64_t RequestsHandled() const { return m_requests; }
     uint64_t RequestsRejected() const { return m_rejected; }
-    uint64_t InferenceLatencySumMs() const { return m_latencyMsSum; }
+    /// Sum of the reported inference latencies (ms). A double: the mock
+    /// models report 0.25 to 0.45 ms, which the former uint64_t accumulator
+    /// truncated to 0 on every request.
+    double InferenceLatencySumMs() const { return m_latencyMsSum; }
+    /// Requests a model handler declined (response status != 0, e.g. a CSI
+    /// tensor that does not match the declared shape). They are part of
+    /// RequestsHandled(), since the handler ran, and are counted here as well.
+    uint64_t RequestsRefusedByModel() const { return m_modelRefused; }
 
     /// Look up a registered model's TritonModelConfig (nullptr if
     /// unknown). Tests use this to assert what was loaded.
@@ -103,7 +110,8 @@ class AiranInferenceServer
 
     uint64_t m_requests{0};
     uint64_t m_rejected{0};
-    uint64_t m_latencyMsSum{0};
+    double m_latencyMsSum{0.0};
+    uint64_t m_modelRefused{0};
 };
 
 } // namespace airan

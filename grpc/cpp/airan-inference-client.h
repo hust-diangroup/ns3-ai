@@ -82,6 +82,9 @@ class AiranInferenceClient
     /// outstanding callback.
     uint64_t TotalOrphan() const { return m_totalOrphan; }
 
+    /// Frames dropped because they did not decode as a response.
+    uint64_t TotalUndecodable() const { return m_totalUndecodable; }
+
     /// Generated request_id counter (next id that will be assigned).
     uint64_t NextRequestId() const { return m_nextRequestId; }
 
@@ -97,6 +100,7 @@ class AiranInferenceClient
     uint64_t m_totalSent{0};
     uint64_t m_totalRecv{0};
     uint64_t m_totalOrphan{0};
+    uint64_t m_totalUndecodable{0};
 };
 
 } // namespace airan

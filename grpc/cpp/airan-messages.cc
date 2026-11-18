@@ -191,6 +191,26 @@ EncodeBeam(const BeamPrediction& b)
     return w.buf;
 }
 
+/// A fixed-width field must declare exactly its width. The decoders read the
+/// value by its wire type and not by the declared length, so a frame that said
+/// u32 with length 8 was consumed 4 bytes short and every later field was read
+/// from the wrong offset.
+bool
+LenMatchesWire(uint8_t wt, uint32_t len)
+{
+    switch (wt)
+    {
+    case kWireU32:
+    case kWireF32:
+        return len == 4;
+    case kWireU64:
+    case kWireF64:
+        return len == 8;
+    default:
+        return true;
+    }
+}
+
 // ----- reader -----
 
 struct Reader
@@ -293,7 +313,10 @@ struct Reader
     }
     std::vector<float> FloatArray(uint32_t len_bytes)
     {
-        if (len_bytes % 4 != 0)
+        // Bounds first: a corrupt length used to reach reserve() and could
+        // request up to 4 GB before the per-element reads noticed the frame
+        // was short.
+        if (len_bytes % 4 != 0 || i + len_bytes > buf.size())
         {
             err = true;
             return {};
@@ -324,7 +347,7 @@ DecodeCsi(const std::vector<uint8_t>& bytes, CsiTensor& out)
         const uint16_t fid = r.U16();
         const uint8_t wt = r.U8();
         const uint32_t len = r.U32();
-        if (r.err)
+        if (r.err || !LenMatchesWire(wt, len))
         {
             return false;
         }
@@ -388,7 +411,7 @@ DecodeRsrp(const std::vector<uint8_t>& bytes, RsrpVector& out)
         const uint16_t fid = r.U16();
         const uint8_t wt = r.U8();
         const uint32_t len = r.U32();
-        if (r.err)
+        if (r.err || !LenMatchesWire(wt, len))
         {
             return false;
         }
@@ -431,7 +454,7 @@ DecodePrecoder(const std::vector<uint8_t>& bytes, PrecoderWeights& out)
         const uint16_t fid = r.U16();
         const uint8_t wt = r.U8();
         const uint32_t len = r.U32();
-        if (r.err)
+        if (r.err || !LenMatchesWire(wt, len))
         {
             return false;
         }
@@ -481,7 +504,7 @@ DecodeBeam(const std::vector<uint8_t>& bytes, BeamPrediction& out)
         const uint16_t fid = r.U16();
         const uint8_t wt = r.U8();
         const uint32_t len = r.U32();
-        if (r.err)
+        if (r.err || !LenMatchesWire(wt, len))
         {
             return false;
         }
@@ -586,7 +609,7 @@ AiranMessageCodec::DecodeRequest(const std::vector<uint8_t>& bytes,
         const uint16_t fid = r.U16();
         const uint8_t wt = r.U8();
         const uint32_t len = r.U32();
-        if (r.err)
+        if (r.err || !LenMatchesWire(wt, len))
         {
             return false;
         }
@@ -684,7 +707,7 @@ AiranMessageCodec::DecodeResponse(const std::vector<uint8_t>& bytes,
         const uint16_t fid = r.U16();
         const uint8_t wt = r.U8();
         const uint32_t len = r.U32();
-        if (r.err)
+        if (r.err || !LenMatchesWire(wt, len))
         {
             return false;
         }

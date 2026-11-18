@@ -45,7 +45,11 @@ AiranMockRuntime::MakePrecoderHandler(uint32_t num_layers,
         // layers, which is a closed-form beamformer and not a learned one. But
         // it is a genuine function of the channel, so a wrong layout now
         // produces a wrong beam and the SINR shows it.
-        if (!csi.LayoutValid() || csi.num_tx != num_tx ||
+        // TS 38.214 section 5.2.2.2: the number of layers cannot exceed the
+        // number of antenna ports; more layers than transmit antennas cannot
+        // be mutually orthogonal, so such a precoder would be a fabrication.
+        if (!csi.LayoutValid() || csi.num_tx != num_tx || num_layers == 0 ||
+            num_layers > num_tx ||
             (expected_num_tx != 0 && csi.num_tx != expected_num_tx))
         {
             // Refuse rather than fabricate. A model handed a tensor that does
@@ -113,11 +117,31 @@ AiranMockRuntime::MakePrecoderHandler(uint32_t num_layers,
             norm = std::sqrt(norm);
             if (norm < 1e-12)
             {
-                // The branch collapsed (rank deficient channel). Fall back to a
-                // single-antenna direction rather than dividing by ~zero.
-                std::fill(v.begin(), v.end(), std::complex<double>{0.0, 0.0});
-                v[layer % num_tx] = {1.0, 0.0};
-                norm = 1.0;
+                // The branch collapsed (rank deficient channel). Fall back to
+                // the first antenna direction that is not already spanned,
+                // orthogonalized like any other layer. The old fallback took
+                // e_(layer mod num_tx) as is, which overlaps the earlier layers
+                // whenever they have energy on that antenna, so the "extra"
+                // stream interfered with the first one.
+                for (uint32_t k = 0; k < num_tx && norm < 1e-6; ++k)
+                {
+                    std::fill(v.begin(), v.end(), std::complex<double>{0.0, 0.0});
+                    v[(layer + k) % num_tx] = {1.0, 0.0};
+                    for (const auto& prev : w)
+                    {
+                        const std::complex<double> proj = std::conj(prev[(layer + k) % num_tx]);
+                        for (uint32_t tx = 0; tx < num_tx; ++tx)
+                        {
+                            v[tx] -= proj * prev[tx];
+                        }
+                    }
+                    norm = 0.0;
+                    for (uint32_t tx = 0; tx < num_tx; ++tx)
+                    {
+                        norm += std::norm(v[tx]);
+                    }
+                    norm = std::sqrt(norm);
+                }
             }
             for (uint32_t tx = 0; tx < num_tx; ++tx)
             {
@@ -153,11 +177,27 @@ AiranMockRuntime::MakeBeamHandler(uint32_t top_k, double latency_ms)
                                 InferenceResponse& out) {
         const RsrpVector& v = req.rsrp;
         out.output_kind = InferenceResponse::OutputKind::beam;
-        if (v.rsrp_dbm.empty())
+        // Refuse rather than fabricate, as the precoder does. An empty RSRP
+        // vector used to come back status 0 with beam 0 and score 0 dBm, a
+        // confident answer with no measurement behind it; a NaN RSRP made
+        // max_element's result unspecified; and beam angles that do not line
+        // up one to one with the RSRP entries cannot name a beam.
+        bool finite = true;
+        for (float x : v.rsrp_dbm)
+        {
+            finite = finite && std::isfinite(x);
+        }
+        const bool anglesOk =
+            (v.beam_az_deg.empty() || v.beam_az_deg.size() == v.rsrp_dbm.size()) &&
+            (v.beam_el_deg.empty() || v.beam_el_deg.size() == v.rsrp_dbm.size());
+        if (v.rsrp_dbm.empty() || !finite || !anglesOk)
         {
             out.beam.best_beam_id = 0;
             out.beam.score = 0.0f;
-            out.status = 0;
+            out.status = 1;
+            out.status_message = v.rsrp_dbm.empty() ? "empty RSRP vector"
+                                 : !finite          ? "non-finite RSRP"
+                                                    : "beam angles do not match the RSRP vector";
             out.inference_latency_ms = latency_ms;
             return;
         }

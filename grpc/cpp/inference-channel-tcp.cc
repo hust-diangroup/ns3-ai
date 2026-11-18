@@ -117,6 +117,12 @@ TcpInferenceChannel::Send(const std::vector<uint8_t>& bytes)
     {
         return false;
     }
+    // The receiver closes the connection on an empty or oversized frame, so
+    // refuse to send one rather than lose the channel on the far side.
+    if (bytes.empty() || bytes.size() > kMaxFrameBytes)
+    {
+        return false;
+    }
     const uint32_t len_be = htonl(static_cast<uint32_t>(bytes.size()));
     if (::send(m_fd, &len_be, sizeof(len_be), MSG_NOSIGNAL) !=
         static_cast<ssize_t>(sizeof(len_be)))
@@ -177,31 +183,58 @@ bool
 TcpInferenceChannel::TryRecv(std::vector<uint8_t>& bytes,
                               uint32_t timeout_ms)
 {
-    if (m_fd < 0)
+    // Frames are reassembled in m_rxStash across calls. This used to read the
+    // 4-byte length and then the payload with two RecvExact calls; when the
+    // poll timed out between or inside them (Poll(0) from a simulator tick is
+    // the normal case, and a 100 kB CSI frame arrives in several segments) the
+    // bytes already read were dropped, and the next call parsed the middle of
+    // a frame as a length header. The stash member existed for exactly this
+    // and was never used.
+    for (;;)
     {
-        return false;
+        if (m_rxStash.size() >= sizeof(uint32_t))
+        {
+            uint32_t len_be = 0;
+            std::memcpy(&len_be, m_rxStash.data(), sizeof(len_be));
+            const uint32_t len = ntohl(len_be);
+            if (len == 0 || len > kMaxFrameBytes)
+            {
+                m_rxStash.clear();
+                Close();
+                return false;
+            }
+            if (m_rxStash.size() >= sizeof(uint32_t) + len)
+            {
+                bytes.assign(m_rxStash.begin() + sizeof(uint32_t),
+                             m_rxStash.begin() + sizeof(uint32_t) + len);
+                m_rxStash.erase(m_rxStash.begin(),
+                                m_rxStash.begin() + sizeof(uint32_t) + len);
+                m_bytesRecv.fetch_add(len);
+                m_framesRecv.fetch_add(1);
+                return true;
+            }
+        }
+        if (m_fd < 0 || !WaitForReadable(m_fd, timeout_ms))
+        {
+            return false;
+        }
+        uint8_t chunk[65536];
+        const ssize_t r = ::recv(m_fd, chunk, sizeof(chunk), 0);
+        if (r <= 0)
+        {
+            if (r < 0 && errno == EINTR)
+            {
+                continue;
+            }
+            if (r < 0 && (errno == EAGAIN || errno == EWOULDBLOCK))
+            {
+                return false;
+            }
+            Close();
+            return false;
+        }
+        m_rxStash.insert(m_rxStash.end(), chunk, chunk + r);
     }
-    uint32_t len_be = 0;
-    if (!RecvExact(reinterpret_cast<uint8_t*>(&len_be),
-                   sizeof(len_be),
-                   timeout_ms))
-    {
-        return false;
-    }
-    const uint32_t len = ntohl(len_be);
-    if (len == 0 || len > (16 * 1024 * 1024))
-    {
-        Close();
-        return false;
-    }
-    bytes.assign(len, 0);
-    if (!RecvExact(bytes.data(), len, timeout_ms))
-    {
-        return false;
-    }
-    m_bytesRecv.fetch_add(len);
-    m_framesRecv.fetch_add(1);
-    return true;
 }
 
 bool

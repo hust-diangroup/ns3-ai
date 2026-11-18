@@ -192,3 +192,9 @@ endif()
 
 # Build Gym msg binding module
 add_subdirectory(model/gym-interface/py)
+
+# The closed-loop test drives a real NR handover from a beam-model decision
+# (NtnRealStackHelper, ntn-traffic). Only the test library links it.
+if(TARGET ns3-ai-ntn-test)
+  target_link_libraries(ns3-ai-ntn-test ntn-traffic)
+endif()

@@ -150,8 +150,11 @@ AiranInferenceServer::DispatchOne(InferenceChannel& ch,
         {
             it->second.handler(req, resp);
             ++m_requests;
-            m_latencyMsSum += static_cast<uint64_t>(
-                resp.inference_latency_ms);
+            m_latencyMsSum += resp.inference_latency_ms;
+            if (resp.status != 0)
+            {
+                ++m_modelRefused;
+            }
         }
     }
     const auto out = AiranMessageCodec::EncodeResponse(resp);
