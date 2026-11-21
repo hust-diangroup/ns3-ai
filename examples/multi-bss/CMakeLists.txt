@@ -24,7 +24,7 @@ build_lib_example(
             ${gsl_libraries}
 )
 
-pybind11_add_module(ns3ai_multibss_py multi_bss_py.cc)
+ns3ai_add_pybind_module(ns3ai_multibss_py multi_bss_py.cc)
 set_target_properties(ns3ai_multibss_py PROPERTIES
         LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(ns3ai_multibss_py PRIVATE

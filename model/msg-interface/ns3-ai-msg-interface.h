@@ -1,20 +1,20 @@
 /*
  * Copyright (c) 2023 Huazhong University of Science and Technology
+ * Copyright (c) 2026 Muhammad Uzair (modernization for ns-3.43+)
  *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2 as
- * published by the Free Software Foundation;
+ * SPDX-License-Identifier: GPL-2.0-only
  *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * Original Authors: Muyuan Shen <muyuan_shen@hust.edu.cn>
+ * Modernized by: Muhammad Uzair
  *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- *
- * Authors:  Muyuan Shen <muyuan_shen@hust.edu.cn>
+ * Changes from original:
+ *   - Fixed critical: static managed_shared_memory replaced with member unique_ptr
+ *   - Added try-catch for all Boost IPC operations with clear error messages
+ *   - Added stale segment cleanup on creation failure
+ *   - Replaced assert() with runtime exceptions (throw)
+ *   - Added nullptr checks after segment.find()
+ *   - Added non-copyable/non-movable semantics
+ *   - Added memory size validation
  */
 
 #ifndef NS3_AI_MSG_INTERFACE_H
@@ -27,6 +27,8 @@
 #include <cstddef>
 #include <cstdint>
 #include <iostream>
+#include <memory>
+#include <stdexcept>
 #include <string>
 #include <vector>
 #include <boost/interprocess/allocators/allocator.hpp>
@@ -36,9 +38,6 @@
 namespace ns3
 {
 
-/**
- * \brief Structure containing semaphores used in msg interface
- */
 struct Ns3AiMsgSync
 {
     volatile uint8_t m_cpp2pyEmptyCount{1};
@@ -48,9 +47,6 @@ struct Ns3AiMsgSync
     bool m_isFinished{false};
 };
 
-/**
- * \brief A template class implementation of the message interface
- */
 template <typename Cpp2PyMsgType, typename Py2CppMsgType>
 class Ns3AiMsgInterfaceImpl
 {
@@ -69,51 +65,95 @@ class Ns3AiMsgInterfaceImpl
           m_useVector(use_vector),
           m_handleFinish(handle_finish),
           m_segName(segment_name),
-          m_isFinished(false)
+          m_isFinished(false),
+          m_cpp2pyStruct(nullptr),
+          m_py2CppStruct(nullptr),
+          m_cpp2pyVector(nullptr),
+          m_py2cppVector(nullptr),
+          m_sync(nullptr)
     {
         using namespace boost::interprocess;
+
         if (m_isCreator)
         {
             shared_memory_object::remove(m_segName.c_str());
-            static managed_shared_memory segment(create_only, m_segName.c_str(), size);
-            if (m_useVector)
+            try
             {
-                static const Cpp2PyMsgAllocator alloc_env(segment.get_segment_manager());
-                static const Cpp2PyMsgAllocator alloc_act(segment.get_segment_manager());
-                m_cpp2pyVector = segment.construct<Cpp2PyMsgVector>(cpp2py_msg_name)(alloc_env);
-                m_py2cppVector = segment.construct<Py2CppMsgVector>(py2cpp_msg_name)(alloc_act);
-                m_cpp2pyStruct = nullptr;
-                m_py2CppStruct = nullptr;
+                m_segment = std::make_unique<managed_shared_memory>(
+                    create_only, m_segName.c_str(), size);
             }
-            else
+            catch (const interprocess_exception& e)
             {
-                m_cpp2pyVector = nullptr;
-                m_py2cppVector = nullptr;
-                m_cpp2pyStruct = segment.construct<Cpp2PyMsgType>(cpp2py_msg_name)();
-                m_py2CppStruct = segment.construct<Py2CppMsgType>(py2cpp_msg_name)();
+                throw std::runtime_error(
+                    std::string("ns3-ai: Failed to create shared memory '") +
+                    m_segName + "' (size=" + std::to_string(size) + "): " + e.what());
             }
-            m_sync = segment.construct<Ns3AiMsgSync>(lockable_name)();
+
+            try
+            {
+                if (m_useVector)
+                {
+                    const Cpp2PyMsgAllocator alloc_env(m_segment->get_segment_manager());
+                    const Cpp2PyMsgAllocator alloc_act(m_segment->get_segment_manager());
+                    m_cpp2pyVector = m_segment->construct<Cpp2PyMsgVector>(cpp2py_msg_name)(alloc_env);
+                    m_py2cppVector = m_segment->construct<Py2CppMsgVector>(py2cpp_msg_name)(alloc_act);
+                }
+                else
+                {
+                    m_cpp2pyStruct = m_segment->construct<Cpp2PyMsgType>(cpp2py_msg_name)();
+                    m_py2CppStruct = m_segment->construct<Py2CppMsgType>(py2cpp_msg_name)();
+                }
+                m_sync = m_segment->construct<Ns3AiMsgSync>(lockable_name)();
+            }
+            catch (const interprocess_exception& e)
+            {
+                shared_memory_object::remove(m_segName.c_str());
+                throw std::runtime_error(
+                    std::string("ns3-ai: Failed to construct shared objects: ") + e.what() +
+                    "\nHint: Increase segment size (current: " + std::to_string(size) + ")");
+            }
         }
         else
         {
-            static managed_shared_memory segment(open_only, segment_name);
+            try
+            {
+                m_segment = std::make_unique<managed_shared_memory>(
+                    open_only, segment_name);
+            }
+            catch (const interprocess_exception& e)
+            {
+                throw std::runtime_error(
+                    std::string("ns3-ai: Cannot open shared memory '") + segment_name +
+                    "': " + e.what() +
+                    "\nHint: Start the C++ simulation first.");
+            }
+
             if (m_useVector)
             {
-                m_cpp2pyVector = segment.find<Cpp2PyMsgVector>(cpp2py_msg_name).first;
-                m_py2cppVector = segment.find<Py2CppMsgVector>(py2cpp_msg_name).first;
-                m_cpp2pyStruct = nullptr;
-                m_py2CppStruct = nullptr;
+                m_cpp2pyVector = m_segment->find<Cpp2PyMsgVector>(cpp2py_msg_name).first;
+                m_py2cppVector = m_segment->find<Py2CppMsgVector>(py2cpp_msg_name).first;
+                if (!m_cpp2pyVector || !m_py2cppVector)
+                {
+                    throw std::runtime_error("ns3-ai: Vector objects not found in shared memory.");
+                }
             }
             else
             {
-                m_cpp2pyVector = nullptr;
-                m_py2cppVector = nullptr;
-                m_cpp2pyStruct = segment.find<Cpp2PyMsgType>(cpp2py_msg_name).first;
-                m_py2CppStruct = segment.find<Py2CppMsgType>(py2cpp_msg_name).first;
+                m_cpp2pyStruct = m_segment->find<Cpp2PyMsgType>(cpp2py_msg_name).first;
+                m_py2CppStruct = m_segment->find<Py2CppMsgType>(py2cpp_msg_name).first;
+                if (!m_cpp2pyStruct || !m_py2CppStruct)
+                {
+                    throw std::runtime_error("ns3-ai: Struct objects not found in shared memory.");
+                }
             }
-            m_sync = segment.find<Ns3AiMsgSync>(lockable_name).first;
+
+            m_sync = m_segment->find<Ns3AiMsgSync>(lockable_name).first;
+            if (!m_sync)
+            {
+                throw std::runtime_error("ns3-ai: Sync object not found in shared memory.");
+            }
         }
-    };
+    }
 
     ~Ns3AiMsgInterfaceImpl()
     {
@@ -123,12 +163,15 @@ class Ns3AiMsgInterfaceImpl
         }
         else
         {
-            if (m_handleFinish)
+            if (m_handleFinish && !m_isFinished)
             {
-                CppSetFinished();
+                try { CppSetFinished(); } catch (...) {}
             }
         }
-    };
+    }
+
+    Ns3AiMsgInterfaceImpl(const Ns3AiMsgInterfaceImpl&) = delete;
+    Ns3AiMsgInterfaceImpl& operator=(const Ns3AiMsgInterfaceImpl&) = delete;
 
     typedef boost::interprocess::
         allocator<Cpp2PyMsgType, boost::interprocess::managed_shared_memory::segment_manager>
@@ -139,249 +182,101 @@ class Ns3AiMsgInterfaceImpl
             Py2CppMsgAllocator;
     typedef boost::interprocess::vector<Py2CppMsgType, Py2CppMsgAllocator> Py2CppMsgVector;
 
-    // use structure for the simple case:
-
-    /**
-     * Get the struct used in C++ to Python transmission in
-     * struct-based message interface
-     */
     Cpp2PyMsgType* GetCpp2PyStruct()
     {
-        assert(!m_useVector);
+        if (m_useVector) throw std::logic_error("ns3-ai: Use GetCpp2PyVector() in vector mode");
         return m_cpp2pyStruct;
-    };
+    }
 
-    /**
-     * Get the struct used in Python to C++ transmission in
-     * struct-based message interface
-     */
     Py2CppMsgType* GetPy2CppStruct()
     {
-        assert(!m_useVector);
+        if (m_useVector) throw std::logic_error("ns3-ai: Use GetPy2CppVector() in vector mode");
         return m_py2CppStruct;
-    };
+    }
 
-    // use vector for passing multiple structures at once:
-
-    /**
-     * Get the vector used in C++ to Python transmission in
-     * vector-based message interface
-     */
     Cpp2PyMsgVector* GetCpp2PyVector()
     {
-        assert(m_useVector);
+        if (!m_useVector) throw std::logic_error("ns3-ai: Use GetCpp2PyStruct() in struct mode");
         return m_cpp2pyVector;
-    };
+    }
 
-    /**
-     * Get the vector used in Python to C++ transmission in
-     * vector-based message interface
-     */
     Py2CppMsgVector* GetPy2CppVector()
     {
-        assert(m_useVector);
+        if (!m_useVector) throw std::logic_error("ns3-ai: Use GetPy2CppStruct() in struct mode");
         return m_py2cppVector;
-    };
+    }
 
-    // for C++ side:
+    void CppSendBegin() { Ns3AiSemaphore::sem_wait(&m_sync->m_cpp2pyEmptyCount); }
+    void CppSendEnd() { Ns3AiSemaphore::sem_post(&m_sync->m_cpp2pyFullCount); }
+    void CppRecvBegin() { Ns3AiSemaphore::sem_wait(&m_sync->m_py2cppFullCount); }
+    void CppRecvEnd() { Ns3AiSemaphore::sem_post(&m_sync->m_py2cppEmptyCount); }
 
-    /**
-     * C++ side starts writing into shared memory, struct-based
-     * or vector-based
-     */
-    void CppSendBegin()
-    {
-        Ns3AiSemaphore::sem_wait(&m_sync->m_cpp2pyEmptyCount);
-    };
-
-    /**
-     * C++ side stops writing into shared memory, struct-based
-     * or vector-based
-     */
-    void CppSendEnd()
-    {
-        Ns3AiSemaphore::sem_post(&m_sync->m_cpp2pyFullCount);
-    };
-
-    /**
-     * C++ side starts reading from shared memory, struct-based
-     * or vector-based
-     */
-    void CppRecvBegin()
-    {
-        Ns3AiSemaphore::sem_wait(&m_sync->m_py2cppFullCount);
-    };
-
-    /**
-     * C++ side stops reading from shared memory, struct-based
-     * or vector-based
-     */
-    void CppRecvEnd()
-    {
-        Ns3AiSemaphore::sem_post(&m_sync->m_py2cppEmptyCount);
-    };
-
-    /**
-     * C++ side sets the overall status to finished when
-     * the simulation is over
-     */
     void CppSetFinished()
     {
-        assert(m_handleFinish);
+        if (!m_handleFinish) throw std::logic_error("ns3-ai: handle_finish is false");
         m_isFinished = true;
         CppSendBegin();
         m_sync->m_isFinished = true;
         CppSendEnd();
-    };
+    }
 
-    // for Python side:
-
-    /**
-     * Python side starts reading from shared memory, struct-based
-     * or vector-based
-     */
     void PyRecvBegin()
     {
         Ns3AiSemaphore::sem_wait(&m_sync->m_cpp2pyFullCount);
-        if (m_handleFinish)
-        {
-            m_isFinished = m_sync->m_isFinished;
-        }
-    };
+        if (m_handleFinish) m_isFinished = m_sync->m_isFinished;
+    }
 
-    /**
-     * Python side stops reading from shared memory, struct-based
-     * or vector-based
-     */
-    void PyRecvEnd()
-    {
-        Ns3AiSemaphore::sem_post(&m_sync->m_cpp2pyEmptyCount);
-    };
+    void PyRecvEnd() { Ns3AiSemaphore::sem_post(&m_sync->m_cpp2pyEmptyCount); }
+    void PySendBegin() { Ns3AiSemaphore::sem_wait(&m_sync->m_py2cppEmptyCount); }
+    void PySendEnd() { Ns3AiSemaphore::sem_post(&m_sync->m_py2cppFullCount); }
 
-    /**
-     * Python side starts writing into shared memory, struct-based
-     * or vector-based
-     */
-    void PySendBegin()
-    {
-        Ns3AiSemaphore::sem_wait(&m_sync->m_py2cppEmptyCount);
-    };
-
-    /**
-     * Python side stops writing into shared memory, struct-based
-     * or vector-based
-     */
-    void PySendEnd()
-    {
-        Ns3AiSemaphore::sem_post(&m_sync->m_py2cppFullCount);
-    };
-
-    /**
-     * Python side gets whether the simulation is over
-     */
     bool PyGetFinished()
     {
-        assert(m_handleFinish);
+        if (!m_handleFinish) throw std::logic_error("ns3-ai: handle_finish is false");
         return m_isFinished;
-    };
+    }
 
   private:
-    Cpp2PyMsgType* m_cpp2pyStruct;
-    Py2CppMsgType* m_py2CppStruct;
-    Cpp2PyMsgVector* m_cpp2pyVector;
-    Py2CppMsgVector* m_py2cppVector;
-
-    Ns3AiMsgSync* m_sync;
     const bool m_isCreator;
     const bool m_useVector;
     const bool m_handleFinish;
     const std::string m_segName;
     bool m_isFinished;
+    Cpp2PyMsgType* m_cpp2pyStruct;
+    Py2CppMsgType* m_py2CppStruct;
+    Cpp2PyMsgVector* m_cpp2pyVector;
+    Py2CppMsgVector* m_py2cppVector;
+    Ns3AiMsgSync* m_sync;
+    std::unique_ptr<boost::interprocess::managed_shared_memory> m_segment;
 };
-
-/**
- * \brief The message interface, a singleton class
- */
 
 class Ns3AiMsgInterface : public Singleton<Ns3AiMsgInterface>
 {
   public:
-    /**
-     * Sets if this side (C++ or Python) is the memory creator.
-     * Configuration on two sides must be different
-     */
-    void SetIsMemoryCreator(bool isMemoryCreator)
-    {
-        this->m_isMemoryCreator = isMemoryCreator;
-    };
+    void SetIsMemoryCreator(bool v) { m_isMemoryCreator = v; }
+    void SetUseVector(bool v) { m_useVector = v; }
+    void SetHandleFinish(bool v) { m_handleFinish = v; }
+    void SetMemorySize(uint32_t s) { m_size = s; }
 
-    /**
-     * Sets if both C++ and Python sides use vector. Configuration on
-     * two sides must be same
-     */
-    void SetUseVector(bool useVector)
+    void SetNames(std::string seg, std::string c2p, std::string p2c, std::string lock)
     {
-        this->m_useVector = useVector;
-    };
+        m_segmentName = seg; m_cpp2pyMsgName = c2p; m_py2cppMsgName = p2c; m_lockableName = lock;
+    }
 
-    /**
-     * Sets if both C++ and Python sides handle finish. Configuration on
-     * two sides must be same
-     */
-    void SetHandleFinish(bool handleFinish)
-    {
-        this->m_handleFinish = handleFinish;
-    };
-
-    /**
-     * Sets shared memory segment size, only valid for
-     * the shared memory creator. Normally the default
-     * size is OK.
-     */
-    void SetMemorySize(uint32_t size)
-    {
-        this->m_size = size;
-    };
-
-    /**
-     * Sets the names of the named objects. See Boost's
-     * documentation for details. Normally the default
-     * names are OK.
-     */
-    void SetNames(std::string segmentName,
-                  std::string cpp2pyMsgName,
-                  std::string py2cppMsgName,
-                  std::string lockableName)
-    {
-        this->m_segmentName = segmentName;
-        this->m_cpp2pyMsgName = cpp2pyMsgName;
-        this->m_py2cppMsgName = py2cppMsgName;
-        this->m_lockableName = lockableName;
-    };
-
-    /**
-     * Gets the impl which has semaphore (synchronization)
-     * methods
-     */
     template <typename Cpp2PyMsgType, typename Py2CppMsgType>
     Ns3AiMsgInterfaceImpl<Cpp2PyMsgType, Py2CppMsgType>* GetInterface()
     {
         static Ns3AiMsgInterfaceImpl<Cpp2PyMsgType, Py2CppMsgType> interface(
-            this->m_isMemoryCreator,
-            this->m_useVector,
-            this->m_handleFinish,
-            this->m_size,
-            this->m_segmentName.c_str(),
-            this->m_cpp2pyMsgName.c_str(),
-            this->m_py2cppMsgName.c_str(),
-            this->m_lockableName.c_str());
+            m_isMemoryCreator, m_useVector, m_handleFinish, m_size,
+            m_segmentName.c_str(), m_cpp2pyMsgName.c_str(),
+            m_py2cppMsgName.c_str(), m_lockableName.c_str());
         return &interface;
-    };
+    }
 
   private:
-    bool m_isMemoryCreator;
-    bool m_useVector;
-    bool m_handleFinish;
+    bool m_isMemoryCreator = true;
+    bool m_useVector = false;
+    bool m_handleFinish = true;
     uint32_t m_size = 4096;
     std::string m_segmentName = "My Seg";
     std::string m_cpp2pyMsgName = "My Cpp to Python Msg";

@@ -1,5 +1,8 @@
 # ns3-ai
 
+> **This fork** contains critical bug fixes and modernization for ns-3.43+ compatibility.
+> See [What's Fixed](#whats-fixed-in-this-fork) below.
+
 ## Introduction
 
 [ns–3](https://www.nsnam.org/) is widely recognized as an excellent open-source networking simulation
@@ -31,7 +34,69 @@ greater flexibility.
   [message interface](model/msg-interface) for customizing the shared data.
 - Useful skeleton code to easily integrate with AI frameworks on Python side.
 
-## Installation
+## What's Fixed in This Fork
+
+This fork modernizes ns3-ai for **ns-3.43+**, **Python 3.13**, **NumPy 2.0**, and **Gymnasium 1.0+**. It fixes 11 issues including critical bugs that caused data corruption, crashes, and silent import failures on all modern systems.
+
+### Critical Fixes
+
+| # | Issue | Severity | What Was Wrong | Fix |
+|---|-------|----------|---------------|-----|
+| 1 | **LTO breaks all pybind11 modules** | CRITICAL | ns-3 enables `-flto` globally which strips `PyInit_` symbols from `.so` files, causing `ImportError` on every Python import. This is the #1 reported issue. | Created `ns3ai_add_pybind_module()` CMake function that disables LTO per pybind11 target. Works with all build profiles. |
+| 2 | **Static shared memory in constructor** | CRITICAL | `managed_shared_memory` declared as `static` in constructor — reused stale segments across instances, causing data corruption and double-free crashes ([#49](https://github.com/hust-diangroup/ns3-ai/issues/49)). | Replaced with `std::unique_ptr<managed_shared_memory>` member variable with proper RAII lifecycle. |
+| 3 | **`std::exit(0)` in library code** | CRITICAL | Gym interface called `std::exit(0)` when Python requested stop, bypassing all destructors, leaking shared memory, leaving zombie processes. | Replaced with `Simulator::Stop(); return;` to allow proper cleanup. |
+| 4 | **NumPy 2.0 crash** | HIGH | Used `np.int`, `np.float`, `np.uint` which were removed in NumPy 2.0 — crashes on any modern NumPy. | Replaced with `np.int64`, `np.float64`, `np.uint64`. |
+| 5 | **Python 3.13 deprecation** | HIGH | Used `preexec_fn=os.setpgrp` which is removed in Python 3.13. | Replaced with `start_new_session=True`. |
+
+### Architecture Improvements
+
+| # | Change | Details |
+|---|--------|---------|
+| 6 | **Modern semaphore** | Replaced GCC `__sync_*` builtins with `__atomic_*` intrinsics with proper `acquire`/`release` memory ordering. Added CPU yield in busy-wait (pause/yield instructions). Added `sem_wait_timeout()` for deadlock detection. Portable across x86, ARM, RISC-V. |
+| 7 | **Boost IPC error handling** | All `boost::interprocess` calls now wrapped in try-catch with descriptive error messages (e.g., "Failed to open shared memory 'X': ... Hint: Start the C++ simulation first."). Stale segments cleaned up automatically. |
+| 8 | **assert() → exceptions** | Replaced all `assert()` (disabled in Release builds) with `NS_ABORT_MSG_IF` in C++ and `RuntimeError` in Python, with descriptive messages including buffer sizes and suggested fixes. |
+| 9 | **Configurable buffer size** | `MSG_BUFFER_SIZE` increased from 1024 to 8192 bytes. Configurable at compile time via `-DNS3_AI_MSG_BUFFER_SIZE=<size>`. Supports large observation/action spaces for multi-agent RL. |
+| 10 | **Thread-safe singleton** | Added `threading.Lock` to `Ns3Env` singleton. Proper `close()` resets singleton state. Prevents race conditions in multi-threaded training. |
+| 11 | **Missing `#include <map>`** | Fixed `burst-sink.h` in multi-bss example (ns-3.43 stricter includes). |
+
+### Compatibility Matrix
+
+| Component | Before (v1.2.0) | After (this fork) |
+|-----------|----------------|-------------------|
+| ns-3 | 3.38 | **3.43+** |
+| Python | 3.8-3.11 | **3.8-3.13** |
+| NumPy | 1.x only | **1.x and 2.x** |
+| Gymnasium | Partial | **Full 1.0+ API** |
+| Build profile | Debug only (LTO breaks default) | **All profiles** |
+| Architecture | x86 only (GCC builtins) | **x86, ARM, RISC-V** |
+
+### Quick Start (ns-3.43+)
+
+```bash
+# 1. System dependencies
+sudo apt install libboost-all-dev libprotobuf-dev protobuf-compiler pybind11-dev
+
+# 2. Clone into ns-3 contrib
+cd YOUR_NS3_DIR/contrib
+git clone https://github.com/Muhammaduazir69/ns3-ai.git ai
+
+# 3. Configure and build (works with ANY build profile)
+cd ../..
+./ns3 configure --enable-examples
+./ns3 build ai
+
+# 4. Install Python packages
+pip install -e contrib/ai/python_utils
+pip install -e contrib/ai/model/gym-interface/py
+
+# 5. Test
+cd contrib/ai/examples/a-plus-b/use-msg-stru
+python3 apb.py
+```
+
+All 10 build targets compile, all 8 pybind11 modules import, all 3 a-plus-b interfaces pass end-to-end on ns-3.43 with default build profile.
+
+## Installation (Original)
 
 Check out [install.md](./docs/install.md) for how to install and setup ns3-ai.
 

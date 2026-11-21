@@ -1,33 +1,52 @@
 /*
  * Copyright (c) 2023 Huazhong University of Science and Technology
+ * Copyright (c) 2026 Muhammad Uzair (modernization)
  *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2 as
- * published by the Free Software Foundation;
+ * SPDX-License-Identifier: GPL-2.0-only
  *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * Original Author: Muyuan Shen <muyuan_shen@hust.edu.cn>
  *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- *
- * Author:  Muyuan Shen <muyuan_shen@hust.edu.cn>
+ * Changes:
+ *   - Increased default MSG_BUFFER_SIZE from 1024 to 8192 to support
+ *     large observation/action spaces (e.g., multi-agent, image-based)
+ *   - Made configurable via NS3_AI_MSG_BUFFER_SIZE define
+ *   - Added compile-time size validation
  */
 
 #ifndef NS3_NS3_AI_GYM_MSG_H
 #define NS3_NS3_AI_GYM_MSG_H
 
-#include <stdint.h>
+#include <cstdint>
 
-#define MSG_BUFFER_SIZE 1024
+/**
+ * \brief Size of the protobuf message buffer in bytes.
+ *
+ * Override at compile time with -DNS3_AI_MSG_BUFFER_SIZE=<size>
+ * Default: 8192 bytes (supports observation spaces up to ~8KB)
+ *
+ * For large observation spaces (e.g., images, multi-agent with many UEs),
+ * increase this value. The buffer is allocated in shared memory.
+ */
+#ifndef NS3_AI_MSG_BUFFER_SIZE
+#define NS3_AI_MSG_BUFFER_SIZE 8192
+#endif
 
+#define MSG_BUFFER_SIZE NS3_AI_MSG_BUFFER_SIZE
+
+static_assert(MSG_BUFFER_SIZE >= 256, "MSG_BUFFER_SIZE must be at least 256 bytes");
+static_assert(MSG_BUFFER_SIZE <= 1048576, "MSG_BUFFER_SIZE should not exceed 1MB");
+
+/**
+ * \brief Shared memory message for gym interface
+ *
+ * Contains a serialized protobuf message (observation or action)
+ * and its actual size. The buffer is fixed-size for shared memory
+ * compatibility (no dynamic allocation in shared memory).
+ */
 struct Ns3AiGymMsg
 {
-    uint8_t buffer[MSG_BUFFER_SIZE];
-    uint32_t size;
+    uint8_t buffer[MSG_BUFFER_SIZE]; //!< Serialized protobuf data
+    uint32_t size;                   //!< Actual message size in bytes
 };
 
 #endif // NS3_NS3_AI_GYM_MSG_H

@@ -22,6 +22,8 @@
 
 #include "ns3/address.h"
 #include "ns3/application.h"
+
+#include <map>
 #include "ns3/event-id.h"
 #include "ns3/inet-socket-address.h"
 #include "ns3/ptr.h"

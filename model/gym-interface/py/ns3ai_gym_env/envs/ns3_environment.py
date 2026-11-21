@@ -1,3 +1,4 @@
+import threading
 import numpy as np
 import gymnasium as gym
 from gymnasium import spaces
@@ -7,7 +8,14 @@ from ns3ai_utils import Experiment
 
 
 class Ns3Env(gym.Env):
+    """
+    Gymnasium environment wrapping an ns-3 simulation via shared memory.
+
+    This is a singleton: only one Ns3Env can exist at a time because
+    the shared memory interface is process-global.
+    """
     _created = False
+    _lock = threading.Lock()  # Thread-safe singleton
 
     def _create_space(self, spaceDesc):
         space = None
@@ -25,13 +33,13 @@ class Ns3Env(gym.Env):
             mtype = boxSpacePb.dtype
 
             if mtype == pb.INT:
-                mtype = np.int
+                mtype = np.int64
             elif mtype == pb.UINT:
-                mtype = np.uint
+                mtype = np.uint64
             elif mtype == pb.DOUBLE:
-                mtype = np.float
+                mtype = np.float64
             else:
-                mtype = np.float
+                mtype = np.float64
 
             space = spaces.Box(low=low, high=high, shape=shape, dtype=mtype)
 
@@ -271,10 +279,13 @@ class Ns3Env(gym.Env):
         extraInfo = {"info": self.get_extra_info()}
         return obs, reward, done, False, extraInfo
 
-    def __init__(self, targetName, ns3Path, ns3Settings=None, shmSize=4096):
-        if self._created:
-            raise Exception('Error: Ns3Env is singleton')
-        self._created = True
+    def __init__(self, targetName, ns3Path, ns3Settings=None, shmSize=32768):
+        with Ns3Env._lock:
+            if Ns3Env._created:
+                raise RuntimeError(
+                    'ns3-ai: Only one Ns3Env instance allowed per process. '
+                    'Call env.close() before creating a new one.')
+            Ns3Env._created = True
         self.exp = Experiment(targetName, ns3Path, py_binding, shmSize=shmSize)
         self.ns3Settings = ns3Settings
 
@@ -332,7 +343,12 @@ class Ns3Env(gym.Env):
         return act
 
     def close(self):
-        # environment is not needed anymore, so kill subprocess in a straightforward way
-        self.exp.kill()
-        # destroy the message interface and its shared memory segment
-        del self.exp
+        """Clean up: kill ns-3 subprocess, release shared memory, reset singleton."""
+        try:
+            self.exp.kill()
+            del self.exp
+        except Exception:
+            pass
+        finally:
+            with Ns3Env._lock:
+                Ns3Env._created = False

@@ -48,13 +48,13 @@ def run_single_ns3(path, pname, setting=None, env=None, show_output=False):
     if show_output:
         proc = subprocess.Popen(cmd, shell=True, text=True, env=env,
                                 stdin=subprocess.PIPE,
-                                preexec_fn=os.setpgrp)
+                                start_new_session=True)
     else:
         proc = subprocess.Popen(cmd, shell=True, text=True, env=env,
                                 stdin=subprocess.PIPE,
                                 stdout=subprocess.PIPE,
                                 stderr=subprocess.PIPE,
-                                preexec_fn=os.setpgrp)
+                                start_new_session=True)
 
     return cmd, proc
 
@@ -102,7 +102,7 @@ class Experiment:
     def __init__(self, targetName, ns3Path, msgModule,
                  handleFinish=False,
                  useVector=False, vectorSize=None,
-                 shmSize=4096,
+                 shmSize=32768,
                  segName="My Seg",
                  cpp2pyMsgName="My Cpp to Python Msg",
                  py2cppMsgName="My Python to Cpp Msg",

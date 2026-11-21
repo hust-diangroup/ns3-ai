@@ -107,7 +107,10 @@ OpenGymInterface::Init()
     // send init msg to python
     msgInterface->CppSendBegin();
     msgInterface->GetCpp2PyStruct()->size = simInitMsg.ByteSizeLong();
-    assert(msgInterface->GetCpp2PyStruct()->size <= MSG_BUFFER_SIZE);
+    NS_ABORT_MSG_IF(msgInterface->GetCpp2PyStruct()->size > MSG_BUFFER_SIZE,
+                     "ns3-ai: Protobuf message size (" << msgInterface->GetCpp2PyStruct()->size
+                     << " bytes) exceeds MSG_BUFFER_SIZE (" << MSG_BUFFER_SIZE
+                     << "). Increase NS3_AI_MSG_BUFFER_SIZE at compile time.");
     simInitMsg.SerializeToArray(msgInterface->GetCpp2PyStruct()->buffer,
                                 msgInterface->GetCpp2PyStruct()->size);
     msgInterface->CppSendEnd();
@@ -124,11 +127,14 @@ OpenGymInterface::Init()
     bool stopSim = simInitAck.stopsimreq();
     if (stopSim)
     {
-        NS_LOG_DEBUG("---Stop requested: " << stopSim);
+        NS_LOG_DEBUG("---Stop requested by Python agent");
         m_stopEnvRequested = true;
         Simulator::Stop();
-        Simulator::Destroy();
-        std::exit(0);
+        // FIX: Do NOT call std::exit(0) - let simulation unwind properly
+        // std::exit() bypasses destructors, leaks shared memory segments,
+        // and leaves the Python process hanging. Instead, just stop the
+        // simulator and let the main() function handle cleanup.
+        return;
     }
 }
 
@@ -182,7 +188,10 @@ OpenGymInterface::NotifyCurrentState()
     // send env state msg to python
     msgInterface->CppSendBegin();
     msgInterface->GetCpp2PyStruct()->size = envStateMsg.ByteSizeLong();
-    assert(msgInterface->GetCpp2PyStruct()->size <= MSG_BUFFER_SIZE);
+    NS_ABORT_MSG_IF(msgInterface->GetCpp2PyStruct()->size > MSG_BUFFER_SIZE,
+                     "ns3-ai: Protobuf message size (" << msgInterface->GetCpp2PyStruct()->size
+                     << " bytes) exceeds MSG_BUFFER_SIZE (" << MSG_BUFFER_SIZE
+                     << "). Increase NS3_AI_MSG_BUFFER_SIZE at compile time.");
     envStateMsg.SerializeToArray(msgInterface->GetCpp2PyStruct()->buffer,
                                  msgInterface->GetCpp2PyStruct()->size);
 
@@ -205,11 +214,10 @@ OpenGymInterface::NotifyCurrentState()
     bool stopSim = envActMsg.stopsimreq();
     if (stopSim)
     {
-        NS_LOG_DEBUG("---Stop requested: " << stopSim);
+        NS_LOG_DEBUG("---Stop requested by Python agent during step");
         m_stopEnvRequested = true;
         Simulator::Stop();
-        Simulator::Destroy();
-        std::exit(0);
+        return;
     }
 
     // first step after reset is called without actions, just to get current state

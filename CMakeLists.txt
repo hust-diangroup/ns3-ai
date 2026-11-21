@@ -1,3 +1,34 @@
+# ns3-ai: AI/ML integration for ns-3 via shared memory
+# Modernized for ns-3.43+ by Muhammad Uzair
+# Fixes: LTO compatibility, Python 3.13+, NumPy 2.0+, shared memory RAII
+
+# ============================================================
+# FIX: ns-3 enables LTO globally (-flto) which strips PyInit_
+# symbols from pybind11 modules, making them fail to import.
+# This function wraps pybind11_add_module to disable LTO per target.
+# All ns3-ai examples MUST use this instead of pybind11_add_module.
+# ============================================================
+function(ns3ai_add_pybind_module TARGET_NAME SOURCE_FILE)
+    # Temporarily disable global LTO for pybind11 module creation
+    set(_saved_ipo ${CMAKE_INTERPROCEDURAL_OPTIMIZATION})
+    set(CMAKE_INTERPROCEDURAL_OPTIMIZATION OFF)
+
+    pybind11_add_module(${TARGET_NAME} ${SOURCE_FILE})
+
+    # Restore global LTO setting
+    set(CMAKE_INTERPROCEDURAL_OPTIMIZATION ${_saved_ipo})
+
+    # Force LTO OFF on this specific target
+    set_target_properties(${TARGET_NAME} PROPERTIES
+        INTERPROCEDURAL_OPTIMIZATION FALSE)
+
+    # Also strip -flto from compile/link flags for this target (belt and suspenders)
+    if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+        target_compile_options(${TARGET_NAME} PRIVATE -fno-lto -fvisibility=default)
+        target_link_options(${TARGET_NAME} PRIVATE -fno-lto)
+    endif()
+endfunction()
+
 check_include_file_cxx(stdint.h HAVE_STDINT_H)
 if(HAVE_STDINT_H)
     add_definitions(-DHAVE_STDINT_H)
@@ -7,7 +38,8 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     add_compile_options("-Wno-gcc-compat")
 endif()
 
-find_package(Boost REQUIRED COMPONENTS program_options)
+# Required: Boost with interprocess support (for shared memory)
+find_package(Boost 1.70 REQUIRED COMPONENTS program_options)
 include_directories(${Boost_INCLUDE_DIRS})
 find_package(Python REQUIRED COMPONENTS Interpreter Development)
 if (Python_FOUND)
@@ -23,6 +55,12 @@ if(NOT Protobuf_FOUND)
     find_package(Protobuf REQUIRED)
 endif()
 include_directories(${Protobuf_INCLUDE_DIRS})
+
+# Ensure protoc executable is found
+if(NOT Protobuf_PROTOC_EXECUTABLE)
+    find_program(Protobuf_PROTOC_EXECUTABLE protoc)
+endif()
+set(protobuf_PROTOC_EXE ${Protobuf_PROTOC_EXECUTABLE})
 
 # Check if C++-based ML frameworks are available
 # Must do before build_lib (which adds examples/ subdirectory)
@@ -65,7 +103,11 @@ else()
 endif()
 
 set(msg_interface_srcs )
-set(msg_interface_hdrs model/msg-interface/ns3-ai-msg-interface.h)
+set(msg_interface_hdrs
+        model/msg-interface/ns3-ai-msg-interface.h
+        model/msg-interface/ns3-ai-semaphore.h
+        model/gym-interface/ns3-ai-gym-msg.h
+)
 set(gym_interface_srcs
         model/gym-interface/cpp/ns3-ai-gym-interface.cc
         model/gym-interface/cpp/ns3-ai-gym-env.cc
@@ -110,7 +152,12 @@ build_lib(
         HEADER_FILES ${msg_interface_hdrs} ${gym_interface_hdrs}
         LIBRARIES_TO_LINK ${libcore} protobuf::libprotobuf
 )
-add_dependencies(${libai} proto-objects)
+# ${libai} is set by build_lib; guard against empty
+if(TARGET ${libai})
+    add_dependencies(${libai} proto-objects)
+elseif(TARGET ai)
+    add_dependencies(ai proto-objects)
+endif()
 
 # Build Gym msg binding module
 add_subdirectory(model/gym-interface/py)
