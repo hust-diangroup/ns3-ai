@@ -1,6 +1,18 @@
+<!-- hero-banner -->
+<p align="center"><a href="https://muhammaduazir69.github.io/ns3-ai/"><img src="doc/figures/ns3-ai-banner.jpg" alt="ns3-ai: Gymnasium RL bridge for ns-3.43 (ns3-ai fork). The banner shows the toolkit architecture (IEEE OJ-COMS 2026, Fig. 2); click to open the project page." width="100%"/></a></p>
+
 <h1 align="center">ns3-ai-ntn</h1>
 
 <p align="center"><strong>A modernized ns3-ai bridge for ns-3.43: Gymnasium 1.0 over versioned shared memory, an AI-RAN inference contract, and NTN reinforcement-learning tooling</strong></p>
+
+<p align="center">
+  <a href="https://youtu.be/JNStiBst68I"><img src="https://img.shields.io/badge/YouTube-Watch%20the%205--minute%20demo-red?logo=youtube" alt="Watch on YouTube"/></a>
+  <a href="https://6g-ntn.live"><img src="https://img.shields.io/badge/Live-6g--ntn.live-2ea44f?logo=googlechrome&logoColor=white" alt="Open the live NTN Control Center"/></a>
+  <a href="https://muhammaduazir69.github.io/ns3-ai/"><img src="https://img.shields.io/badge/Project%20page-ns3--ai-6a10d5?logo=githubpages&logoColor=white" alt="Project page"/></a>
+  <a href="https://github.com/Muhammaduazir69/ns3-ai/releases/latest"><img src="https://img.shields.io/github/v/release/Muhammaduazir69/ns3-ai?label=release&color=3424d6" alt="Latest release"/></a>
+  <a href="https://www.linkedin.com/in/muhammad-uzair-285331185/"><img src="https://img.shields.io/badge/LinkedIn-Muhammad%20Uzair-0A66C2?logo=linkedin&logoColor=white" alt="LinkedIn"/></a><br/>
+  <sub><b>New on 6g-ntn.live:</b> a live ns-3 console, 115 examples with editable parameters, a 3D globe of real constellations, open datasets (CC BY 4.0) and a validation page with 690 test cases in 41 suites.</sub><br/>
+</p>
 
 <p align="center">
   <a href="https://www.nsnam.org"><img src="https://img.shields.io/badge/ns--3-3.43-blue.svg" alt="ns-3.43"/></a>
